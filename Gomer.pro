@@ -24,10 +24,16 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    board.cpp \
+    stones.cpp \
+    stone.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    board.h \
+    stones.h \
+    stone.h
 
 FORMS += \
         mainwindow.ui
