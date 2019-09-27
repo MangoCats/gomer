@@ -6,9 +6,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    boardScene = new BoardScene( board, this );
+    ui->boardView->setScene( boardScene );
+    drawBoard();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::drawBoard()
+{ }
