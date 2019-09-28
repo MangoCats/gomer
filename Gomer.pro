@@ -28,14 +28,16 @@ SOURCES += \
     board.cpp \
     stones.cpp \
     stone.cpp \
-    boardscene.cpp
+    boardscene.cpp \
+    boardrect.cpp
 
 HEADERS += \
         mainwindow.h \
     board.h \
     stones.h \
     stone.h \
-    boardscene.h
+    boardscene.h \
+    boardrect.h
 
 FORMS += \
         mainwindow.ui

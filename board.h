@@ -11,7 +11,7 @@ class Board : public QObject
     Q_OBJECT
 public:
     explicit Board(QObject *parent = nullptr);
-            ~Board() { if ( stones ) delete stones; }
+            ~Board();
 signals:
 
 public slots:

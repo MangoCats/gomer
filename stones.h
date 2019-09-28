@@ -7,8 +7,7 @@ class Stone;
 #include "stone.h"
 
 class Stones : public QObject
-{
-    Q_OBJECT
+{ Q_OBJECT
 public:
     explicit Stones(QObject *parent = nullptr);
             ~Stones() { clear(); }
