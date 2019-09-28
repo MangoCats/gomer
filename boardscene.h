@@ -9,9 +9,11 @@ class BoardScene : public QGraphicsScene
 {
 public:
             BoardScene( Board *pbp, QObject *parent = nullptr );
+      void  drawGrid();
 
      Board *bp;
-    QBrush  backBrush,lineBrush,blackBrush,whiteBrush;
+    QBrush  backBrush,blackBrush,whiteBrush;
+      QPen  linePen;
 };
 
 #endif // BOARDSCENE_H

@@ -6,8 +6,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    board      = new Board( this );
     boardScene = new BoardScene( board, this );
     ui->boardView->setScene( boardScene );
+    ui->boardView->setDragMode( QGraphicsView::ScrollHandDrag );
+    ui->boardView->scale( 30.0, 30.0 );
     drawBoard();
 }
 
