@@ -45,6 +45,8 @@ Stone *Board::stoneAt( int x, int y )
 bool Board::placeNextStone( int x, int y )
 { if ( !stones )
     return false;
+  if ( !legalMove( x, y ) )
+    return false;
   Stone * sp = stones->placeNextStone( x, y );
   if ( sp == nullptr )
     return false;
@@ -68,3 +70,12 @@ bool Board::isOnBoard( int x, int y )
   return true;
 }
 
+bool Board::legalMove( int x, int y )
+{ if ( !isOnBoard( x, y ) )
+    return false;
+  if ( stoneAt( x, y ) != nullptr )
+    return false;
+  // TODO: check for self capture
+  // TODO: check for Ko
+  return true;
+}

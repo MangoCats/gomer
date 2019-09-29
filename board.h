@@ -20,6 +20,7 @@ public:
         bool  placeNextStone( int, int );
         bool  isOnBoard( Stone * );
         bool  isOnBoard( int, int );
+        bool  legalMove( int, int );
 
 signals:
 
