@@ -12,13 +12,13 @@ Stone::Stone( int px, int py, int pc, int pi, Board *pb, QObject *parent) : QObj
 Stone * Stone::northNeighbor()
 { if ( board == nullptr )
     return nullptr;
-  return board->stoneAt( x, y - 1 );
+  return board->stoneAt( x, y + 1 );
 }
 
 Stone * Stone::southNeighbor()
 { if ( board == nullptr )
     return nullptr;
-  return board->stoneAt( x, y + 1 );
+  return board->stoneAt( x, y - 1 );
 }
 
 Stone * Stone::eastNeighbor()
@@ -34,16 +34,16 @@ Stone * Stone::westNeighbor()
 }
 
 /**
- * @brief Stone::liberties
+ * @brief Stone::libertyCount
  * @return the number of liberties this individual stone contributes to its group
  */
-int Stone::liberties()
+int Stone::libertyCount()
 { int lc = 0;
   if ( y > 0 )
-    if ( northNeighbor() == nullptr )
+    if ( southNeighbor() == nullptr )
       lc++;
   if ( y < (board->Ysize - 1) )
-    if ( southNeighbor() == nullptr )
+    if ( northNeighbor() == nullptr )
       lc++;
   if ( x > 0 )
     if ( eastNeighbor() == nullptr )
@@ -52,4 +52,21 @@ int Stone::liberties()
     if ( westNeighbor() == nullptr )
       lc++;
   return lc;
+}
+
+QList<QPoint> Stone::libertyList()
+{ QList<QPoint> ll;
+  if ( y > 0 )
+    if ( southNeighbor() == nullptr )
+      ll.append( QPoint(x,y-1) );
+  if ( y < (board->Ysize - 1) )
+    if ( northNeighbor() == nullptr )
+      ll.append( QPoint(x,y+1) );
+  if ( x > 0 )
+    if ( eastNeighbor() == nullptr )
+      ll.append( QPoint(x-1,y) );
+  if ( x < (board->Xsize - 1) )
+    if ( westNeighbor() == nullptr )
+      ll.append( QPoint(x+1,y) );
+  return ll;
 }

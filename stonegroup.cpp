@@ -21,12 +21,22 @@ void StoneGroup::addStone( Stone *sp )
 }
 
 /**
- * @brief StoneGroup::liberties
+ * @brief StoneGroup::libertyCount
  * @return total number of liberties held by the group
+ * TODO: fix inaccuracy, two stones may be counting the same liberty
  */
-int StoneGroup::liberties()
-{ int lc = 0;
+int StoneGroup::libertyCount()
+{ QList<QPoint> ll = libertyList();
+  return ll.size();
+}
+
+QList<QPoint> StoneGroup::libertyList()
+{ QList<QPoint> ll;
   foreach( Stone *sp, group )
-    lc += sp->liberties();
-  return lc;
+    { QList<QPoint> sl = sp->libertyList();
+      foreach( QPoint lp, sl )
+        if ( !ll.contains( lp ) )
+          ll.append( lp );
+    }
+  return ll;
 }

@@ -9,11 +9,12 @@ class StoneGroup : public QObject
 {
     Q_OBJECT
 public:
-    explicit StoneGroup( Stone *fsp, QObject *parent = nullptr);
-        bool isInGroup( Stone * );
-        void addStone( Stone * );
-         int size() { return group.size(); }
-         int liberties();
+     explicit StoneGroup( Stone *fsp, QObject *parent = nullptr);
+         bool isInGroup( Stone * );
+         void addStone( Stone * );
+          int size() { return group.size(); }
+          int libertyCount();
+QList<QPoint> libertyList();
 
 signals:
 

@@ -4,6 +4,7 @@
 class Board;
 #include <QObject>
 #include <QPointer>
+#include <QPoint>
 #include "board.h"
 
 class Stone : public QObject
@@ -15,7 +16,9 @@ public:
        Stone *southNeighbor();
        Stone *eastNeighbor();
        Stone *westNeighbor();
-         int  liberties();
+         int  libertyCount();
+QList<QPoint> libertyList();
+
 
 signals:
 
