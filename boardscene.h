@@ -16,11 +16,15 @@ public:
             BoardScene( Board *pbp, QObject *parent = nullptr );
       void  drawGrid();
 
+public slots:
+      void  placeNewStone(int,int,int);
+
+public:
           QPointer<Board> bp;
                BoardRect *rp;
 QPointer<BoardRectObject> op;
                   QBrush  backBrush,blackBrush,whiteBrush;
-                    QPen  linePen;
+                    QPen  linePen,blackPen,whitePen;
 };
 
 #endif // BOARDSCENE_H

@@ -34,4 +34,30 @@ void GameControl::clickAt( QPointF p )
     }
   msg = QString("gc clickAt %1 %2").arg( nearX ).arg( nearY );
   qDebug( qPrintable( msg ) );
+  proposeMove( nearX, nearY );
+}
+
+void GameControl::proposeMove( int x, int y )
+{ QString msg;
+  if ( !bp )
+    { qDebug( "game board undefined" );
+      return;
+    }
+  if (( x < 0 ) ||
+      ( y < 0 ) ||
+      ( x >= bp->Xsize ) ||
+      ( y >= bp->Ysize ))
+    { qDebug( "out of bounds" );
+      return;
+    }
+  if ( bp->stoneAt( x, y ) >= 0 )
+    { msg = QString( "Stone already present at %1,%2" ).arg( x ).arg( y );
+      qDebug( qPrintable( msg ) );
+      return;
+    }
+  if ( bp->placeNextStone( x, y ) )
+    { // trigger drawing of stone
+      int c = 1 - (bp->stones->stoneList.size() & 1);
+      emit newStonePlaced( x, y, c );
+    }
 }

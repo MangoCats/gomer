@@ -9,14 +9,14 @@ class Board;
 class Stone : public QObject
 { Q_OBJECT
 public:
-    explicit Stone(QObject *parent = nullptr);
+    explicit Stone( int px, int py, int pc, Board *pb, QObject *parent = nullptr);
             ~Stone() {}
 signals:
 
 public slots:
 
 public:
-             int  x,y;
+             int  x,y,c;
   QPointer<Board> board;
 };
 

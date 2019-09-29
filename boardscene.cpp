@@ -8,8 +8,12 @@ BoardScene::BoardScene( Board *pbp, QObject *parent ) : QGraphicsScene ( parent 
   backBrush  = QBrush( QColor( 224,152, 64 ) );
   blackBrush = QBrush( QColor(   0,  0,  0 ) );
   whiteBrush = QBrush( QColor( 255,255,255 ) );
+  blackPen   = QPen  ( QColor(  64, 64, 64 ) );
+  blackPen.setWidth( 0 );
+  whitePen   = QPen  ( QColor( 192,192,192 ) );
+  whitePen.setWidth( 0 );
   linePen    = QPen  ( QColor(   0,  0,  0 ) );
-  linePen.setWidth( 0 );
+  linePen .setWidth( 0 );
   drawGrid();
 }
 
@@ -31,3 +35,14 @@ void BoardScene::drawGrid()
       lip->setAcceptedMouseButtons( Qt::NoButton );
     }
 }
+
+void  BoardScene::placeNewStone(int x,int y,int c)
+{ qreal ss = bp->stoneSize();
+  qreal xc = ((qreal)x) - ss*0.5;
+  qreal yc = ((qreal)y) - ss*0.5;
+  if ( c == 0 )
+    addEllipse( xc,yc,ss,ss,blackPen,blackBrush );
+   else
+    addEllipse( xc,yc,ss,ss,whitePen,whiteBrush );
+}
+

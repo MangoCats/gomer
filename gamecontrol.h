@@ -13,9 +13,11 @@ public:
     explicit  GameControl( Board *pbp, QObject *parent = nullptr);
         void  start();
        qreal  stoneSize();
+        void  proposeMove( int, int );
 
 signals:
         void  stateMessage( QString );
+        void  newStonePlaced( int, int, int );
 
 public slots:
         void  clickAt( QPointF );

@@ -13,6 +13,8 @@ public:
     explicit  Board(QObject *parent = nullptr);
              ~Board();
        qreal  stoneSize();
+         int  stoneAt( int, int );
+        bool  placeNextStone( int, int );
 
 signals:
 
