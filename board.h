@@ -10,8 +10,10 @@ class Board : public QObject
 {
     Q_OBJECT
 public:
-    explicit Board(QObject *parent = nullptr);
-            ~Board();
+    explicit  Board(QObject *parent = nullptr);
+             ~Board();
+       qreal  stoneSize();
+
 signals:
 
 public slots:

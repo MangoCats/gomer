@@ -19,6 +19,7 @@ public slots:
 
 public:
     QList<Stone *> stoneList;
+            qreal  size;
 };
 
 #endif // STONES_H

@@ -9,3 +9,9 @@ Board::~Board()
 { if ( stones )
     delete stones;
 }
+
+qreal Board::stoneSize()
+{ if ( stones )
+    return stones->size;
+  return 0.618;
+}

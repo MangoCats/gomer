@@ -8,12 +8,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     board       = new Board( this );
     boardScene  = new BoardScene( board, this );
-    gameControl = new GameControl( this );
+    gameControl = new GameControl( board, this );
     ui->boardView->setScene( boardScene );
     // ui->boardView->setDragMode( QGraphicsView::ScrollHandDrag );
     ui->boardView->scale( 40.0, 40.0 );
-    connect( gameControl, SIGNAL(stateMessage(QString)), ui->stateLabel, SLOT(setText(QString)) );
-    connect( boardScene->op, SIGNAL(clicked( QPointF )), gameControl, SLOT(clickAt( QPointF )) );
+    connect(    gameControl, SIGNAL(stateMessage(QString)), ui->stateLabel, SLOT(setText(QString)) );
+    connect( boardScene->op, SIGNAL(clicked(QPointF)),         gameControl, SLOT(clickAt(QPointF)) );
     gameControl->start();
     drawBoard();
 }
