@@ -14,6 +14,7 @@ public:
 protected:
      void  mousePressEvent(QGraphicsSceneMouseEvent *event);
      void  mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+     void  hoverMoveEvent(QGraphicsSceneHoverEvent *event);
 
 public:
   BoardRectObject  op;

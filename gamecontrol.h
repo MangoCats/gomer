@@ -21,6 +21,7 @@ signals:
 
 public slots:
         void  clickAt( QPointF );
+        void  hover( QPointF );
 
 public:
   QPointer<Board> bp;

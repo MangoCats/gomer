@@ -10,9 +10,11 @@ class BoardRectObject : public QObject
 public:
     explicit  BoardRectObject(QObject *parent = nullptr);
         void  clickAt( QPointF );
+        void  hoverAt( QPointF );
 
 signals:
         void  clicked( QPointF );
+        void  hover( QPointF );
 
 public slots:
 };
