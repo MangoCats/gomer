@@ -2,9 +2,13 @@
 #define BOARDSCENE_H
 
 class Board;
+class BoardRect;
+class BoardRectObject;
+#include <QPointer>
 #include <QGraphicsScene>
 #include "board.h"
 #include "boardrect.h"
+#include "boardrectobject.h"
 
 class BoardScene : public QGraphicsScene
 { Q_OBJECT
@@ -12,9 +16,11 @@ public:
             BoardScene( Board *pbp, QObject *parent = nullptr );
       void  drawGrid();
 
-     Board *bp;
-    QBrush  backBrush,blackBrush,whiteBrush;
-      QPen  linePen;
+          QPointer<Board> bp;
+               BoardRect *rp;
+QPointer<BoardRectObject> op;
+                  QBrush  backBrush,blackBrush,whiteBrush;
+                    QPen  linePen;
 };
 
 #endif // BOARDSCENE_H

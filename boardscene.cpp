@@ -4,6 +4,7 @@
 
 BoardScene::BoardScene( Board *pbp, QObject *parent ) : QGraphicsScene ( parent )
 { bp = pbp;
+  rp = nullptr;
   backBrush  = QBrush( QColor( 224,152, 64 ) );
   blackBrush = QBrush( QColor(   0,  0,  0 ) );
   whiteBrush = QBrush( QColor( 255,255,255 ) );
@@ -14,12 +15,12 @@ BoardScene::BoardScene( Board *pbp, QObject *parent ) : QGraphicsScene ( parent 
 
 void BoardScene::drawGrid()
 { QGraphicsLineItem *lip;
-  BoardRect *rip;
   setBackgroundBrush( blackBrush );
-  rip = new BoardRect( QRectF( -2.0, -2.0, (qreal)(bp->Xsize +3), (qreal)(bp->Ysize + 3) ), nullptr );
-  rip->setBrush( backBrush );
-  rip->setPen( linePen );
-  addItem( rip );
+  rp = new BoardRect( QRectF( -2.0, -2.0, (qreal)(bp->Xsize +3), (qreal)(bp->Ysize + 3) ), nullptr );
+  rp->setBrush( backBrush );
+  rp->setPen( linePen );
+  op = &(rp->op);
+  addItem( rp );
 
   for ( int x = 0; x < bp->Xsize; x++ )
     { lip = addLine( QLineF( (qreal)x, 0.0, (qreal)x, (qreal)(bp->Ysize - 1) ), linePen );

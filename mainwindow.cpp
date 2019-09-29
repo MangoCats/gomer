@@ -10,9 +10,10 @@ MainWindow::MainWindow(QWidget *parent) :
     boardScene  = new BoardScene( board, this );
     gameControl = new GameControl( this );
     ui->boardView->setScene( boardScene );
-    ui->boardView->setDragMode( QGraphicsView::ScrollHandDrag );
+    // ui->boardView->setDragMode( QGraphicsView::ScrollHandDrag );
     ui->boardView->scale( 40.0, 40.0 );
     connect( gameControl, SIGNAL(stateMessage(QString)), ui->stateLabel, SLOT(setText(QString)) );
+    connect( boardScene->op, SIGNAL(clicked( QPointF )), gameControl, SLOT(clickAt( QPointF )) );
     gameControl->start();
     drawBoard();
 }

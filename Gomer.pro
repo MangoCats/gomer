@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT      += core gui widgets
 
-TARGET = Gomer
+TARGET   = Gomer
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -23,9 +23,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    boardrectobject.cpp \
     gamecontrol.cpp \
-        main.cpp \
-        mainwindow.cpp \
+    main.cpp \
+    mainwindow.cpp \
     board.cpp \
     stones.cpp \
     stone.cpp \
@@ -33,8 +34,9 @@ SOURCES += \
     boardrect.cpp
 
 HEADERS += \
+    boardrectobject.h \
     gamecontrol.h \
-        mainwindow.h \
+    mainwindow.h \
     board.h \
     stones.h \
     stone.h \
@@ -42,7 +44,7 @@ HEADERS += \
     boardrect.h
 
 FORMS += \
-        mainwindow.ui
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
