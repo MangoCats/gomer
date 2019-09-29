@@ -28,6 +28,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     board.cpp \
+    stonegroup.cpp \
     stones.cpp \
     stone.cpp \
     boardscene.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     gamecontrol.h \
     mainwindow.h \
     board.h \
+    stonegroup.h \
     stones.h \
     stone.h \
     boardscene.h \

@@ -50,7 +50,7 @@ void GameControl::proposeMove( int x, int y )
     { qDebug( "out of bounds" );
       return;
     }
-  if ( bp->stoneAt( x, y ) >= 0 )
+  if ( bp->stoneIndexAt( x, y ) >= 0 )
     { msg = QString( "Stone already present at %1,%2" ).arg( x ).arg( y );
       qDebug( qPrintable( msg ) );
       return;
@@ -59,5 +59,9 @@ void GameControl::proposeMove( int x, int y )
     { // trigger drawing of stone
       int c = 1 - (bp->stones->stoneList.size() & 1);
       emit newStonePlaced( x, y, c );
+      if ( c == 0 )
+        emit stateMessage( "White to Move" );
+       else
+        emit stateMessage( "Black to Move" );
     }
 }
