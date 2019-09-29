@@ -23,6 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    gamecontrol.cpp \
         main.cpp \
         mainwindow.cpp \
     board.cpp \
@@ -32,6 +33,7 @@ SOURCES += \
     boardrect.cpp
 
 HEADERS += \
+    gamecontrol.h \
         mainwindow.h \
     board.h \
     stones.h \

@@ -7,6 +7,7 @@ class BoardScene;
 #include <QPointer>
 #include "board.h"
 #include "boardscene.h"
+#include "gamecontrol.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,9 +21,10 @@ public:
         void  drawBoard();
 
 private:
-     Ui::MainWindow *ui;
-     QPointer<Board> board;
-QPointer<BoardScene> boardScene;
+      Ui::MainWindow *ui;
+      QPointer<Board> board;
+ QPointer<BoardScene> boardScene;
+QPointer<GameControl> gameControl;
 };
 
 #endif // MAINWINDOW_H

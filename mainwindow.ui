@@ -15,7 +15,7 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="1" column="0">
      <widget class="QGraphicsView" name="boardView">
       <property name="sceneRect">
        <rectf>
@@ -24,6 +24,13 @@
         <width>22.000000000000000</width>
         <height>22.000000000000000</height>
        </rectf>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="stateLabel">
+      <property name="text">
+       <string>TextLabel</string>
       </property>
      </widget>
     </item>
