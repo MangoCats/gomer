@@ -21,6 +21,8 @@ public:
         bool  isOnBoard( Stone * );
         bool  isOnBoard( int, int );
         bool  legalMove( int, int );
+        bool  selfCapture( int x, int y, int c );
+         int  colorToMove();
 
 signals:
 

@@ -135,3 +135,23 @@ int Stones::isInGroup( Stone *sp )
   return -1;
 */
 }
+
+/**
+ * @brief StoneGroup::atariList - return a list of all points which may be played to capture a group of the passed color
+ * @param color - only list Ataris for groups of this color
+ * @return  A list of the Atari (capture) points for the passed color
+ */
+QList<QPoint> Stones::atariList( int color )
+{ QList<QPoint> al;
+  foreach( StoneGroup *sgp, groupList )
+    { if ( sgp != nullptr )
+        if ( sgp->group.size() > 0 )
+          if ( sgp->group.at(0)->c == color )
+            { QList<QPoint> ll = sgp->libertyList();
+              if ( ll.size() == 1 )
+                al.append( ll.at(0) );
+            }
+    }
+  return al;
+}
+

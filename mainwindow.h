@@ -18,7 +18,6 @@ class MainWindow : public QMainWindow
 public:
     explicit  MainWindow(QWidget *parent = nullptr);
              ~MainWindow();
-        void  drawBoard();
 
 private:
       Ui::MainWindow *ui;

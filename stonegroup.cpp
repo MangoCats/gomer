@@ -40,3 +40,4 @@ QList<QPoint> StoneGroup::libertyList()
     }
   return ll;
 }
+

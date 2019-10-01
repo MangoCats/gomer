@@ -17,11 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect( boardScene->op, SIGNAL(hover(QPointF)),             gameControl, SLOT(hover(QPointF))             );
     connect(    gameControl, SIGNAL(newStonePlaced(int,int,int)), boardScene, SLOT(placeNewStone(int,int,int)) );
     gameControl->start();
-    drawBoard();
 }
 
 MainWindow::~MainWindow()
 { delete ui; }
-
-void MainWindow::drawBoard()
-{ }
