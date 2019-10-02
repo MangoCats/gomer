@@ -12,10 +12,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->boardView->setScene( boardScene );
     // ui->boardView->setDragMode( QGraphicsView::ScrollHandDrag );
     ui->boardView->scale( 40.0, 40.0 );
-    connect(    gameControl, SIGNAL(stateMessage(QString)),   ui->stateLabel, SLOT(setText(QString))           );
-    connect( boardScene->op, SIGNAL(clicked(QPointF)),           gameControl, SLOT(clickAt(QPointF))           );
-    connect( boardScene->op, SIGNAL(hover(QPointF)),             gameControl, SLOT(hover(QPointF))             );
-    connect(    gameControl, SIGNAL(newStonePlaced(int,int,int)), boardScene, SLOT(placeNewStone(int,int,int)) );
+    connect(           gameControl, SIGNAL(stateMessage(QString)), ui->stateLabel, SLOT(setText(QString))        );
+    connect(        boardScene->op, SIGNAL(clicked(QPointF)),         gameControl, SLOT(clickAt(QPointF))        );
+    connect(        boardScene->op, SIGNAL(hover(QPointF)),           gameControl, SLOT(hover(QPointF))          );
+    connect(           gameControl, SIGNAL(newStonePlaced(Stone *)),   boardScene, SLOT(placeNewStone(Stone *))  );
+    connect(                 board, SIGNAL(captured(Stone *)),         boardScene, SLOT(stoneCaptured(Stone *))  );
+    connect( ui->showLibertyCounts, SIGNAL(toggled(bool)),             boardScene, SLOT(showLibertyCounts(bool)) );
+    boardScene->showLibertyCounts( ui->showLibertyCounts->isChecked() );
     gameControl->start();
 }
 

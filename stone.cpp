@@ -1,16 +1,19 @@
 #include "stone.h"
 
 Stone::Stone( int px, int py, int pc, int pi, Board *pb, QObject *parent) : QObject(parent)
-{ x = px;
-  y = py;
-  c = pc;
-  i = pi;
-  g = -1;
+{ ei = nullptr;
+  x  = px;
+  y  = py;
+  c  = pc;
+  i  = pi;
+  g  = -1;
   board = pb;
 }
 
 Stone * Stone::northNeighbor()
 { if ( board == nullptr )
+    return nullptr;
+  if ( y >= ( board->Ysize - 1 ) )
     return nullptr;
   return board->stoneAt( x, y + 1 );
 }
@@ -18,11 +21,15 @@ Stone * Stone::northNeighbor()
 Stone * Stone::southNeighbor()
 { if ( board == nullptr )
     return nullptr;
+  if ( y <= 0 )
+    return nullptr;
   return board->stoneAt( x, y - 1 );
 }
 
 Stone * Stone::eastNeighbor()
 { if ( board == nullptr )
+    return nullptr;
+  if ( x <= 0 )
     return nullptr;
   return board->stoneAt( x - 1, y );
 }
@@ -30,8 +37,38 @@ Stone * Stone::eastNeighbor()
 Stone * Stone::westNeighbor()
 { if ( board == nullptr )
     return nullptr;
+  if ( x >= ( board->Xsize - 1 ) )
+    return nullptr;
   return board->stoneAt( x + 1, y );
 }
+
+/**
+ * @brief Stone::inviteNeighborToGroup - this stone is looking for neighbor groups
+ * @param np - neighbor to join, if that's a valid thing to do
+ */
+void  Stone::inviteNeighborToGroup( Stone *np )
+{ if ( np == nullptr ) // empty grid, can't join that
+    return;
+  if ( np->c != c ) // wrong color, can't join that
+    return;
+  if ( g < 0 ) // not in a group, can't invite neighbors
+    { qDebug( "ERROR: inviting neighbor to group when not a member of a group yet, shouldn't happen" );
+      return;
+    }
+  if ( np->g >= 0 ) // already member of a group
+    { if ( np->g != g )
+        qDebug( "ERROR: neighbor is a member of a different group, shouldn't be..." );
+      return;
+    }
+  np->g = g; // Neighbor joining our group
+  board->stones->groupList.at( g )->group.append( np );
+  // Now, invite their neighbors
+  inviteNeighborToGroup( np->northNeighbor() );
+  inviteNeighborToGroup( np->southNeighbor() );
+  inviteNeighborToGroup( np->eastNeighbor()  );
+  inviteNeighborToGroup( np->westNeighbor()  );
+}
+
 
 /**
  * @brief Stone::libertyCount

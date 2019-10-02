@@ -34,6 +34,34 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="topMargin">
+       <number>22</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="pass">
+        <property name="text">
+         <string>Pass</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="resign">
+        <property name="text">
+         <string>Resign</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="showLibertyCounts">
+        <property name="text">
+         <string>Show Liberty Counts</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">

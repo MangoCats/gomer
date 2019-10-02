@@ -25,6 +25,7 @@ CONFIG += c++11
 SOURCES += \
     boardrectobject.cpp \
     gamecontrol.cpp \
+    libertycountdisplay.cpp \
     main.cpp \
     mainwindow.cpp \
     board.cpp \
@@ -37,6 +38,7 @@ SOURCES += \
 HEADERS += \
     boardrectobject.h \
     gamecontrol.h \
+    libertycountdisplay.h \
     mainwindow.h \
     board.h \
     stonegroup.h \

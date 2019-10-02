@@ -12,6 +12,12 @@ void Stones::clear()
   stoneList.clear();
 }
 
+/**
+ * @brief Stones::stoneAt - scan all of stoneList looking for a stone at x,y
+ * @param x - grid location to check
+ * @param y - grid location to check
+ * @return index in stoneList of the stone at x,y - or -1 if there is no stone in stoneList at x,y
+ */
 int Stones::stoneAt( int x, int y )
 { int i = 0;
   while ( i < stoneList.size() )
@@ -23,6 +29,12 @@ int Stones::stoneAt( int x, int y )
   return -1;
 }
 
+/**
+ * @brief Stones::placeNextStone
+ * @param x - where to place the stone
+ * @param y - where to place the stone
+ * @return pointer to the stone that was placed, or null if there was already a stone there
+ */
 Stone * Stones::placeNextStone( int x, int y )
 { if ( stoneAt( x, y ) != -1 )
     return nullptr;
@@ -48,42 +60,13 @@ void Stones::computeGroups()
   foreach( Stone *sp, stoneList )
     { if ( bp->isOnBoard( sp ) )
         if ( !isInAGroup( sp ) )  // sp itself is not in a group already
-          { Stone *np;
-            int g;
-            np = sp->northNeighbor();
-            g = isInGroup( np );
-            if (( g >= 0 ) && ( sp->c == np->c ))
-              { groupList.at(g)->addStone( sp );
-                sp->g = g;
-              }
-             else
-              { np = sp->southNeighbor();
-                g = isInGroup( np );
-                if (( g >= 0 ) && ( sp->c == np->c ))
-                  { groupList.at(g)->addStone( sp );
-                    sp->g = g;
-                  }
-                 else
-                  { np = sp->eastNeighbor();
-                    g = isInGroup( np );
-                    if (( g >= 0 ) && ( sp->c == np->c ))
-                      { groupList.at(g)->addStone( sp );
-                        sp->g = g;
-                      }
-                     else
-                      { np = sp->westNeighbor();
-                        g = isInGroup( np );
-                        if (( g >= 0 ) && ( sp->c == np->c ))
-                          { groupList.at(g)->addStone( sp );
-                            sp->g = g;
-                          }
-                         else
-                          { sp->g = groupList.size();
-                            groupList.append( new StoneGroup( sp, this ) );
-                          }
-                      }
-                  }
-              }
+          { sp->g = groupList.size();
+            groupList.append( new StoneGroup( sp, this ) );
+            // Floodfill
+            sp->inviteNeighborToGroup( sp->northNeighbor() );
+            sp->inviteNeighborToGroup( sp->southNeighbor() );
+            sp->inviteNeighborToGroup( sp->eastNeighbor()  );
+            sp->inviteNeighborToGroup( sp->westNeighbor()  );
           }
     }
 }
@@ -99,14 +82,10 @@ bool Stones::isInAGroup( Stone *sp )
   if ( sp->g < 0 )
     return false;
   if ( sp->g >= groupList.size() )
-    return false;
+    { qDebug( "ERROR: sp->g >= groupList.size()" );
+      return false;
+    }
   return true;
-/*
-  foreach ( StoneGroup *sgp, groupList )
-    if ( sgp->isInGroup( sp ) )
-      return true;
-  return false;
-*/
 }
 
 /**
@@ -122,18 +101,6 @@ int Stones::isInGroup( Stone *sp )
   if ( sp->g >= groupList.size() )
     return -1;
   return sp->g;
-/*
-  if ( groupList.size() <= 0 )
-    return -1;
-  int i = 0;
-  while ( i < groupList.size() )
-    { StoneGroup *sgp = groupList.at(i);
-      if ( sgp->isInGroup( sp ) )
-        return i;
-      i++;
-    }
-  return -1;
-*/
 }
 
 /**

@@ -5,6 +5,7 @@
 BoardScene::BoardScene( Board *pbp, QObject *parent ) : QGraphicsScene ( parent )
 { bp = pbp;
   rp = nullptr;
+  lp = new LibertyCountDisplay( this );
   backBrush  = QBrush( QColor( 224,152, 64 ) );
   blackBrush = QBrush( QColor(   0,  0,  0 ) );
   whiteBrush = QBrush( QColor( 255,255,255 ) );
@@ -36,13 +37,32 @@ void BoardScene::drawGrid()
     }
 }
 
-void  BoardScene::placeNewStone(int x,int y,int c)
+void  BoardScene::showLibertyCounts( bool s )
+{ if ( lp ) lp->setShow( s ); }
+
+void  BoardScene::placeNewStone(Stone *sp)
 { qreal ss = bp->stoneSize();
-  qreal xc = ((qreal)x) - ss*0.5;
-  qreal yc = ((qreal)y) - ss*0.5;
-  if ( c == 0 )
-    addEllipse( xc,yc,ss,ss,blackPen,blackBrush );
+  qreal xc = ((qreal)sp->x) - ss*0.5;
+  qreal yc = ((qreal)sp->y) - ss*0.5;
+  if ( sp->c == 0 )
+    sp->ei = addEllipse( xc,yc,ss,ss,blackPen,blackBrush );
    else
-    addEllipse( xc,yc,ss,ss,whitePen,whiteBrush );
+    sp->ei = addEllipse( xc,yc,ss,ss,whitePen,whiteBrush );
+  if ( lp )
+    lp->updateCounts();
 }
 
+void  BoardScene::stoneCaptured(Stone *sp)
+{ if ( sp == nullptr )
+    { qDebug( "ERROR: captured stone is null" );
+      return;
+    }
+  if ( sp->ei == nullptr )
+    { qDebug( "ERROR: captured stone has no graphics item" );
+      return;
+    }
+  sp->ei->setVisible( false );
+  removeItem( sp->ei );
+  delete( sp->ei );
+  sp->ei = nullptr;
+}

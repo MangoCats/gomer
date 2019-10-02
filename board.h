@@ -17,14 +17,17 @@ public:
        qreal  stoneSize();
          int  stoneIndexAt( int, int );
        Stone *stoneAt( int, int );
-        bool  placeNextStone( int, int );
+       Stone *placeNextStone( int, int );
         bool  isOnBoard( Stone * );
         bool  isOnBoard( int, int );
         bool  legalMove( int, int );
+         int  executeCaptures( int x, int y, int c );
         bool  selfCapture( int x, int y, int c );
+         int  friendlyLibertyCount( int x, int y, int c );
          int  colorToMove();
 
 signals:
+        void  captured( Stone * );
 
 public slots:
 

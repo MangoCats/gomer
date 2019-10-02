@@ -1,4 +1,4 @@
-#include "board.h"
+﻿#include "board.h"
 
 Board::Board( QObject *parent ) : QObject(parent)
 { Xsize = Ysize = 19;
@@ -41,18 +41,20 @@ Stone *Board::stoneAt( int x, int y )
   return board.at( x + y * Xsize );
 }
 
-
-bool Board::placeNextStone( int x, int y )
+Stone *Board::placeNextStone( int x, int y )
 { if ( !stones )
-    return false;
+    return nullptr;
   if ( !legalMove( x, y ) )
-    return false;
+    return nullptr;
   Stone * sp = stones->placeNextStone( x, y );
   if ( sp == nullptr )
-    return false;
+    { qDebug( "stones->placeNextStone( x, y ) == nullptr" );
+      return sp;
+    }
+  executeCaptures( x,y,sp->c );
   board.replace( x + y * Xsize, sp );
   stones->computeGroups();
-  return true;
+  return sp;
 }
 
 bool Board::isOnBoard( Stone *sp )
@@ -100,6 +102,40 @@ int  Board::colorToMove()
 }
 
 /**
+ * @brief Board::executeCaptures - remove captured stones from the board
+ * @param x - where new stone is being placed
+ * @param y - where new stone is being placed
+ * @param c - color of new stone
+ * @return number of stones captured
+ */
+int Board::executeCaptures( int x, int y, int c )
+{ int n = 0;
+  if ( stones == nullptr )
+    { qDebug( "ERROR: stones is NULL" );
+      return -1;
+    }
+  foreach( StoneGroup *sgp, stones->groupList )
+    { if ( sgp != nullptr )
+        if ( sgp->group.size() > 0 )
+          if ( sgp->group.at(0)->c != c )
+            { QList<QPoint> ll = sgp->libertyList();
+              if ( ll.size() == 1 )  // Atari?
+                if (( ll.at(0).x() == x ) &&
+                    ( ll.at(0).y() == y )) // Capturing this Atari?
+                  { foreach( Stone *sp, sgp->group )
+                      { emit captured( sp );
+                        board.replace( sp->x + sp->y * Xsize, nullptr );
+                        sp->x = -2;
+                        sp->y = c;
+                        n++;
+                      }
+                  }
+            }
+    }
+  return n;
+}
+
+/**
  * @brief Board::selfCapture - is the proposed stone placement a self-caputre?
  * @param x - stone placement under consideration
  * @param y - stone placement under consideration
@@ -125,80 +161,71 @@ bool Board::selfCapture( int x, int y, int c )
     if ( stoneAt( x,y+1 ) == nullptr )
       return false;
 
-  // Check for capture of enemy
-  QList<QPoint> al = stones->atariList( c );
+  // Check for capture of opponent
+  QList<QPoint> al = stones->atariList( 1 - c ); // Looking for opponent's ataris
   foreach( QPoint p, al )
     if (( p.x() == x ) && ( p.y() == y ))
-      return false;
+      return false; // any opponent capture is enough to guarantee this is not a self capture
 
   // Check for friendly neighbors with excess liberties
-  Stone *sp;
-  int gls = stones->groupList.size();
+  int flc;
   if ( x > 0 )
-    { sp = stoneAt( x-1,y );
-      if ( sp->c == c )
-        { if ( sp->g >= gls )
-            { qDebug( "ERROR: unexpected sp->g >= stones->groupList.size()" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->c != c )
-            { qDebug( "ERROR: stones->groupList.at( sp->g )->c != c" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->libertyCount() > 1 )
-            return false; // Can't be self-capture if this adjacent friendly group has 2 or more liberties
-        }
+    { flc = friendlyLibertyCount( x-1,y,c );
+      if ( flc < 0 ) // error
+        return true;
+      if ( flc > 1 )
+        return false;  // Can't be self-capture if the adjacent friendly group has 2 or more liberties
     }
 
   if ( x <= ( Xsize - 1 ) )
-    { sp = stoneAt( x+1,y );
-      if ( sp->c == c )
-        { if ( sp->g >= gls )
-            { qDebug( "ERROR: unexpected sp->g >= stones->groupList.size()" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->c != c )
-            { qDebug( "ERROR: stones->groupList.at( sp->g )->c != c" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->libertyCount() > 1 )
-            return false; // Can't be self-capture if this adjacent friendly group has 2 or more liberties
-        }
+    { flc = friendlyLibertyCount( x+1,y,c );
+      if ( flc < 0 ) // error
+        return true;
+      if ( flc > 1 )
+        return false;  // Can't be self-capture if the adjacent friendly group has 2 or more liberties
     }
 
   if ( y > 0 )
-    { sp = stoneAt( x,y-1 );
-      if ( sp->c == c )
-        { if ( sp->g >= gls )
-            { qDebug( "ERROR: unexpected sp->g >= stones->groupList.size()" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->c != c )
-            { qDebug( "ERROR: stones->groupList.at( sp->g )->c != c" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->libertyCount() > 1 )
-            return false; // Can't be self-capture if this adjacent friendly group has 2 or more liberties
-        }
+    { flc = friendlyLibertyCount( x,y-1,c );
+      if ( flc < 0 ) // error
+        return true;
+      if ( flc > 1 )
+        return false;  // Can't be self-capture if the adjacent friendly group has 2 or more liberties
     }
 
   if ( y <= ( Ysize - 1 ) )
-    { sp = stoneAt( x,y+1 );
-      if ( sp->c == c )
-        { if ( sp->g >= gls )
-            { qDebug( "ERROR: unexpected sp->g >= stones->groupList.size()" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->c != c )
-            { qDebug( "ERROR: stones->groupList.at( sp->g )->c != c" );
-              return true;
-            }
-          if ( stones->groupList.at( sp->g )->libertyCount() > 1 )
-            return false; // Can't be self-capture if this adjacent friendly group has 2 or more liberties
-        }
+    { flc = friendlyLibertyCount( x,y+1,c );
+      if ( flc < 0 ) // error
+        return true;
+      if ( flc > 1 )
+        return false;  // Can't be self-capture if the adjacent friendly group has 2 or more liberties
     }
 
   // TODO: the expensive calculation with a prospective board....
 
   return true;
+}
+
+/**
+ * @brief Board::friendlyLibertyCount
+ * @param x
+ * @param y
+ * @param c - color
+ * @return libertyCount of stone at the passed position, if color matches, 0 if color does not match, 1 if grid is empty, or -1 if there is an error
+ */
+int Board::friendlyLibertyCount( int x, int y, int c )
+{ Stone *sp = stoneAt( x,y );
+  if ( sp == nullptr )
+    return 1;
+  if ( sp->c != c )
+    return 0;
+  if ( sp->g >= stones->groupList.size() )
+    { qDebug( "ERROR: unexpected sp->g >= stones->groupList.size()" );
+      return -1;
+    }
+  if ( stones->groupList.at( sp->g )->c != c )
+    { qDebug( "ERROR: stones->groupList.at( sp->g )->c != c" );
+      return -1;
+    }
+  return stones->groupList.at( sp->g )->libertyCount();
 }

@@ -2,9 +2,11 @@
 #define GAMECONTROL_H
 
 class Board;
+class Stone;
 #include <QObject>
 #include <QPointF>
 #include "board.h"
+#include "stone.h"
 
 class GameControl : public QObject
 {
@@ -17,7 +19,7 @@ public:
 
 signals:
         void  stateMessage( QString );
-        void  newStonePlaced( int, int, int );
+        void  newStonePlaced( Stone * );
 
 public slots:
         void  clickAt( QPointF );

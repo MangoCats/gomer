@@ -56,10 +56,11 @@ void GameControl::proposeMove( int x, int y )
       qDebug( qPrintable( msg ) );
       return;
     }
-  if ( bp->placeNextStone( x, y ) )
+  Stone *sp = bp->placeNextStone( x, y );
+  if ( sp != nullptr )
     { // trigger drawing of stone
-      int c = 1 - (bp->stones->stoneList.size() & 1);
-      emit newStonePlaced( x, y, c );
+      int c = sp->c;
+      emit newStonePlaced( sp );
       if ( c == 0 )
         emit stateMessage( "White to Move" );
        else
@@ -99,7 +100,8 @@ void GameControl::hover( QPointF p )
     return;
   if ( bp->stones->groupList.size() <= sp->g )
     return;
-  msg = QString( "%1 %2 %3 %4" ).arg(nearX).arg(nearY).arg( (sp->c == 0) ? "black" : "white" )
-                                .arg( bp->stones->groupList.at( sp->g )->libertyCount() );
+  msg = QString( "x%1 y%2 c%3 lc%4 g%5" ).arg(nearX).arg(nearY).arg( sp->c )
+                                .arg( bp->stones->groupList.at( sp->g )->libertyCount() )
+                                .arg( sp->g );
   qDebug( qPrintable( msg ) );
 }
