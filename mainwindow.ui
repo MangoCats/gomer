@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>453</width>
-    <height>407</height>
+    <width>1067</width>
+    <height>661</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@
     <item row="2" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="topMargin">
-       <number>22</number>
+       <number>0</number>
       </property>
       <item>
        <widget class="QPushButton" name="pass">
@@ -60,6 +60,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="showTerritory">
+        <property name="text">
+         <string>Show Territory</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -69,7 +76,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>453</width>
+     <width>1067</width>
      <height>22</height>
     </rect>
    </property>

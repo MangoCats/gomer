@@ -1,16 +1,16 @@
 #include "libertycountdisplay.h"
 
 LibertyCountDisplay::LibertyCountDisplay( BoardScene *bsp, QObject *parent ) : QObject( parent )
-{ sp = bsp;
+{ scene = bsp;
   show = false;
 }
 
 void LibertyCountDisplay::clearCounts()
-{ if ( sp == nullptr )
+{ if ( scene == nullptr )
     return;
   foreach( QGraphicsSimpleTextItem *tp, counts )
     { tp->setVisible( false );
-      sp->removeMyItem( tp );
+      scene->removeMyItem( tp );
       delete( tp );
     }
   counts.clear();
@@ -19,8 +19,8 @@ void LibertyCountDisplay::clearCounts()
 void LibertyCountDisplay::updateCounts()
 { clearCounts();
   if ( !show ) return;
-  if ( sp == nullptr ) return;
-  Board *bp = sp->bp;
+  if ( scene == nullptr ) return;
+  Board *bp = scene->bp;
   if ( bp == nullptr ) return;
   Stones *stp = bp->stones;
   if ( stp == nullptr ) return;

@@ -3,6 +3,7 @@
 Board::Board( QObject *parent ) : QObject(parent)
 { Xsize = Ysize = 19;
   stones = new Stones( this );
+  territory = new Territory( this );
   for ( int i = 0; i < Xsize; i++ )
     for ( int j = 0; j < Ysize; j++ )
       board.append( nullptr );

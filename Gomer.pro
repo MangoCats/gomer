@@ -33,7 +33,10 @@ SOURCES += \
     stones.cpp \
     stone.cpp \
     boardscene.cpp \
-    boardrect.cpp
+    boardrect.cpp \
+    territory.cpp \
+    territorygroup.cpp \
+    territorysquare.cpp
 
 HEADERS += \
     boardrectobject.h \
@@ -45,7 +48,10 @@ HEADERS += \
     stones.h \
     stone.h \
     boardscene.h \
-    boardrect.h
+    boardrect.h \
+    territory.h \
+    territorygroup.h \
+    territorysquare.h
 
 FORMS += \
     mainwindow.ui

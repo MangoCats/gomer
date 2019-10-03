@@ -22,7 +22,7 @@ public slots:
 public:
                            bool  show;
 QList<QGraphicsSimpleTextItem *> counts;
-            QPointer<BoardScene> sp;
+            QPointer<BoardScene> scene;
 
 };
 

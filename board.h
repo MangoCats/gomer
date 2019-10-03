@@ -3,10 +3,12 @@
 
 class Stone;
 class Stones;
+class Territory;
 #include <QObject>
 #include <QPointer>
 #include "stone.h"
 #include "stones.h"
+#include "territory.h"
 
 class Board : public QObject
 {
@@ -34,6 +36,7 @@ public slots:
 public:
                        int  Xsize,Ysize;
            QPointer<Stones> stones;
+        QPointer<Territory> territory;
   QVector<QPointer<Stone> > board;
 };
 

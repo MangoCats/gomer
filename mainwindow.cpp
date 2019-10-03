@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     boardScene  = new BoardScene( board, this );
     gameControl = new GameControl( board, this );
     ui->boardView->setScene( boardScene );
+    board->territory->setScene( boardScene );
     // ui->boardView->setDragMode( QGraphicsView::ScrollHandDrag );
     ui->boardView->scale( 40.0, 40.0 );
     connect(           gameControl, SIGNAL(stateMessage(QString)), ui->stateLabel, SLOT(setText(QString))        );
@@ -19,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(                 board, SIGNAL(captured(Stone *)),         boardScene, SLOT(stoneCaptured(Stone *))  );
     connect( ui->showLibertyCounts, SIGNAL(toggled(bool)),             boardScene, SLOT(showLibertyCounts(bool)) );
     boardScene->showLibertyCounts( ui->showLibertyCounts->isChecked() );
+    connect( ui->showTerritory    , SIGNAL(toggled(bool)),       board->territory, SLOT(setShow(bool)) );
     gameControl->start();
 }
 

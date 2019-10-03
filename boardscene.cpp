@@ -41,7 +41,9 @@ void  BoardScene::showLibertyCounts( bool s )
 { if ( lp ) lp->setShow( s ); }
 
 void  BoardScene::placeNewStone(Stone *sp)
-{ qreal ss = bp->stoneSize();
+{ if ( bp == nullptr )
+    return;
+  qreal ss = bp->stoneSize();
   qreal xc = ((qreal)sp->x) - ss*0.5;
   qreal yc = ((qreal)sp->y) - ss*0.5;
   if ( sp->c == 0 )
@@ -50,6 +52,8 @@ void  BoardScene::placeNewStone(Stone *sp)
     sp->ei = addEllipse( xc,yc,ss,ss,whitePen,whiteBrush );
   if ( lp )
     lp->updateCounts();
+  if ( bp->territory != nullptr )
+    bp->territory->update();
 }
 
 void  BoardScene::stoneCaptured(Stone *sp)
