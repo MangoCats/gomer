@@ -14,12 +14,13 @@ qreal GameControl::stoneSize()
 }
 
 void GameControl::clickAt( QPointF p )
-{ QString msg = QString("gc clickAt %1 %2").arg( p.rx() ).arg( p.ry() );
-  qDebug( qPrintable( msg ) );
-  if (( p.rx() < -0.5 ) ||
-      ( p.ry() < -0.5 ) ||
-      ( p.rx() > ((qreal)bp->Xsize) - 0.5 ) ||
-      ( p.ry() > ((qreal)bp->Xsize) - 0.5 ))
+{ QString msg;
+  // msg = QString("gc clickAt %1 %2").arg( p.x() ).arg( p.y() );
+  // qDebug( qPrintable( msg ) );
+  if (( p.x() < -0.5 ) ||
+      ( p.y() < -0.5 ) ||
+      ( p.x() > ((qreal)bp->Xsize) - 0.5 ) ||
+      ( p.y() > ((qreal)bp->Xsize) - 0.5 ))
     { qDebug( "out of bounds" );
       return;
     }
@@ -44,10 +45,7 @@ void GameControl::proposeMove( int x, int y )
     { qDebug( "game board undefined" );
       return;
     }
-  if (( x < 0 ) ||
-      ( y < 0 ) ||
-      ( x >= bp->Xsize ) ||
-      ( y >= bp->Ysize ))
+  if ( !bp->isOnBoard( x, y ) )
     { qDebug( "out of bounds" );
       return;
     }

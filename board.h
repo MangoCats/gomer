@@ -30,6 +30,7 @@ public:
 
 signals:
         void  captured( Stone * );
+        void  clearLiberties();
 
 public slots:
 

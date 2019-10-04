@@ -9,9 +9,11 @@ void LibertyCountDisplay::clearCounts()
 { if ( scene == nullptr )
     return;
   foreach( QGraphicsSimpleTextItem *tp, counts )
-    { tp->setVisible( false );
-      scene->removeMyItem( tp );
-      delete( tp );
+    { if ( tp != nullptr )
+        { tp->setVisible( false );
+          scene->removeMyItem( tp );
+          delete( tp );
+        }
     }
   counts.clear();
 }
@@ -44,8 +46,8 @@ void LibertyCountDisplay::updateCounts()
           qreal yo = (lc > 9) ? -0.4 : -0.65;
           tp->setPos( (qreal)s->x + xo, (qreal)s->y + yo );
           tp->setText( QString::number(lc) );
-          qDebug( "adding lc" );
-          // sp->addMyItem( tp );
+          // qDebug( "adding lc" );
+          // scene->addMyItem( tp ); Not needed because of s->ei parent
           counts.append( tp );
         }
     }

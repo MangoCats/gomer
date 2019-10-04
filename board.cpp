@@ -115,6 +115,7 @@ int Board::executeCaptures( int x, int y, int c )
     { qDebug( "ERROR: stones is NULL" );
       return -1;
     }
+  bool libertiesCleared = false;
   foreach( StoneGroup *sgp, stones->groupList )
     { if ( sgp != nullptr )
         if ( sgp->group.size() > 0 )
@@ -123,7 +124,11 @@ int Board::executeCaptures( int x, int y, int c )
               if ( ll.size() == 1 )  // Atari?
                 if (( ll.at(0).x() == x ) &&
                     ( ll.at(0).y() == y )) // Capturing this Atari?
-                  { foreach( Stone *sp, sgp->group )
+                  { if ( !libertiesCleared )
+                      { libertiesCleared = true;
+                        emit clearLiberties();
+                      }
+                    foreach( Stone *sp, sgp->group )
                       { emit captured( sp );
                         board.replace( sp->x + sp->y * Xsize, nullptr );
                         sp->x = -2;

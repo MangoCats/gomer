@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(        boardScene->op, SIGNAL(hover(QPointF)),           gameControl, SLOT(hover(QPointF))          );
     connect(           gameControl, SIGNAL(newStonePlaced(Stone *)),   boardScene, SLOT(placeNewStone(Stone *))  );
     connect(                 board, SIGNAL(captured(Stone *)),         boardScene, SLOT(stoneCaptured(Stone *))  );
+    connect(                 board, SIGNAL(clearLiberties()),      boardScene->lp, SLOT(clearCounts())           );
     connect( ui->showLibertyCounts, SIGNAL(toggled(bool)),             boardScene, SLOT(showLibertyCounts(bool)) );
     boardScene->showLibertyCounts( ui->showLibertyCounts->isChecked() );
     connect( ui->showTerritory    , SIGNAL(toggled(bool)),       board->territory, SLOT(setShow(bool)) );
