@@ -157,13 +157,13 @@ bool Board::selfCapture( int x, int y, int c )
   if ( x > 0 )
     if ( stoneAt( x-1,y ) == nullptr )
       return false;
-  if ( x <= (Xsize - 1) )
+  if ( x < (Xsize - 1) )
     if ( stoneAt( x+1,y ) == nullptr )
       return false;
   if ( y > 0 )
     if ( stoneAt( x,y-1 ) == nullptr )
       return false;
-  if ( y <= (Ysize - 1) )
+  if ( y < (Ysize - 1) )
     if ( stoneAt( x,y+1 ) == nullptr )
       return false;
 
@@ -183,7 +183,7 @@ bool Board::selfCapture( int x, int y, int c )
         return false;  // Can't be self-capture if the adjacent friendly group has 2 or more liberties
     }
 
-  if ( x <= ( Xsize - 1 ) )
+  if ( x < ( Xsize - 1 ) )
     { flc = friendlyLibertyCount( x+1,y,c );
       if ( flc < 0 ) // error
         return true;
@@ -199,7 +199,7 @@ bool Board::selfCapture( int x, int y, int c )
         return false;  // Can't be self-capture if the adjacent friendly group has 2 or more liberties
     }
 
-  if ( y <= ( Ysize - 1 ) )
+  if ( y < ( Ysize - 1 ) )
     { flc = friendlyLibertyCount( x,y+1,c );
       if ( flc < 0 ) // error
         return true;
