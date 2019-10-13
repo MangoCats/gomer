@@ -18,5 +18,6 @@ add_executable(GomerEngine main.cpp
                            goban.cpp      goban.h
                            gosu.cpp       gosu.h
                            goishi.cpp     goishi.h
+                           player.cpp     player.h
               )
 target_link_libraries(GomerEngine Qt5::Core)

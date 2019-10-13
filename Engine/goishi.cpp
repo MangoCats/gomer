@@ -1,6 +1,6 @@
 #include "goishi.h"
 
-Goishi::Goishi(qint32 c, QObject *parent) : QObject(parent), color(c)
+Goishi::Goishi(qint32 c, Goban *parent) : QObject(parent), bp(parent), color(c)
 { // qDebug( "Goishi constructor %d", color );
 
 }

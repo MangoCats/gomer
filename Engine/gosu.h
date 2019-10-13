@@ -23,6 +23,7 @@ signals:
 public slots:
 
 public:
+           QPointer<Goban> bp;    /// Board this bowl is playing on
   QList<QPointer<Goishi> > bowl;  /// Stones yet to be played
   QList<QPointer<Goishi> > lid;   /// Stones captured
 };
