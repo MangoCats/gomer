@@ -1,19 +1,30 @@
 #include "game.h"
 
+/**
+ * @brief Game::Game - the master container
+ * @param playerNames - list of player names, size implies the number of players
+ * @param xs - board X size
+ * @param ys - board Y size
+ * @param parent - QObject this Game "lives in", or nullptr.
+ */
 Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QObject(parent), np(playerNames.size())
 { qDebug( "Game constructor %d players", np );
   // TODO: if np < 2 or np too big, fail out.
+
+  // One Goban, one Gosu per player
   bp = new Goban(this,xs,ys);
   for ( qint32 i = 0; i < np; i++ )
     { Gosu *sp = new Gosu(bp);
       spl.append( sp );
       ppl.append( new Player(playerNames.at(i), sp) );
     }
+
+  // Fill the Gosu with Goishi
   qint32 nPoints = bp->nPoints();
   qint32 cc = 0;
   while ( nPoints > 0 )
     { spl.at(cc)->addGoishiToBowl( new Goishi(cc,bp) );
-      if ( ++cc >= np )
+      if ( ++cc >= np ) // Alternate between the players
         cc = 0;
       nPoints--;
     }
@@ -23,19 +34,31 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
  * @brief Game::clearBoard - move all Goishi into their original Gosu bowls
  */
 void Game::clearBoard()
-{ qint32 nPoints = bp->nPoints();
-  for ( qint32 i = 0 ; i < nPoints ; i++ )
-    { Goishi *ip = bp->takeGoishi( i );
-      if ( ip != nullptr )
-        clearGoishi( ip );
+{ // First the board
+  if ( bp == nullptr )
+    { qDebug( "WARNING: Goban is nullptr" ); }
+   else
+    { qint32 nPoints = bp->nPoints();
+      for ( qint32 i = 0 ; i < nPoints ; i++ )
+        { Goishi *ip = bp->takeGoishi( i );
+          if ( ip != nullptr )
+            clearGoishi( ip );
+        }
     }
+
+  // Then the return the captured Goishi from the lids to their bowls
   qint32 ns = spl.size();
   if ( np != spl.size() )
     qDebug( "WARNING: np %d != spl.size() %d", np, spl.size() );
 
   for ( qint32 i = 0 ; i < ns ; i++ )
-    while ( spl.at(i)->goishiInLid() > 0 )
-      clearGoishi( spl.at(i)->takeGoishiFromLid() );
+    { if ( spl.at(i) == nullptr )
+        { qDebug( "WARNING: Gosu %d is nullptr", i ); }
+       else
+        { while ( spl.at(i)->goishiInLid() > 0 )
+            clearGoishi( spl.at(i)->takeGoishiFromLid() );
+        }
+    }
 }
 
 /**

@@ -25,6 +25,7 @@ public:
         bool  onBoard( qint32 x, qint32 y );
 
 signals:
+        void  boardChanged( QString );
 
 public slots:
 

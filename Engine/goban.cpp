@@ -71,6 +71,7 @@ Goishi *Goban::takeGoishi( qint32 i )
   Goishi *ip = grid.at(i);
   if ( ip != nullptr )
     grid.replace( i, nullptr );
+  emit boardChanged( state() );
   return ip;
 }
 
@@ -94,6 +95,7 @@ bool Goban::placeGoishi( Goishi *ip, qint32 i )
       return false;
     }
   grid.replace( i, ip );
+  emit boardChanged( state() );
   return true;
 }
 
