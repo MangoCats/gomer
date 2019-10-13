@@ -16,8 +16,9 @@ find_package(Qt5Core)
 add_executable(GomerEngine main.cpp
                            game.cpp       game.h
                            goban.cpp      goban.h
-                           gosu.cpp       gosu.h
                            goishi.cpp     goishi.h
+                           gosu.cpp       gosu.h
+                           gtphandler.cpp gtphandler.h
                            player.cpp     player.h
               )
 target_link_libraries(GomerEngine Qt5::Core)

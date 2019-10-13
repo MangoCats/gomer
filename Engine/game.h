@@ -4,12 +4,14 @@
 class Goban;
 class Goishi;
 class Gosu;
+class GtpHandler;
 class Player;
 #include <QObject>
 #include <QPointer>
 #include "goban.h"
 #include "goishi.h"
 #include "gosu.h"
+#include "gtphandler.h"
 #include "player.h"
 
 /**
@@ -28,6 +30,7 @@ signals:
 public slots:
 
 public:
+      QPointer<GtpHandler> hp;
            QPointer<Goban> bp;
     QList<QPointer<Gosu> > spl;
   QList<QPointer<Player> > ppl;
