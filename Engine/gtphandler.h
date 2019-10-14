@@ -2,6 +2,7 @@
 #define GTPHANDLER_H
 
 class Game;
+#include <QCoreApplication>
 #include <QObject>
 #include <QPointer>
 #include "game.h"
@@ -15,14 +16,21 @@ class GtpHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit GtpHandler(Game *parent = nullptr);
+    explicit  GtpHandler(QCoreApplication *app,Game *parent = nullptr);
+        void  parseReceivedMessage( QString m, qint32 *id, QString *command_name, QString *arguments );
+     QString  trimComments( QString m );
+        void  respond( bool pf, qint32 id = -1, QString msg = "" );
 
 signals:
+        void  response( QString );
+        void  exit( int );
 
 public slots:
+        void  receivedMessage( QString );
 
 public:
     QPointer<Game> gp;
+      QStringList  handledCommands;
 };
 
 #endif // GTPHANDLER_H
