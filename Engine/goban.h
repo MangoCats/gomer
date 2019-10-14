@@ -16,6 +16,7 @@ class Goban : public QObject
     Q_OBJECT
 public:
     explicit  Goban(Game *parent = nullptr, qint32 xs=19, qint32 ys=19);
+        bool  resize( qint32 xs, qint32 ys );
       qint32  nPoints() { return Xsize * Ysize; }
      QString  state();
       Goishi *takeGoishi( qint32 i );

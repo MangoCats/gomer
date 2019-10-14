@@ -36,6 +36,7 @@ public:
   QList<QPointer<Player> > ppl;
                     qreal  komi;
                    qint32  np;
+              QStringList  stateHistory;
 };
 
 #endif // GAME_H

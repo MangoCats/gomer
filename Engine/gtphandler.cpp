@@ -4,7 +4,23 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 { qDebug( "GtpHandler constructor" );
   connect( this, SIGNAL(exit(int)), app, SLOT(exit(int)) );
   handledCommands.append( "quit" );
+#define      COMMAND_INDEX_QUIT                 0
+  handledCommands.append( "protocol_version" );
+#define      COMMAND_INDEX_PROTOCOL_VERSION     1
+  handledCommands.append( "name" );
+#define      COMMAND_INDEX_NAME                 2
+  handledCommands.append( "version" );
+#define      COMMAND_INDEX_VERSION              3
+  handledCommands.append( "known_command" );
+#define      COMMAND_INDEX_KNOWN_COMMAND        4
+  handledCommands.append( "list_commands" );
+#define      COMMAND_INDEX_LIST_COMMANDS        5
+  handledCommands.append( "boardsize" );
+#define      COMMAND_INDEX_BOARDSIZE            6
   handledCommands.append( "clear_board" );
+#define      COMMAND_INDEX_CLEAR_BOARD          7
+  handledCommands.append( "komi" );
+#define      COMMAND_INDEX_KOMI                 8
 }
 
 /**
@@ -15,26 +31,89 @@ void  GtpHandler::receivedMessage( QString m )
 { qint32 id;
   QString command_name;
   QString arguments;
-  m = trimComments( m );
+  m = trimComments( m ).trimmed();
+  if ( m.size() <= 0 )
+    return;  // 2.10 Empty lines and lines with only whitespace sent by the controller must be ignored by the engine.
+  m.replace( QChar('\t'), QChar(' ') );
   parseReceivedMessage( m, &id, &command_name, &arguments );
   if ( command_name.size() <= 0 )
     { respond( false, id, "no_supported_command_found" );
       return;
     }
+  QString msg,cmd;
+  qint32 sz;
+  bool success;
   switch ( handledCommands.indexOf(command_name) )
-    { case 0: // quit
+    { case COMMAND_INDEX_QUIT:
         respond( true, id );
         emit exit( 0 );
         break;
 
-      case 1: // clear_board
-        if ( gp != nullptr )
-          { gp->clearBoard();
-            respond( true, id );
-          }
-         else
-          respond( false, id, "game_object_null" );
+      case COMMAND_INDEX_PROTOCOL_VERSION:
+        respond( true, id, "2" );
         break;
+
+      case COMMAND_INDEX_NAME:
+        respond( true, id, "Gomer" );
+        break;
+
+      case COMMAND_INDEX_VERSION:
+        respond( true, id, "0.0.1" );
+        break;
+
+      case COMMAND_INDEX_KNOWN_COMMAND:
+        respond( true, id, handledCommands.contains( arguments ) ? "true" : "false" );
+        break;
+
+      case COMMAND_INDEX_LIST_COMMANDS:
+        msg="";
+        foreach ( cmd, handledCommands )
+          msg += cmd +"\n";
+        respond( true, id, msg );
+        break;
+
+      case COMMAND_INDEX_BOARDSIZE:
+        if ( gp == nullptr )
+          { respond( false, id, "game_object_null" );
+            break;
+          }
+        if ( gp->bp == nullptr )
+          { respond( false, id, "board_object_null" );
+            break;
+          }
+        sz = arguments.toInt();
+        if ( sz < 5 )
+          { respond( false, id, "unacceptable size" );
+            break;
+          }
+        gp->clearBoard();
+        success = gp->bp->resize( sz, sz );
+        if ( !success )
+          { respond( false, id, "board cleared, unacceptable size" );
+            break;
+          }
+        respond( true, id );
+        break;
+
+      case COMMAND_INDEX_CLEAR_BOARD:
+        if ( gp == nullptr )
+          { respond( false, id, "game_object_null" );
+            break;
+          }
+        gp->clearBoard();
+        respond( true, id );
+        break;
+
+      case COMMAND_INDEX_KOMI:
+        if ( gp == nullptr )
+          { respond( false, id, "game_object_null" );
+            break;
+          }
+        gp->komi = arguments.toDouble();
+        break;
+
+      default:
+        respond( false, id, "unexpected_failure_to_find_command" );
     }
 
 }
@@ -43,14 +122,14 @@ void  GtpHandler::receivedMessage( QString m )
  * @brief GtpHandler::respond - send a formatted response
  * @param pf - pass or fail
  * @param id - id number ( < 0 is no id )
- * @param msg - message, if any
+ * @param responseMsg - response message, if any
  */
-void GtpHandler::respond( bool pf, qint32 id, QString msg )
+void GtpHandler::respond( bool pf, qint32 id, QString responseMsg )
 { QString r = pf ? "=" : "?";
   if ( id >= 0 )
     r.append( QString("%1").arg(id) );
-  if ( msg.size() > 0 )
-    r.append( " "+msg );
+  if ( responseMsg.size() > 0 )
+    r.append( " "+responseMsg );
   r.append( "\n\n" );
   emit response(r);
 }

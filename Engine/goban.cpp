@@ -2,8 +2,6 @@
 
 Goban::Goban(Game *parent,qint32 xs,qint32 ys) : QObject(parent), gp(parent), Xsize(xs), Ysize(ys)
 { qDebug( "Goban constructor %d x %d", Xsize, Ysize );
-  for ( int i = 0 ; i < nPoints() ; i++ )
-    grid.append( nullptr );
   goishiChar = ".XO3456789";
   Xlabels.append("A");  Ylabels.append("1");
   Xlabels.append("B");  Ylabels.append("2");
@@ -36,6 +34,32 @@ Goban::Goban(Game *parent,qint32 xs,qint32 ys) : QObject(parent), gp(parent), Xs
   Xlabels.append("AD"); Ylabels.append("29");
   Xlabels.append("AE"); Ylabels.append("30");
   Xlabels.append("AF"); Ylabels.append("31");
+  resize( xs, ys );
+}
+
+/**
+ * @brief Goban::resize - board must be clear before a resize can succeed
+ * @param xs - new size
+ * @param ys - new size
+ * @return true if successful
+ */
+bool Goban::resize( qint32 xs, qint32 ys )
+{ if ( xs > Xlabels.size() )
+    return false;
+  if ( ys > Ylabels.size() )
+    return false;
+  foreach ( Goishi *ip, grid )
+    if ( ip != nullptr )
+      { qDebug( "ERROR: attempt to resize when board is not cleared." );
+        return false;
+      }
+  Xsize = xs;
+  Ysize = ys;
+  if ( grid.size() > nPoints() )
+    grid.clear();
+  while ( grid.size() < nPoints() )
+    grid.append( nullptr );
+  return true;
 }
 
 /**
