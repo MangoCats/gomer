@@ -96,7 +96,7 @@ void Game::clearGoishi( Goishi *ip )
 bool Game::resizeGoban( qint32 xs, qint32 ys )
 { if ( xs < 1 ) return false;
   if ( ys < 1 ) return false;
-  if ( xs+ys < 6 ) return false;
+  if ( xs+ys < 5 ) return false;
   if ( bp == nullptr ) return false;
   clearGoban(); // Return Goishi to the Gosu
   foreach ( Gosu *sp, spl )
@@ -105,4 +105,16 @@ bool Game::resizeGoban( qint32 xs, qint32 ys )
   if ( success )
     fillGosu();
   return success;
+}
+
+/**
+ * @brief Game::showBoard
+ * @return simple board representation, might later embellish with capture, komi and other info
+ */
+QString Game::showBoard()
+{ if ( bp == nullptr )
+    { qDebug( "WARNING: bp null in Game::showBoard()" );
+      return "";
+    }
+  return bp->showBoard();
 }

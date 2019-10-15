@@ -23,7 +23,13 @@ public:
         bool  placeGoishi( Goishi *ip, qint32 i );
         bool  placeGoishiAt( Goishi *ip, qint32 x, qint32 y );
         bool  placeGoishiAt( Goishi *ip, QString pos );
+      Goishi *goishiAt( qint32 x, qint32 y );
         bool  onBoard( qint32 x, qint32 y );
+     QString  showBoard();
+     QString  xAxisLabels();
+     QString  centerString( QString s, qint32 len );
+     QString  asciiGoishi( qint32 x, qint32 y );
+
 
 signals:
         void  boardChanged( QString );

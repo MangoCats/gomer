@@ -177,6 +177,20 @@ bool  Goban::placeGoishiAt( Goishi *ip, QString pos )
 }
 
 /**
+ * @brief Goban::goishiAt
+ * @param x - coordinate to get Goishi pointer for
+ * @param y - coordinate to get Goishi pointer for
+ * @return pointer to the Goishi at x,y - nullptr if none
+ */
+Goishi *Goban::goishiAt( qint32 x, qint32 y )
+{ if ( !onBoard(x,y) )
+    { qDebug( "WARNING: Goban::goishiAt(%d,%d) not on board",x,y );
+      return nullptr;
+    }
+  return grid.at( x + Xsize * y );
+}
+
+/**
  * @brief Goban::onBoard
  * @param x
  * @param y
@@ -188,4 +202,75 @@ bool  Goban::onBoard( qint32 x, qint32 y )
   if ( x >= Xsize ) return false;
   if ( y >= Ysize ) return false;
   return true;
+}
+
+/**
+ * @brief Goban::showBoard
+ * @return ASCII art representation of the current board state
+ */
+QString Goban::showBoard()
+{ QString bs,bl;
+  bs.append( "\n"+xAxisLabels() );
+  qint32 y = Ysize - 1;
+  while ( y >= 0 )
+    { bl = centerString( Ylabels.at(y), 2 );
+      for ( qint32 x = 0 ; x < Xsize ; x++ )
+        bl.append( asciiGoishi( x, y ) );
+      bl.append( centerString( Ylabels.at(y), 2 ) + "\n" );
+      bs.append( bl );
+      y--;
+    }
+  bs.append( xAxisLabels() );
+  return bs;
+}
+
+/**
+ * @brief Goban::xAxisLabels
+ * @return the xAxis label string
+ */
+QString Goban::xAxisLabels()
+{ QString bl = "   "; // space for Y labels
+  foreach( QString xl, Xlabels )
+    bl.append( centerString( xl, 2 ) );
+  return bl+"\n";
+}
+
+/**
+ * @brief Goban::centerString - for ASCII art work
+ * @param s - string to center
+ * @param len - number of characters in the final string
+ * @return s centered in a string len characters long
+ */
+QString Goban::centerString( QString s, qint32 len )
+{ QString ps;
+  qint32 spaces = len - s.size();
+  if ( spaces < 0 )
+    qDebug( "WARNING: s longer than len" );
+  if ( spaces <= 0 )
+    return s;
+  while ( ps.size() < (spaces/2) )
+    ps.append( " " );
+  ps.append( s );
+  while ( ps.size() < len )
+    ps.append( " " );
+  return ps;
+}
+
+
+/**
+ * @brief Goban::asciiGoishi - simple representation of the board, can get fancier later.
+ * @param x - grid point to represent
+ * @param y - grid point to represent
+ * @return X for black, O for white, . for empty, with leading and trailing spaces
+ */
+QString Goban::asciiGoishi( qint32 x, qint32 y )
+{ Goishi *ip = goishiAt( x, y );
+  if ( ip == nullptr )
+    return centerString( goishiChar.at(0), 2 );
+  qint32 c = ip->color;
+  if (( c >= goishiChar.size() - 1 ) || ( c < 0 ))
+    { qDebug( "WARNING: color out of range in asciiGoishi" );
+      return "*";
+    }
+  return centerString( goishiChar.at( c+1 ), 2 );
 }

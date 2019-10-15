@@ -21,6 +21,8 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_CLEAR_BOARD          7
   handledCommands.append( "komi" );
 #define      COMMAND_INDEX_KOMI                 8
+  handledCommands.append( "showboard" );
+#define      COMMAND_INDEX_SHOWBOARD            9
 }
 
 /**
@@ -73,10 +75,7 @@ void  GtpHandler::receivedMessage( QString m )
         break;
 
       case COMMAND_INDEX_BOARDSIZE:
-        if ( gp == nullptr )
-          { respond( false, id, "game_object_null" );
-            break;
-          }
+        if ( !checkGpNull( id ) ) break;
         sz = arguments.toInt();
         if ( sz < 5 )
           { respond( false, id, "unacceptable size" );
@@ -91,26 +90,39 @@ void  GtpHandler::receivedMessage( QString m )
         break;
 
       case COMMAND_INDEX_CLEAR_BOARD:
-        if ( gp == nullptr )
-          { respond( false, id, "game_object_null" );
-            break;
-          }
+        if ( !checkGpNull( id ) ) break;
         gp->clearGoban();
         respond( true, id );
         break;
 
       case COMMAND_INDEX_KOMI:
-        if ( gp == nullptr )
-          { respond( false, id, "game_object_null" );
-            break;
-          }
+        if ( !checkGpNull( id ) ) break;
         gp->komi = arguments.toDouble();
+        respond( true, id );
+        break;
+
+      case COMMAND_INDEX_SHOWBOARD:
+        if ( !checkGpNull( id ) ) break;
+        respond( true, id, gp->showBoard() );
         break;
 
       default:
         respond( false, id, "unexpected_failure_to_find_command" );
     }
 
+}
+
+/**
+ * @brief GtpHandler::checkGpNull - frequently used safety/error check
+ * @param id - for use in the failure message
+ * @return false if gp is nullptr
+ */
+bool  GtpHandler::checkGpNull( qint32 id )
+{ if ( gp == nullptr )
+    { respond( false, id, "game_object_null" );
+      return false;
+    }
+  return true;
 }
 
 /**

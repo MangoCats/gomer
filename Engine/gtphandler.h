@@ -20,6 +20,7 @@ public:
         void  parseReceivedMessage( QString m, qint32 *id, QString *command_name, QString *arguments );
      QString  trimComments( QString m );
         void  respond( bool pf, qint32 id = -1, QString msg = "" );
+        bool  checkGpNull( qint32 id );
 
 signals:
         void  response( QString );

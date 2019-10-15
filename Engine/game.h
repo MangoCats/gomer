@@ -26,6 +26,7 @@ public:
         void clearGoban();
         void clearGoishi( Goishi * );
         bool resizeGoban( qint32 xs, qint32 ys );
+     QString showBoard();
 
 signals:
 
