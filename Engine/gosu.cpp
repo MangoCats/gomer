@@ -5,6 +5,18 @@ Gosu::Gosu(Goban *parent) : QObject(parent), bp(parent)
 }
 
 /**
+ * @brief Gosu::empty - delete all Goishi contained in the bowl and lid
+ */
+void Gosu::empty()
+{ foreach ( Goishi *ip, bowl )
+    ip->deleteLater();
+  bowl.clear();
+  foreach ( Goishi *ip, lid )
+    ip->deleteLater();
+  lid.clear();
+}
+
+/**
  * @brief Gosu::addGoishiToBowl
  * @param ip - pointer to a Goishi that is being placed in the bowl
  */

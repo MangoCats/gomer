@@ -18,9 +18,14 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
       spl.append( sp );
       ppl.append( new Player(playerNames.at(i), sp) );
     }
+  fillGosu();
+}
 
-  // Fill the Gosu with Goishi
-  qint32 nPoints = bp->nPoints();
+/**
+ * @brief Game::fillGosu - with enough Goishi to cover the Goban, distributed evenly
+ */
+void Game::fillGosu()
+{ qint32 nPoints = bp->nPoints();
   qint32 cc = 0;
   while ( nPoints > 0 )
     { spl.at(cc)->addGoishiToBowl( new Goishi(cc,bp) );
@@ -31,9 +36,9 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
 }
 
 /**
- * @brief Game::clearBoard - move all Goishi into their original Gosu bowls
+ * @brief Game::clearGoban - move all Goishi into their original Gosu bowls
  */
-void Game::clearBoard()
+void Game::clearGoban()
 { // First the board
   if ( bp == nullptr )
     { qDebug( "WARNING: Goban is nullptr" ); }
@@ -80,4 +85,24 @@ void Game::clearGoishi( Goishi *ip )
       return;
     }
   spl.at(c)->addGoishiToBowl(ip);
+}
+
+/**
+ * @brief Game::resizeGoban
+ * @param xs - new x dimension
+ * @param ys - new y dimension
+ * @return true if successful
+ */
+bool Game::resizeGoban( qint32 xs, qint32 ys )
+{ if ( xs < 1 ) return false;
+  if ( ys < 1 ) return false;
+  if ( xs+ys < 6 ) return false;
+  if ( bp == nullptr ) return false;
+  clearGoban(); // Return Goishi to the Gosu
+  foreach ( Gosu *sp, spl )
+    sp->empty(); // Empty the Gosu
+  bool success = bp->resize( xs, ys );
+  if ( success )
+    fillGosu();
+  return success;
 }

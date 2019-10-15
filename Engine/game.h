@@ -22,8 +22,10 @@ class Game : public QObject
     Q_OBJECT
 public:
     explicit Game(QStringList playerNames, qint32 xs = 19, qint32 ys = 19, QObject *parent = nullptr);
-        void clearBoard();
+        void fillGosu();
+        void clearGoban();
         void clearGoishi( Goishi * );
+        bool resizeGoban( qint32 xs, qint32 ys );
 
 signals:
 

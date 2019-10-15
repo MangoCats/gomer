@@ -16,6 +16,7 @@ class Gosu : public QObject
     Q_OBJECT
 public:
     explicit  Gosu(Goban *parent = nullptr);
+        void  empty();
         void  addGoishiToBowl(Goishi *ip);
         void  addGoishiToLid(Goishi *ip);
       qint32  goishiInBowl() { return bowl.size(); }

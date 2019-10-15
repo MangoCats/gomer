@@ -77,19 +77,14 @@ void  GtpHandler::receivedMessage( QString m )
           { respond( false, id, "game_object_null" );
             break;
           }
-        if ( gp->bp == nullptr )
-          { respond( false, id, "board_object_null" );
-            break;
-          }
         sz = arguments.toInt();
         if ( sz < 5 )
           { respond( false, id, "unacceptable size" );
             break;
           }
-        gp->clearBoard();
-        success = gp->bp->resize( sz, sz );
+        success = gp->resizeGoban( sz, sz );
         if ( !success )
-          { respond( false, id, "board cleared, unacceptable size" );
+          { respond( false, id, "unacceptable size" );
             break;
           }
         respond( true, id );
@@ -100,7 +95,7 @@ void  GtpHandler::receivedMessage( QString m )
           { respond( false, id, "game_object_null" );
             break;
           }
-        gp->clearBoard();
+        gp->clearGoban();
         respond( true, id );
         break;
 
