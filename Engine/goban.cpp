@@ -135,7 +135,16 @@ bool Goban::placeGoishiAt( Goishi *ip, qint32 x, qint32 y )
     { qDebug( "WARNING: Goban::placeGoishiAt(%d,%d) not on board",x,y );
       return false;
     }
-  return placeGoishi( ip, x + Xsize * y );
+  if ( goishiAt( x, y ) != nullptr )
+    { qDebug( "WARNING: Goban::placeGoishiAt(%d,%d), Goishi already present there.",x,y );
+      return false;
+    }
+  bool success = placeGoishi( ip, x + Xsize * y );
+  if ( success )
+    { ip->x = x;
+      ip->y = y;
+    }
+  return success;
 }
 
 /**

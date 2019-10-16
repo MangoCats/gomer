@@ -20,5 +20,7 @@ add_executable(GomerEngine main.cpp
                            gosu.cpp       gosu.h
                            gtphandler.cpp gtphandler.h
                            player.cpp     player.h
+                           shiko.cpp      shiko.h
+                           wyrm.cpp       wyrm.h
               )
 target_link_libraries(GomerEngine Qt5::Core)

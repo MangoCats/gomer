@@ -6,6 +6,7 @@ class Goishi;
 class Gosu;
 class GtpHandler;
 class Player;
+class Shiko;
 #include <QObject>
 #include <QPointer>
 #include "goban.h"
@@ -13,6 +14,7 @@ class Player;
 #include "gosu.h"
 #include "gtphandler.h"
 #include "player.h"
+#include "shiko.h"
 
 /**
  * @brief The Game class - encapsulates a single game play
@@ -27,6 +29,7 @@ public:
         void clearGoishi( Goishi * );
         bool resizeGoban( qint32 xs, qint32 ys );
      QString showBoard();
+        bool playGoishi( qint32 x, qint32 y, qint32 c );
 
 signals:
 
@@ -37,9 +40,11 @@ public:
            QPointer<Goban> bp;
     QList<QPointer<Gosu> > spl;
   QList<QPointer<Player> > ppl;
+           QPointer<Shiko> tp;
                     qreal  komi;
-                   qint32  np;
-              QStringList  stateHistory;
+                   qint32  np;           // Number of players
+                   qint32  pt;           // Which player's turn is is?
+              QStringList  stateHistory; // Previous board positions
 };
 
 #endif // GAME_H

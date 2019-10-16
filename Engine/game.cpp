@@ -7,7 +7,7 @@
  * @param ys - board Y size
  * @param parent - QObject this Game "lives in", or nullptr.
  */
-Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QObject(parent), np(playerNames.size())
+Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QObject(parent), np(playerNames.size()), pt(0)
 { qDebug( "Game constructor %d players", np );
   // TODO: if np < 2 or np too big, fail out.
 
@@ -64,6 +64,14 @@ void Game::clearGoban()
             clearGoishi( spl.at(i)->takeGoishiFromLid() );
         }
     }
+
+  stateHistory.clear();
+
+  // Clear all thoughts about the Goban state
+  if ( tp == nullptr )
+    qDebug( "WARNING: Shiko is nullptr" );
+   else
+    tp->clearGoban();
 }
 
 /**
@@ -117,4 +125,43 @@ QString Game::showBoard()
       return "";
     }
   return bp->showBoard();
+}
+
+/**
+ * @brief Game::playGoishi
+ * @param x - coordinate to play at
+ * @param y - coordinate to play at
+ * @param c - color to play
+ * @return true if successful
+ */
+bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
+{ if ( !tp->legalMove(x,y,c) )
+    return false;
+  if ( c >= spl.size() )
+    { qDebug( "WARNING: playGoishi(%d,%d,%d) no Gosu %d available",x,y,c,c );
+      return false;
+    }
+  if ( spl.at(c) == nullptr )
+    { qDebug( "WARNING: playGoishi(%d,%d,%d) Gosu %d is nullptr",x,y,c,c );
+      return false;
+    }
+  Goishi *ip = spl.at(c)->takeGoishiFromBowl();
+  if ( ip->color != c )
+    { qDebug( "UNEXPECTED: wrong color %d Goishi in bowl %d", ip->color, c );
+      return false;
+    }
+  if ( ip == nullptr )
+    { qDebug( "Game::playGoishi Gosu bowl empty?  Creating new Goishi." );
+      ip = new Goishi(c,bp);
+    }
+  if ( !bp->placeGoishiAt( ip, x, y ) )
+    { spl.at(c)->addGoishiToBowl( ip ); // Returning Goishi to bowl it was taken from
+      return false;
+    }
+
+  // TODO: execute captures, if any
+
+  tp->goishiPlacedOnGoban( ip ); // Updates Wyrms
+
+  return true;
 }
