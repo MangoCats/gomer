@@ -19,6 +19,7 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
       ppl.append( new Player(playerNames.at(i), sp) );
     }
   fillGosu();
+  tp = new Shiko(bp,this);
 }
 
 /**
@@ -135,14 +136,18 @@ QString Game::showBoard()
  * @return true if successful
  */
 bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
-{ if ( !tp->legalMove(x,y,c) )
+{ if ( tp == nullptr )
+    { qDebug( "WARNING: Game::playGoishi Shiko pointer is null" );
+      return false;
+    }
+  if ( !tp->legalMove(x,y,c) )
     return false;
   if ( c >= spl.size() )
-    { qDebug( "WARNING: playGoishi(%d,%d,%d) no Gosu %d available",x,y,c,c );
+    { qDebug( "WARNING: Game::playGoishi(%d,%d,%d) no Gosu %d available",x,y,c,c );
       return false;
     }
   if ( spl.at(c) == nullptr )
-    { qDebug( "WARNING: playGoishi(%d,%d,%d) Gosu %d is nullptr",x,y,c,c );
+    { qDebug( "WARNING: Game::playGoishi(%d,%d,%d) Gosu %d is nullptr",x,y,c,c );
       return false;
     }
   Goishi *ip = spl.at(c)->takeGoishiFromBowl();
@@ -155,9 +160,12 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
       ip = new Goishi(c,bp);
     }
   if ( !bp->placeGoishiAt( ip, x, y ) )
-    { spl.at(c)->addGoishiToBowl( ip ); // Returning Goishi to bowl it was taken from
+    { qDebug( "Game::playGoishi problem during Goban::placeGoishiAt()" );
+      spl.at(c)->addGoishiToBowl( ip ); // Returning Goishi to bowl it was taken from
       return false;
     }
+  if ( ++pt >= np ) // Advance player turn to the next player, reset to player 0 when last player has played
+    pt = 0;
 
   // TODO: execute captures, if any
 

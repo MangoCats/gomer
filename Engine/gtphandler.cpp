@@ -28,6 +28,8 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_KOMI                 8
   handledCommands.append( "showboard" );
 #define      COMMAND_INDEX_SHOWBOARD            9
+  handledCommands.append( "play" );
+#define      COMMAND_INDEX_PLAY                10
 }
 
 /**
@@ -38,17 +40,18 @@ void  GtpHandler::receivedMessage( QString m )
 { qint32 id;
   QString command_name;
   QString arguments;
-  m = trimComments( m ).trimmed();
+  m = trimComments( m ).trimmed().toLower();
   if ( m.size() <= 0 )
     return;  // 2.10 Empty lines and lines with only whitespace sent by the controller must be ignored by the engine.
   m.replace( QChar('\t'), QChar(' ') );
   parseReceivedMessage( m, &id, &command_name, &arguments );
   if ( command_name.size() <= 0 )
-    { respond( false, id, "no_supported_command_found" );
+    { respond( false, id, "unknown command" );
       return;
     }
+  QStringList args = arguments.split(QRegExp("[\r\n\t ]+"), QString::SkipEmptyParts);
   QString msg,cmd;
-  qint32 sz;
+  qint32 sz,c,x,y;
   bool success;
   switch ( handledCommands.indexOf(command_name) )
     { case COMMAND_INDEX_QUIT:
@@ -110,6 +113,24 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_SHOWBOARD:
         if ( !checkGpNull( id ) ) break;
         respond( true, id, gp->showBoard() );
+        break;
+
+      case COMMAND_INDEX_PLAY:
+        if ( !checkGpNull( id ) ) break;
+        c = interpretColor( args.at(0) );
+        if (( c < 0 ) || ( c > gp->np ))
+          { respond( false, id, "invalid color "+args.at(0) ); break; }
+        if ( gp->bp == nullptr )
+          { respond( false, id, "Goban pointer is null" ); break; }
+        if ( !gp->bp->vertexToXY( args.at(1), &x, &y ) )
+          { respond( false, id, "invalid vertex "+args.at(1) ); break; }
+        if ( gp->tp == nullptr )
+          { respond( false, id, "Shiko pointer is null" ); break; }
+        if ( !gp->tp->legalMove( x, y, c ) )
+          { respond( false, id, "illegal move "+args.at(0)+" "+args.at(1) ); break; }
+        if ( !gp->playGoishi( x, y, c ) )
+          { respond( false, id, "problem playing "+args.at(0)+" "+args.at(1) ); break; }
+        respond( true, id );
         break;
 
       default:
@@ -180,7 +201,7 @@ void  GtpHandler::parseReceivedMessage( QString m, qint32 *id, QString *command_
     }
   if ( words.size() < 2 )
     return;
-  if ( handledCommands.contains( words.at(1) ) ) // Command without id
+  if ( handledCommands.contains( words.at(1) ) ) // Command with id
     { *id = words.at(0).toInt();
       *command_name = words.at(1);
       *arguments = m.mid( m.indexOf( words.at(1) ) + words.at(1).size() ).trimmed();
@@ -189,4 +210,22 @@ void  GtpHandler::parseReceivedMessage( QString m, qint32 *id, QString *command_
   return;
 }
 
-
+/**
+ * @brief GtpHandler::interpretColor
+ * @param cs - color string to interpret
+ * @return color as an integer player number (0 black, 1 white) or -1 if invalid for this game
+ */
+qint32  GtpHandler::interpretColor( QString cs )
+{ qint32 c = -1;
+  if ( gp == nullptr )
+    return c;
+  if (( cs == "b" ) || ( cs == "black" ))
+    c = 0;
+  if (( cs == "w" ) || ( cs == "white" ))
+    c = 1;
+  if ( c < 0 )
+    c = cs.toInt();
+  if (( c >= gp->np ) || ( c < 0 ))
+    c = -1;
+  return c;
+}

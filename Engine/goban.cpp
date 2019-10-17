@@ -166,35 +166,50 @@ bool Goban::placeGoishiAt( Goishi *ip, qint32 x, qint32 y )
  * @return true if successful
  */
 bool  Goban::placeGoishiAt( Goishi *ip, QString pos )
-{ qint32 x = Xsize;
-  if ( x > Xlabels.size() )
+{ qint32 x,y;
+  if ( !vertexToXY(pos,&x,&y) )
+    return false;
+  return placeGoishiAt( ip, x, y );
+}
+
+/**
+ * @brief Goban::vertexToXY
+ * @param pos - vertex as string
+ * @param x - pointer to x coordinate
+ * @param y - pointer to x coordinate
+ * @return true if vertex conversion to xy was successful
+ */
+bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
+{ pos = pos.toUpper();
+  *x = Xsize;
+  if ( *x > Xlabels.size() )
     { qDebug( "WARNING: Xsize larger than available labels." );
       return false;
     }
   bool done = false;
   while ( !done )
-    { if ( x <= 0 )
-        { qDebug( "Goban::placeGoishiAt(%s) no match found in Xlabels", qPrintable( pos ) );
+    { if ( *x <= 0 )
+        { qDebug( "Goban::vertexToXY(%s) no match found in Xlabels", qPrintable( pos ) );
           return false;
         }
-      if ( pos.startsWith( Xlabels.at(--x) ) )
+      if ( pos.startsWith( Xlabels.at(--*x) ) )
         done = true;
     }
-  qint32 y = Ysize;
-  if ( y > Ylabels.size() )
+  *y = Ysize;
+  if ( *y > Ylabels.size() )
     { qDebug( "WARNING: Ysize larger than available labels." );
       return false;
     }
   done = false;
   while ( !done )
-    { if ( y <= 0 )
-        { qDebug( "Goban::placeGoishiAt(%s) no match found in Ylabels", qPrintable( pos ) );
+    { if ( *y <= 0 )
+        { qDebug( "Goban::vertexToXY(%s) no match found in Ylabels", qPrintable( pos ) );
           return false;
         }
-      if ( pos.endsWith( Ylabels.at(--y) ) )
+      if ( pos.endsWith( Ylabels.at(--*y) ) )
         done = true;
     }
-  return placeGoishiAt( ip, x, y );
+  return true;
 }
 
 /**
@@ -224,6 +239,8 @@ bool  Goban::onBoard( qint32 x, qint32 y )
   if ( y >= Ysize ) return false;
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief Goban::showBoard
