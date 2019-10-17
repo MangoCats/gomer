@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5Core)
 
 add_executable(GomerEngine main.cpp
+                           console.cpp    console.h
                            game.cpp       game.h
                            goban.cpp      goban.h
                            goishi.cpp     goishi.h

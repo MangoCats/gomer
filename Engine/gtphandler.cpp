@@ -1,8 +1,13 @@
 #include "gtphandler.h"
+#include "console.h"
 
 GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), gp(parent)
 { qDebug( "GtpHandler constructor" );
-  connect( this, SIGNAL(exit(int)), app, SLOT(exit(int)) );
+  connect( this, SIGNAL(quit()), app, SLOT(quit()) );
+  Console *cp = new Console(this);
+  connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
+  connect( this, SIGNAL(response(QString)), cp,   SLOT(sendResponse(QString))    );
+  cp->run();
   handledCommands.append( "quit" );
 #define      COMMAND_INDEX_QUIT                 0
   handledCommands.append( "protocol_version" );
@@ -48,7 +53,7 @@ void  GtpHandler::receivedMessage( QString m )
   switch ( handledCommands.indexOf(command_name) )
     { case COMMAND_INDEX_QUIT:
         respond( true, id );
-        emit exit( 0 );
+        emit quit();
         break;
 
       case COMMAND_INDEX_PROTOCOL_VERSION:
@@ -70,12 +75,13 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_LIST_COMMANDS:
         msg="";
         foreach ( cmd, handledCommands )
-          msg += cmd +"\n";
+          msg += "\n"+cmd;
         respond( true, id, msg );
         break;
 
       case COMMAND_INDEX_BOARDSIZE:
         if ( !checkGpNull( id ) ) break;
+        qDebug( arguments.toUtf8().data() );
         sz = arguments.toInt();
         if ( sz < 5 )
           { respond( false, id, "unacceptable size" );
@@ -137,7 +143,7 @@ void GtpHandler::respond( bool pf, qint32 id, QString responseMsg )
     r.append( QString("%1").arg(id) );
   if ( responseMsg.size() > 0 )
     r.append( " "+responseMsg );
-  r.append( "\n\n" );
+  r.append( "\n" );
   emit response(r);
 }
 
@@ -177,7 +183,7 @@ void  GtpHandler::parseReceivedMessage( QString m, qint32 *id, QString *command_
   if ( handledCommands.contains( words.at(1) ) ) // Command without id
     { *id = words.at(0).toInt();
       *command_name = words.at(1);
-      *arguments = m.mid( m.indexOf( words.at(1) ) + words.at(0).size() ).trimmed();
+      *arguments = m.mid( m.indexOf( words.at(1) ) + words.at(1).size() ).trimmed();
       return;
     }
   return;

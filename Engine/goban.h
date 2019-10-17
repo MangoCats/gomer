@@ -39,6 +39,7 @@ public slots:
 public:
               QPointer<Game> gp;
                      qint32  Xsize,Ysize;
+               QList<qint32> Xdots,Ydots;
   QVector<QPointer<Goishi> > grid;
                     QString  goishiChar;
                 QStringList  Xlabels,Ylabels;

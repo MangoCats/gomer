@@ -24,7 +24,7 @@ public:
 
 signals:
         void  response( QString );
-        void  exit( int );
+        void  quit();
 
 public slots:
         void  receivedMessage( QString );

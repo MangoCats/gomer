@@ -2,7 +2,7 @@
 
 Goban::Goban(Game *parent,qint32 xs,qint32 ys) : QObject(parent), gp(parent), Xsize(xs), Ysize(ys)
 { qDebug( "Goban constructor %d x %d", Xsize, Ysize );
-  goishiChar = ".XO3456789";
+  goishiChar = ".,XO3456789";
   Xlabels.append("A");  Ylabels.append("1");
   Xlabels.append("B");  Ylabels.append("2");
   Xlabels.append("C");  Ylabels.append("3");
@@ -59,6 +59,18 @@ bool Goban::resize( qint32 xs, qint32 ys )
     grid.clear();
   while ( grid.size() < nPoints() )
     grid.append( nullptr );
+
+  // For the ASCII board:
+  Xdots.clear();
+  Ydots.clear();
+  Xdots.append( (Xsize < 13) ? 2 : 3 );
+  Ydots.append( (Ysize < 13) ? 2 : 3 );
+  Xdots.append( Xsize - ((Xsize < 13) ? 3 : 4) );
+  Ydots.append( Ysize - ((Ysize < 13) ? 3 : 4) );
+  if ( ( Xsize % 2 ) == 1 )
+    Xdots.append( Xsize/2 );
+  if ( ( Ysize % 2 ) == 1 )
+    Ydots.append( Ysize/2 );
   return true;
 }
 
@@ -219,10 +231,10 @@ bool  Goban::onBoard( qint32 x, qint32 y )
  */
 QString Goban::showBoard()
 { QString bs,bl;
-  bs.append( "\n"+xAxisLabels() );
+  bs.append( "\n"+xAxisLabels()+"\n" );
   qint32 y = Ysize - 1;
   while ( y >= 0 )
-    { bl = centerString( Ylabels.at(y), 2 );
+    { bl = centerString( Ylabels.at(y), -2 ) + " ";
       for ( qint32 x = 0 ; x < Xsize ; x++ )
         bl.append( asciiGoishi( x, y ) );
       bl.append( centerString( Ylabels.at(y), 2 ) + "\n" );
@@ -239,9 +251,10 @@ QString Goban::showBoard()
  */
 QString Goban::xAxisLabels()
 { QString bl = "   "; // space for Y labels
-  foreach( QString xl, Xlabels )
-    bl.append( centerString( xl, 2 ) );
-  return bl+"\n";
+  qint32 i = 0;
+  while ( i < Xsize )
+    bl.append( centerString( Xlabels.at(i++), 2 ) );
+  return bl;
 }
 
 /**
@@ -252,7 +265,12 @@ QString Goban::xAxisLabels()
  */
 QString Goban::centerString( QString s, qint32 len )
 { QString ps;
-  qint32 spaces = len - s.size();
+  qint32 extraSpace = 0;
+  if ( len < 0 )
+    { len = -len;
+      extraSpace = 1;
+    }
+  qint32 spaces = len - s.size() + extraSpace;
   if ( spaces < 0 )
     qDebug( "WARNING: s longer than len" );
   if ( spaces <= 0 )
@@ -275,11 +293,14 @@ QString Goban::centerString( QString s, qint32 len )
 QString Goban::asciiGoishi( qint32 x, qint32 y )
 { Goishi *ip = goishiAt( x, y );
   if ( ip == nullptr )
-    return centerString( goishiChar.at(0), 2 );
+    { if ( Xdots.contains(x) && Ydots.contains(y) )
+        return centerString( goishiChar.at(1), 2 );
+      return centerString( goishiChar.at(0), 2 );
+    }
   qint32 c = ip->color;
-  if (( c >= goishiChar.size() - 1 ) || ( c < 0 ))
+  if (( c >= goishiChar.size() - 2 ) || ( c < 0 ))
     { qDebug( "WARNING: color out of range in asciiGoishi" );
       return "*";
     }
-  return centerString( goishiChar.at( c+1 ), 2 );
+  return centerString( goishiChar.at( c+2 ), 2 );
 }
