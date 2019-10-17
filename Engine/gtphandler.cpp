@@ -20,16 +20,30 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_KNOWN_COMMAND        4
   handledCommands.append( "list_commands" );
 #define      COMMAND_INDEX_LIST_COMMANDS        5
+  handledCommands.append( "help" );
+#define      COMMAND_INDEX_HELP                 6
   handledCommands.append( "boardsize" );
-#define      COMMAND_INDEX_BOARDSIZE            6
+#define      COMMAND_INDEX_BOARDSIZE            7
+  handledCommands.append( "query_boardsize" );
+#define      COMMAND_INDEX_QUERY_BOARDSIZE      8
   handledCommands.append( "clear_board" );
-#define      COMMAND_INDEX_CLEAR_BOARD          7
+#define      COMMAND_INDEX_CLEAR_BOARD          9
   handledCommands.append( "komi" );
-#define      COMMAND_INDEX_KOMI                 8
+#define      COMMAND_INDEX_KOMI                10
+  handledCommands.append( "get_komi" );
+#define      COMMAND_INDEX_GET_KOMI            11
   handledCommands.append( "showboard" );
-#define      COMMAND_INDEX_SHOWBOARD            9
+#define      COMMAND_INDEX_SHOWBOARD           12
+  handledCommands.append( "black" );
+#define      COMMAND_INDEX_BLACK               13
+  handledCommands.append( "playwhite" );
+#define      COMMAND_INDEX_PLAYWHITE           14
   handledCommands.append( "play" );
-#define      COMMAND_INDEX_PLAY                10
+#define      COMMAND_INDEX_PLAY                15
+  handledCommands.append( "is_legal" );
+#define      COMMAND_INDEX_IS_LEGAL            16
+  handledCommands.append( "captures" );
+#define      COMMAND_INDEX_CAPTURES            17
 }
 
 /**
@@ -75,6 +89,7 @@ void  GtpHandler::receivedMessage( QString m )
         respond( true, id, handledCommands.contains( arguments ) ? "true" : "false" );
         break;
 
+      case COMMAND_INDEX_HELP:
       case COMMAND_INDEX_LIST_COMMANDS:
         msg="";
         foreach ( cmd, handledCommands )
@@ -84,7 +99,6 @@ void  GtpHandler::receivedMessage( QString m )
 
       case COMMAND_INDEX_BOARDSIZE:
         if ( !checkGpNull( id ) ) break;
-        qDebug( arguments.toUtf8().data() );
         sz = arguments.toInt();
         if ( sz < 5 )
           { respond( false, id, "unacceptable size" );
@@ -96,6 +110,14 @@ void  GtpHandler::receivedMessage( QString m )
             break;
           }
         respond( true, id );
+        break;
+
+      case COMMAND_INDEX_QUERY_BOARDSIZE:
+        if ( !checkGpNull( id ) ) break;
+        if ( !checkBpNull( id ) ) break;
+        if ( gp->bp->Xsize == gp->bp->Ysize )
+          { respond( true, id, QString::number( gp->bp->Xsize ) ); break; }
+        respond( true, id, QString::number( gp->bp->Xsize )+","+QString::number( gp->bp->Ysize ) );
         break;
 
       case COMMAND_INDEX_CLEAR_BOARD:
@@ -110,9 +132,32 @@ void  GtpHandler::receivedMessage( QString m )
         respond( true, id );
         break;
 
+      case COMMAND_INDEX_GET_KOMI:
+        if ( !checkGpNull( id ) ) break;
+        respond( true, id, QString::number( gp->komi ) );
+        break;
+
       case COMMAND_INDEX_SHOWBOARD:
         if ( !checkGpNull( id ) ) break;
         respond( true, id, gp->showBoard() );
+        break;
+
+      case COMMAND_INDEX_BLACK:
+        if ( !checkBpNull( id ) ) break;
+        if ( !gp->bp->vertexToXY( arguments, &x, &y ) )
+          { respond( false, id, "invalid vertex "+arguments ); break; }
+        if ( !gp->playGoishi( x, y, 0 ) )
+          { respond( false, id, "illegal move "+arguments ); break; }
+        respond( true, id );
+        break;
+
+      case COMMAND_INDEX_PLAYWHITE:
+        if ( !checkBpNull( id ) ) break;
+        if ( !gp->bp->vertexToXY( arguments, &x, &y ) )
+          { respond( false, id, "invalid vertex "+arguments ); break; }
+        if ( !gp->playGoishi( x, y, 1 ) )
+          { respond( false, id, "illegal move "+arguments ); break; }
+        respond( true, id );
         break;
 
       case COMMAND_INDEX_PLAY:
@@ -120,17 +165,39 @@ void  GtpHandler::receivedMessage( QString m )
         c = interpretColor( args.at(0) );
         if (( c < 0 ) || ( c > gp->np ))
           { respond( false, id, "invalid color "+args.at(0) ); break; }
-        if ( gp->bp == nullptr )
-          { respond( false, id, "Goban pointer is null" ); break; }
+        if ( !checkBpNull( id ) ) break;
         if ( !gp->bp->vertexToXY( args.at(1), &x, &y ) )
           { respond( false, id, "invalid vertex "+args.at(1) ); break; }
-        if ( gp->tp == nullptr )
-          { respond( false, id, "Shiko pointer is null" ); break; }
+        if ( !checkTpNull( id ) ) break;
         if ( !gp->tp->legalMove( x, y, c ) )
           { respond( false, id, "illegal move "+args.at(0)+" "+args.at(1) ); break; }
         if ( !gp->playGoishi( x, y, c ) )
           { respond( false, id, "problem playing "+args.at(0)+" "+args.at(1) ); break; }
         respond( true, id );
+        break;
+
+      case COMMAND_INDEX_IS_LEGAL:
+        if ( !checkGpNull( id ) ) break;
+        c = interpretColor( args.at(0) );
+        if (( c < 0 ) || ( c > gp->np ))
+          { respond( false, id, "invalid color "+args.at(0) ); break; }
+        if ( !checkBpNull( id ) ) break;
+        if ( !gp->bp->vertexToXY( args.at(1), &x, &y ) )
+          { respond( false, id, "invalid vertex "+args.at(1) ); break; }
+        if ( !checkTpNull( id ) ) break;
+        respond( true, id, gp->tp->legalMove( x, y, c ) ? "1" : "0" );
+        break;
+
+      case COMMAND_INDEX_CAPTURES:
+        if ( !checkGpNull( id ) ) break;
+        c = interpretColor( arguments );
+        if (( c < 0 ) || ( c > gp->np ))
+          { respond( false, id, "invalid color "+arguments ); break; }
+        if ( gp->spl.size() <= c )
+          { respond( false, id, "no gosu found for "+arguments ); break; }
+        if ( gp->spl.at(c) == nullptr )
+          { respond( false, id, arguments+" gosu is null" ); break; }
+        respond( true, id, QString::number( gp->spl.at(c)->lid.size() ) );
         break;
 
       default:
@@ -147,6 +214,30 @@ void  GtpHandler::receivedMessage( QString m )
 bool  GtpHandler::checkGpNull( qint32 id )
 { if ( gp == nullptr )
     { respond( false, id, "game_object_null" );
+      return false;
+    }
+  return true;
+}
+
+bool  GtpHandler::checkBpNull( qint32 id )
+{ if ( gp == nullptr )
+    { respond( false, id, "game pointer null" );
+      return false;
+    }
+  if ( gp->bp == nullptr )
+    { respond( false, id, "Goban pointer null" );
+      return false;
+    }
+  return true;
+}
+
+bool  GtpHandler::checkTpNull( qint32 id )
+{ if ( gp == nullptr )
+    { respond( false, id, "game pointer null" );
+      return false;
+    }
+  if ( gp->tp == nullptr )
+    { respond( false, id, "Shiko pointer null" );
       return false;
     }
   return true;
@@ -223,9 +314,10 @@ qint32  GtpHandler::interpretColor( QString cs )
     c = 0;
   if (( cs == "w" ) || ( cs == "white" ))
     c = 1;
+  bool ok = true;
   if ( c < 0 )
-    c = cs.toInt();
-  if (( c >= gp->np ) || ( c < 0 ))
+    c = cs.toInt(&ok);
+  if (( c >= gp->np ) || ( c < 0 ) || !ok )
     c = -1;
   return c;
 }

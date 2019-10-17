@@ -21,6 +21,8 @@ public:
      QString  trimComments( QString m );
         void  respond( bool pf, qint32 id = -1, QString msg = "" );
         bool  checkGpNull( qint32 id );
+        bool  checkBpNull( qint32 id );
+        bool  checkTpNull( qint32 id );
       qint32  interpretColor( QString cs );
 
 signals:
