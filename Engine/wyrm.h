@@ -11,17 +11,24 @@ class Wyrm : public QObject
 {
     Q_OBJECT
 public:
-    explicit Wyrm(Goishi *ipp, Shiko *parent = nullptr);
-        void addGoishi( Goishi *ip );
-        void addWyrm( Wyrm *wp );
-      qint32 color();
+    explicit  Wyrm(Goishi *ipp, Shiko *parent = nullptr);
+        void  addGoishi( Goishi *ip );
+        void  mergeLibertyList( QList<qint32> );
+QList<qint32> getLibertyList( Goishi *ip );
+        void  addWyrm( Wyrm *wp );
+      qint32  color();
+        bool  removeLiberty( qint32 );
+        bool  addLiberty( qint32 );
+        bool  inAtari() { return ( libertyList.size() == 1 ); }
+     QString  show();
 
 signals:
 
 public slots:
 
 public:
-  QList<QPointer<Goishi> > ipl;
+  QList<QPointer<Goishi> > ipl;          // List of all Goishi in this Wyrm
+             QList<qint32> libertyList;  // List of all this Wyrm's liberties, by grid index
 
 };
 

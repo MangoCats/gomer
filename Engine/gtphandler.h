@@ -35,6 +35,8 @@ public slots:
 public:
     QPointer<Game> gp;
       QStringList  handledCommands;
+             bool  showBoardAfterPlay;
+             bool  debugWyrms;
 };
 
 #endif // GTPHANDLER_H

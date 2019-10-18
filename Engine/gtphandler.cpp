@@ -1,49 +1,62 @@
 #include "gtphandler.h"
 #include "console.h"
+#include "config.h"
 
 GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), gp(parent)
 { qDebug( "GtpHandler constructor" );
+  showBoardAfterPlay = false;
+  debugWyrms = true;
   connect( this, SIGNAL(quit()), app, SLOT(quit()) );
   Console *cp = new Console(this);
   connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
   connect( this, SIGNAL(response(QString)), cp,   SLOT(sendResponse(QString))    );
   cp->run();
   handledCommands.append( "quit" );
-#define      COMMAND_INDEX_QUIT                 0
+#define      COMMAND_INDEX_QUIT                      0
   handledCommands.append( "protocol_version" );
-#define      COMMAND_INDEX_PROTOCOL_VERSION     1
+#define      COMMAND_INDEX_PROTOCOL_VERSION          1
   handledCommands.append( "name" );
-#define      COMMAND_INDEX_NAME                 2
+#define      COMMAND_INDEX_NAME                      2
   handledCommands.append( "version" );
-#define      COMMAND_INDEX_VERSION              3
+#define      COMMAND_INDEX_VERSION                   3
   handledCommands.append( "known_command" );
-#define      COMMAND_INDEX_KNOWN_COMMAND        4
+#define      COMMAND_INDEX_KNOWN_COMMAND             4
   handledCommands.append( "list_commands" );
-#define      COMMAND_INDEX_LIST_COMMANDS        5
+#define      COMMAND_INDEX_LIST_COMMANDS             5
   handledCommands.append( "help" );
-#define      COMMAND_INDEX_HELP                 6
+#define      COMMAND_INDEX_HELP                      6
   handledCommands.append( "boardsize" );
-#define      COMMAND_INDEX_BOARDSIZE            7
+#define      COMMAND_INDEX_BOARDSIZE                 7
   handledCommands.append( "query_boardsize" );
-#define      COMMAND_INDEX_QUERY_BOARDSIZE      8
+#define      COMMAND_INDEX_QUERY_BOARDSIZE           8
   handledCommands.append( "clear_board" );
-#define      COMMAND_INDEX_CLEAR_BOARD          9
+#define      COMMAND_INDEX_CLEAR_BOARD               9
   handledCommands.append( "komi" );
-#define      COMMAND_INDEX_KOMI                10
+#define      COMMAND_INDEX_KOMI                     10
   handledCommands.append( "get_komi" );
-#define      COMMAND_INDEX_GET_KOMI            11
+#define      COMMAND_INDEX_GET_KOMI                 11
   handledCommands.append( "showboard" );
-#define      COMMAND_INDEX_SHOWBOARD           12
+#define      COMMAND_INDEX_SHOWBOARD                12
   handledCommands.append( "black" );
-#define      COMMAND_INDEX_BLACK               13
+#define      COMMAND_INDEX_BLACK                    13
   handledCommands.append( "playwhite" );
-#define      COMMAND_INDEX_PLAYWHITE           14
+#define      COMMAND_INDEX_PLAYWHITE                14
   handledCommands.append( "play" );
-#define      COMMAND_INDEX_PLAY                15
+#define      COMMAND_INDEX_PLAY                     15
+  handledCommands.append( "p" );
+#define      COMMAND_INDEX_P                        16
+  handledCommands.append( "showboard_after_play" );
+#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     17
+  handledCommands.append( "sap" );
+#define      COMMAND_INDEX_SAP                      18
+  handledCommands.append( "noboard_after_play" );
+#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       19
+  handledCommands.append( "nap" );
+#define      COMMAND_INDEX_NAP                      20
   handledCommands.append( "is_legal" );
-#define      COMMAND_INDEX_IS_LEGAL            16
+#define      COMMAND_INDEX_IS_LEGAL                 21
   handledCommands.append( "captures" );
-#define      COMMAND_INDEX_CAPTURES            17
+#define      COMMAND_INDEX_CAPTURES                 22
 }
 
 /**
@@ -82,7 +95,11 @@ void  GtpHandler::receivedMessage( QString m )
         break;
 
       case COMMAND_INDEX_VERSION:
-        respond( true, id, "0.0.1" );
+        msg = QString( "%1.%2.%3" )
+              .arg( GomerEngine_VERSION_MAJOR )
+              .arg( GomerEngine_VERSION_MINOR )
+              .arg( GomerEngine_VERSION_PATCH );
+        respond( true, id, msg );
         break;
 
       case COMMAND_INDEX_KNOWN_COMMAND:
@@ -144,35 +161,62 @@ void  GtpHandler::receivedMessage( QString m )
 
       case COMMAND_INDEX_BLACK:
         if ( !checkBpNull( id ) ) break;
-        if ( !gp->bp->vertexToXY( arguments, &x, &y ) )
-          { respond( false, id, "invalid vertex "+arguments ); break; }
-        if ( !gp->playGoishi( x, y, 0 ) )
-          { respond( false, id, "illegal move "+arguments ); break; }
+        if ( arguments == "pass" )
+          gp->pass();
+         else
+          { if ( !gp->bp->vertexToXY( arguments, &x, &y ) )
+              { respond( false, id, "invalid vertex "+arguments ); break; }
+            if ( !gp->playGoishi( x, y, 0 ) )
+              { respond( false, id, "illegal move "+arguments ); break; }
+          }
         respond( true, id );
         break;
 
       case COMMAND_INDEX_PLAYWHITE:
         if ( !checkBpNull( id ) ) break;
-        if ( !gp->bp->vertexToXY( arguments, &x, &y ) )
-          { respond( false, id, "invalid vertex "+arguments ); break; }
-        if ( !gp->playGoishi( x, y, 1 ) )
-          { respond( false, id, "illegal move "+arguments ); break; }
+        if ( arguments == "pass" )
+          gp->pass();
+         else
+          { if ( !gp->bp->vertexToXY( arguments, &x, &y ) )
+              { respond( false, id, "invalid vertex "+arguments ); break; }
+            if ( !gp->playGoishi( x, y, 1 ) )
+              { respond( false, id, "illegal move "+arguments ); break; }
+          }
         respond( true, id );
         break;
 
       case COMMAND_INDEX_PLAY:
+      case COMMAND_INDEX_P:
         if ( !checkGpNull( id ) ) break;
         c = interpretColor( args.at(0) );
         if (( c < 0 ) || ( c > gp->np ))
           { respond( false, id, "invalid color "+args.at(0) ); break; }
         if ( !checkBpNull( id ) ) break;
-        if ( !gp->bp->vertexToXY( args.at(1), &x, &y ) )
-          { respond( false, id, "invalid vertex "+args.at(1) ); break; }
-        if ( !checkTpNull( id ) ) break;
-        if ( !gp->tp->legalMove( x, y, c ) )
-          { respond( false, id, "illegal move "+args.at(0)+" "+args.at(1) ); break; }
-        if ( !gp->playGoishi( x, y, c ) )
-          { respond( false, id, "problem playing "+args.at(0)+" "+args.at(1) ); break; }
+        if ( args.at(1) == "pass" )
+          gp->pass();
+         else
+          { if ( !gp->bp->vertexToXY( args.at(1), &x, &y ) )
+              { respond( false, id, "invalid vertex "+args.at(1) ); break; }
+            if ( !checkTpNull( id ) ) break;
+            if ( !gp->tp->legalMove( x, y, c ) )
+              { respond( false, id, "illegal move "+args.at(0)+" "+args.at(1) ); break; }
+            if ( !gp->playGoishi( x, y, c ) )
+              { respond( false, id, "problem playing "+args.at(0)+" "+args.at(1) ); break; }
+          }
+        msg = showBoardAfterPlay ? gp->showBoard() : "";
+        msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
+        respond( true, id, msg );
+        break;
+
+      case COMMAND_INDEX_SHOWBOARD_AFTER_PLAY:
+      case COMMAND_INDEX_SAP:
+        showBoardAfterPlay = true;
+        respond( true, id );
+        break;
+
+      case COMMAND_INDEX_NOBOARD_AFTER_PLAY:
+      case COMMAND_INDEX_NAP:
+        showBoardAfterPlay = false;
         respond( true, id );
         break;
 

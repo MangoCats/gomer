@@ -30,6 +30,9 @@ public:
         bool resizeGoban( qint32 xs, qint32 ys );
      QString showBoard();
         bool playGoishi( qint32 x, qint32 y, qint32 c );
+        void capture( Wyrm * );
+        void pass();
+        void advancePlayer();
 
 signals:
 

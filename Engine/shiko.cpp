@@ -33,12 +33,52 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
     { qDebug( "Shiko::legalMove Goishi already present at %d, %d", x, y );
       return false; // Goishi already placed there
     }
-
-  // TODO: Check for self capture
+  if ( isSelfCapture(x,y,c) )
+    { qDebug( "Shiko::legalMove %d, %d would result in self capture", x, y );
+      return false;
+    }
 
   // TODO: Check gp->stateHistory for Ko
 
   return true;
+}
+
+/**
+ * @brief Shiko::isSelfCapture
+ * @param x
+ * @param y
+ * @param c
+ * @return true if placing a color c Goishi at x,y would result in self capture
+ */
+bool Shiko::isSelfCapture( qint32 x, qint32 y, qint32 c )
+{ if ( bp == nullptr )
+    { qDebug( "Shiko::isSelfCapture Goban null" );
+      return true;
+    }
+  // Check for open neighbors
+  if ( x > 0 )           if ( selfCaptureRelief( x-1,y,c ) ) return false;
+  if ( x < bp->Xsize-1 ) if ( selfCaptureRelief( x+1,y,c ) ) return false;
+  if ( y > 0 )           if ( selfCaptureRelief( x,y-1,c ) ) return false;
+  if ( y < bp->Ysize-1 ) if ( selfCaptureRelief( x,y+1,c ) ) return false;
+  return true;
+}
+
+/**
+ * @brief Shiko::selfCaptureRelief
+ * @param x
+ * @param y
+ * @param c
+ * @return true if this neighboring grid provides relief from self capture
+ */
+bool Shiko::selfCaptureRelief( qint32 x, qint32 y, qint32 c )
+{ Goishi *ip = bp->goishiAt( x,y );
+  if ( ip == nullptr )
+    return true; // Empty grid - new liberty
+  if (( ip->color == c ) && ( !ip->wp->inAtari() ))
+    return true; // Friendly Wyrm not in Atari
+  if (( ip->color != c ) && ( ip->wp->inAtari() ))
+    return true; // Opponent Wyrm in Atari
+  return false;
 }
 
 /**
@@ -47,44 +87,156 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
  */
 void Shiko::goishiPlacedOnGoban( Goishi *ip )
 { if ( ip == nullptr )
-    { qDebug( "WARNING: goishiPlacedOnGoban( Goishi == nullptr)" );
+    { qDebug( "WARNING: goishiPlacedOnGoban( Goishi == nullptr )" );
       return;
     }
-  QList<Goishi *> nipl; // Make a list of "friendly neighbors"
-  Goishi *nip;
-  if ( ip->x > 0 )
-    { nip = bp->goishiAt( ip->x-1, ip->y );
-      if ( nip != nullptr ) if ( nip->color == ip->color ) nipl.append( nip );
+  if ( bp == nullptr )
+    { qDebug( "WARNING: goishiPlacedOnGoban( Goban nullptr )" );
+      return;
     }
-  if ( ip->x < (bp->Xsize - 1) )
-    { nip = bp->goishiAt( ip->x+1, ip->y );
-      if ( nip != nullptr ) if ( nip->color == ip->color ) nipl.append( nip );
+  QList<Wyrm *> fwpl; // Make a list of "friendly neighbors' Wyrms"
+  QList<Wyrm *> owpl; // Make a list of "opponent neighbors' Wyrms"
+  if ( ip->x > 0 )               collectWyrm( &fwpl, &owpl, ip->x-1, ip->y, ip->color );
+  if ( ip->x < (bp->Xsize - 1) ) collectWyrm( &fwpl, &owpl, ip->x+1, ip->y, ip->color );
+  if ( ip->y > 0 )               collectWyrm( &fwpl, &owpl, ip->x, ip->y-1, ip->color );
+  if ( ip->y < (bp->Ysize - 1) ) collectWyrm( &fwpl, &owpl, ip->x, ip->y+1, ip->color );
+
+  foreach( Wyrm *owp, owpl )
+    { if ( owp->inAtari() )
+        { addCaptureLiberties( owp );
+          gp->capture( owp );
+          owpl.removeAt( owpl.indexOf(owp) );
+        }
     }
-  if ( ip->y > 0 )
-    { nip = bp->goishiAt( ip->x, ip->y-1 );
-      if ( nip != nullptr ) if ( nip->color == ip->color ) nipl.append( nip );
-    }
-  if ( ip->y < (bp->Ysize - 1) )
-    { nip = bp->goishiAt( ip->x, ip->y+1 );
-      if ( nip != nullptr ) if ( nip->color == ip->color ) nipl.append( nip );
-    }
-  if ( nipl.size() == 0 )
-    { wpl.append( new Wyrm(ip,this) );
-      return; // No friendly neighbors, new Wyrm
-    }
-  if ( nipl.size() == 1 )
-    { if ( nipl.at(0)->wp == nullptr )
+
+  if ( fwpl.size() == 0 ) // No friendly neighbors, new Wyrm
+    wpl.append( new Wyrm(ip,this) );
+   else if ( fwpl.size() == 1 )
+    { if ( fwpl.at(0) == nullptr )
         { qDebug( "WARNING: Shiko::goishiPlacedOnGoban neighbor wp is nullptr" );
           return;
         }
-      nipl.at(0)->wp->addGoishi( ip );
+      fwpl.at(0)->addGoishi( ip );
+    }
+   else
+    { // Multiple friendly Wyrms will be joined by this newly placed Goishi
+      fwpl.at(0)->addGoishi( ip );
+      int i = 1;
+      while ( i < fwpl.size() )
+        mergeWyrms( fwpl.at(0), fwpl.at(i++) );
+    }
+
+  // Take away the opponent liberties at the newly placed Goishi grid location
+  foreach ( Wyrm *owp, owpl )
+    owp->removeLiberty( bp->xyToIndex( ip->x, ip->y ) );
+}
+
+/**
+ * @brief Shiko::addCaptureLiberties - wp is being captured, give liberties to all adjacent opponents of its Goishi
+ * @param wp - captured Wyrm
+ */
+void  Shiko::addCaptureLiberties( Wyrm *wp )
+{ if ( wp == nullptr )
+    { qDebug( "Shiko::addCaptureLiberties() fed a nullptr Wyrm" );
       return;
     }
-  // Multiple friendly Wyrms will be joined by this newly placed Goishi
-  nipl.at(0)->wp->addGoishi( ip );
-  int i = 1;
-  while ( i < nipl.size() )
-    mergeWyrms( nipl.at(0)->wp, nipl.at(i++)->wp );
+  foreach( Goishi *ip, wp->ipl )
+    addCaptureLiberties( ip );
+}
+
+/**
+ * @brief Shiko::addCaptureLiberties - ip is being captured, give liberties to all adjacent opponents
+ * @param ip - captured Goishi
+ */
+void  Shiko::addCaptureLiberties( Goishi *ip )
+{ if ( ip == nullptr )
+    { qDebug( "Shiko::addCaptureLiberties() fed a nullptr Goishi" );
+      return;
+    }
+  if ( bp == nullptr )
+    { qDebug( "Shiko::addCaptureLiberties() null Goban" );
+      return;
+    }
+  qint32 x = ip->x;
+  qint32 y = ip->y;
+  qint32 c = ip->color;
+  qint32 i = bp->xyToIndex(x,y);
+  if ( x > 0 )           addCaptureLiberty( x-1,y,i,c );
+  if ( x < bp->Xsize-1 ) addCaptureLiberty( x+1,y,i,c );
+  if ( y > 0 )           addCaptureLiberty( x,y-1,i,c );
+  if ( y < bp->Ysize-1 ) addCaptureLiberty( x,y+1,i,c );
+}
+
+/**
+ * @brief Shiko::addCaptureLiberty - a neighboring Goishi of color c is being captured, add this liberty if applicable
+ * @param x - coordinates of Goishi that might gain a liberty
+ * @param y - coordinates of Goishi that might gain a liberty
+ * @param i - index of the liberty that might be gained
+ * @param c - color of the Goishi being captured
+ */
+void  Shiko::addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c )
+{ Goishi *ip = bp->goishiAt( x, y );
+  if ( ip == nullptr )
+    return;
+  if ( ip->color != c )
+    if ( ip->wp != nullptr )
+      ip->wp->addLiberty( i );
+}
+
+/**
+ * @brief Shiko::wyrmCaptured - called from the Game which has taken care of moving the Goishi from Goban to Gosu
+ *   Shiko needs to remove this Wyrm from the list of Wyrms on the board.
+ * @param wp - captured Wyrm
+ */
+void Shiko::wyrmCaptured( Wyrm *wp )
+{ if ( wp == nullptr )
+    { qDebug( "Shiko::wyrmCaptured( nullptr )" );
+      return;
+    }
+  if ( !wpl.contains( wp ) )
+    { qDebug( "ERROR: Shiko::wyrmCaptured() %s not found in wpl", qPrintable( wp->show() ) );
+      return;
+    }
+  wpl.removeAt( wpl.indexOf( wp ) );
+}
+
+/**
+ * @brief Shiko::wyrmAt
+ * @param x - coordinate to examine
+ * @param y - coordinate to examine
+ * @return pointer to the Wyrm at the passed coordinate, or nullptr if no Wyrm / Goishi present
+ */
+Wyrm *Shiko::wyrmAt( qint32 x, qint32 y )
+{ if ( bp == nullptr )        return nullptr;
+  if ( !bp->onBoard( x, y ) ) return nullptr;
+  Goishi *ip = bp->goishiAt( x, y );
+  if ( ip == nullptr )        return nullptr;
+  if ( ip->wp == nullptr )
+    qDebug( "Unexpected: all Goishi should have a valid Wyrm." );
+  return ip->wp;
+}
+
+/**
+ * @brief Shiko::collectWyrm - collect Wyrms, sorting them into friendly and opponent lists
+ * @param fwplp - Pointer to the Friendly Wyrm Pointer List
+ * @param owplp - Pointer to the Opponent Wyrm Pointer List
+ * @param x - coordinate to look for a new Wyrm to collect
+ * @param y - coordinate to look for a new Wyrm to collect
+ * @param c - friendly color, all others are opponents
+ * @return color of Wyrm collected (even if already in list), or -1 if none found
+ */
+qint32 Shiko::collectWyrm( QList<Wyrm *> *fwplp, QList<Wyrm *> *owplp, qint32 x, qint32 y, qint32 c )
+{ Wyrm *wp = wyrmAt( x, y );
+  if ( wp == nullptr )
+    return -1;
+  if ( wp->color() == c )
+    { if ( !fwplp->contains( wp ) )
+        fwplp->append( wp );
+      return c;
+    }
+  if ( !owplp->contains( wp ) )
+    owplp->append( wp );
+  return wp->color();
 }
 
 /**
@@ -108,4 +260,15 @@ void Shiko::mergeWyrms( Wyrm *wp, Wyrm *wp2 )
       return;
     }
   wpl.removeAt( i );
+}
+
+/**
+ * @brief Shiko::showWyrms - debug tool, shows all Wyrm data
+ */
+QString Shiko::showWyrms()
+{ QString s = "\nWyrms:\n";
+  foreach( Wyrm *wp, wpl )
+    s.append( wp->show() );
+  s.append( "\n" );
+  return s;
 }

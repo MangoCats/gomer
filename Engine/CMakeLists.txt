@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 3.5)
 
+# See also: https://cmake.org/cmake-tutorial/
+
 project(GomerEngine LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set (GomerEngine_VERSION_MAJOR 0)
+set (GomerEngine_VERSION_MINOR 0)
+set (GomerEngine_VERSION_PATCH 1)
+
+# configure a header file to pass some of the CMake settings
+# to the source code, then add the binary tree to the search
+# path for include files so that we will find config.h
+configure_file    ( "${PROJECT_SOURCE_DIR}/config.h.in"
+                    "${PROJECT_BINARY_DIR}/config.h" )
+include_directories("${PROJECT_BINARY_DIR}")
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -13,7 +26,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5Core)
 
-add_executable(GomerEngine main.cpp
+add_executable(GomerEngine main.cpp       config.h.in
                            console.cpp    console.h
                            game.cpp       game.h
                            goban.cpp      goban.h
@@ -24,4 +37,5 @@ add_executable(GomerEngine main.cpp
                            shiko.cpp      shiko.h
                            wyrm.cpp       wyrm.h
               )
+
 target_link_libraries(GomerEngine Qt5::Core)

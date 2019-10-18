@@ -112,6 +112,32 @@ Goishi *Goban::takeGoishi( qint32 i )
 }
 
 /**
+ * @brief Goban::removeGoishi - remove the passed Goishi from the board
+ * @param ip - Goishi pointer
+ */
+void Goban::removeGoishi( Goishi *ip )
+{ if ( ip == nullptr )
+    { qDebug( "WARNING: Goban::removeGoishi( nullptr )" );
+      return;
+    }
+  qint32 i = xyToIndex( ip->x, ip->y );
+  if (( i < 0 ) || ( i >= nPoints() ))
+    { qDebug( "WARNING: Goban::removeGoishi() @ %d, %d not on board", ip->x, ip->y );
+      return;
+    }
+  if ( grid.at(i) == nullptr )
+    { qDebug( "WARNING: Goban::removeGoishi() no Goishi present @ %d, %d", ip->x, ip->y );
+      return;
+    }
+  if ( grid.at(i) != ip )
+    { qDebug( "ERROR: Goban::removeGoishi() different Goishi present @ %d, %d", ip->x, ip->y );
+      return;
+    }
+  grid.replace( i, nullptr );
+  emit boardChanged( state() );
+}
+
+/**
  * @brief Goban::placeGoishi - place a Goishi at linear index i
  * @param ip - pointer to Goishi to place
  * @param i - linear index into the array
@@ -136,7 +162,7 @@ bool Goban::placeGoishi( Goishi *ip, qint32 i )
 }
 
 /**
- * @brief Goban::placeGoishiAt - place a Goishi on the Goban at the given coordinates
+ * @brief Goban::placeGoishiAt - place a Goishi on the Goban at the given grid coordinates
  * @param ip - pointer to Goishi to place
  * @param x - coordinate to place at
  * @param y - coordinate to place at
@@ -151,7 +177,7 @@ bool Goban::placeGoishiAt( Goishi *ip, qint32 x, qint32 y )
     { qDebug( "WARNING: Goban::placeGoishiAt(%d,%d), Goishi already present there.",x,y );
       return false;
     }
-  bool success = placeGoishi( ip, x + Xsize * y );
+  bool success = placeGoishi( ip, xyToIndex( x, y ) );
   if ( success )
     { ip->x = x;
       ip->y = y;
@@ -213,6 +239,50 @@ bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
 }
 
 /**
+ * @brief Goban::indexToXY
+ * @param i - index to convert
+ * @param x - pointer to X coordinate variable
+ * @param y - pointer to Y coordinate variable
+ * @return true if successful
+ */
+bool  Goban::indexToXY( qint32 i, qint32 *x, qint32 *y )
+{ if (( i < 0 ) || ( i >= nPoints() ))
+    return false;
+  *x = i % Xsize;
+  *y = i / Xsize;
+  return true;
+}
+
+/**
+ * @brief indexToVertex
+ * @param i - index to convert
+ * @return vertex string, or empty if there is a problem
+ */
+QString  Goban::indexToVertex( qint32 i )
+{ qint32 x,y;
+  if ( !indexToXY( i, &x, &y ) )
+    return "";
+  return xyToVertex( x, y );
+}
+
+/**
+ * @brief Goban::xyToVertex
+ * @param x - coordinate to convert
+ * @param y - coordinate to convert
+ * @return vertex string, or empty if there is a problem
+ */
+QString  Goban::xyToVertex( qint32 x, qint32 y )
+{ if (( x < 0 ) ||
+      ( y < 0 ) ||
+      ( x >= Xsize ) ||
+      ( y >= Ysize ) ||
+      ( x >= Xlabels.size() ) ||
+      ( y >= Ylabels.size() ))
+    return "";
+  return Xlabels.at(x)+Ylabels.at(y);
+}
+
+/**
  * @brief Goban::goishiAt
  * @param x - coordinate to get Goishi pointer for
  * @param y - coordinate to get Goishi pointer for
@@ -254,8 +324,12 @@ QString Goban::showBoard()
     { bl = centerString( Ylabels.at(y), -2 ) + " ";
       for ( qint32 x = 0 ; x < Xsize ; x++ )
         bl.append( asciiGoishi( x, y ) );
-      bl.append( centerString( Ylabels.at(y), 2 ) + "\n" );
-      bs.append( bl );
+      bl.append( centerString( Ylabels.at(y), 2 ) );
+      if ( y < gp->np )
+        { bl.append( ( y == gp->pt ) ? " *" : "  " );
+          bl.append( goishiChar.mid( y+2, 1 )+" "+QString::number( gp->spl.at(y)->lid.size() ) );
+        }
+      bs.append( bl  + "\n" );
       y--;
     }
   bs.append( xAxisLabels() );

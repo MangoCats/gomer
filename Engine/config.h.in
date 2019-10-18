@@ -1,0 +1,11 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// the configured options and settings for GomerEngine
+#define GomerEngine_VERSION_MAJOR @GomerEngine_VERSION_MAJOR@
+#define GomerEngine_VERSION_MINOR @GomerEngine_VERSION_MINOR@
+#define GomerEngine_VERSION_PATCH @GomerEngine_VERSION_PATCH@
+
+// Someday: https://cmake.org/pipermail/cmake/2018-October/068389.html
+
+#endif // CONFIG_H

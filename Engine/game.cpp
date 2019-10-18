@@ -164,12 +164,49 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
       spl.at(c)->addGoishiToBowl( ip ); // Returning Goishi to bowl it was taken from
       return false;
     }
-  if ( ++pt >= np ) // Advance player turn to the next player, reset to player 0 when last player has played
-    pt = 0;
-
-  // TODO: execute captures, if any
 
   tp->goishiPlacedOnGoban( ip ); // Updates Wyrms
 
+  advancePlayer();
+
   return true;
+}
+/**
+ * @brief Game::advancePlayer - Advance player turn to the next player, reset to player 0 when last player has played
+ */
+void Game::advancePlayer()
+{ if ( ++pt >= np )
+    pt = 0;
+}
+
+/**
+ * @brief Game::pass - handle the pass move
+ */
+void Game::pass()
+{ advancePlayer();
+  // TODO: check for all players passed, end of game
+}
+
+/**
+ * @brief Game::capture - remove the Wyrm's stones from the board to the appropriate Gosu lid
+ * @param wp - pointer to the captured Wyrm
+ */
+void Game::capture( Wyrm *wp )
+{ if ( wp == nullptr )
+    { qDebug( "Game::capture fed a nullptr Wyrm" );
+      return;
+    }
+  if ( bp == nullptr )
+    { qDebug( "Game::capture Goban null" );
+      return;
+    }
+  foreach( Goishi *ip, wp->ipl )
+    { if ( ip == nullptr )
+        qDebug( "Game::capture Wyrm contains a nullptr Goishi" );
+       else
+        { bp->removeGoishi( ip );
+          spl.at( pt )->addGoishiToLid( ip );
+        }
+    }
+  tp->wyrmCaptured( wp );
 }
