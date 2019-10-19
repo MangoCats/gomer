@@ -296,6 +296,14 @@ Goishi *Goban::goishiAt( qint32 x, qint32 y )
   return grid.at( x + Xsize * y );
 }
 
+Goishi *Goban::goishiAt( QString pos )
+{ qint32 x = -1;
+  qint32 y = -1;
+  if ( vertexToXY( pos, &x, &y ) )
+    return goishiAt( x, y );
+  return nullptr;
+}
+
 /**
  * @brief Goban::onBoard
  * @param x

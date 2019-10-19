@@ -35,28 +35,30 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_KOMI                     10
   handledCommands.append( "get_komi" );
 #define      COMMAND_INDEX_GET_KOMI                 11
+  handledCommands.append( "color" );
+#define      COMMAND_INDEX_COLOR                    12
   handledCommands.append( "showboard" );
-#define      COMMAND_INDEX_SHOWBOARD                12
+#define      COMMAND_INDEX_SHOWBOARD                13
   handledCommands.append( "black" );
-#define      COMMAND_INDEX_BLACK                    13
+#define      COMMAND_INDEX_BLACK                    14
   handledCommands.append( "playwhite" );
-#define      COMMAND_INDEX_PLAYWHITE                14
+#define      COMMAND_INDEX_PLAYWHITE                15
   handledCommands.append( "play" );
-#define      COMMAND_INDEX_PLAY                     15
+#define      COMMAND_INDEX_PLAY                     16
   handledCommands.append( "p" );
-#define      COMMAND_INDEX_P                        16
+#define      COMMAND_INDEX_P                        17
   handledCommands.append( "showboard_after_play" );
-#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     17
+#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     18
   handledCommands.append( "sap" );
-#define      COMMAND_INDEX_SAP                      18
+#define      COMMAND_INDEX_SAP                      19
   handledCommands.append( "noboard_after_play" );
-#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       19
+#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       20
   handledCommands.append( "nap" );
-#define      COMMAND_INDEX_NAP                      20
+#define      COMMAND_INDEX_NAP                      21
   handledCommands.append( "is_legal" );
-#define      COMMAND_INDEX_IS_LEGAL                 21
+#define      COMMAND_INDEX_IS_LEGAL                 22
   handledCommands.append( "captures" );
-#define      COMMAND_INDEX_CAPTURES                 22
+#define      COMMAND_INDEX_CAPTURES                 23
 }
 
 /**
@@ -79,6 +81,7 @@ void  GtpHandler::receivedMessage( QString m )
   QStringList args = arguments.split(QRegExp("[\r\n\t ]+"), QString::SkipEmptyParts);
   QString msg,cmd;
   qint32 sz,c,x,y;
+  Goishi *ip;
   bool success;
   switch ( handledCommands.indexOf(command_name) )
     { case COMMAND_INDEX_QUIT:
@@ -154,6 +157,20 @@ void  GtpHandler::receivedMessage( QString m )
         respond( true, id, QString::number( gp->komi ) );
         break;
 
+      case COMMAND_INDEX_COLOR:
+        if ( !checkBpNull( id ) ) break;
+        ip = gp->bp->goishiAt( arguments );
+        if ( ip == nullptr )
+          { respond( true, id, "empty" ); break; }
+        if ( ip->color == 0 )
+          msg = "black";
+         else if ( ip->color == 1 )
+          msg = "white";
+         else
+          msg = QString::number( ip->color );
+        respond( true, id, msg );
+
+        break;
       case COMMAND_INDEX_SHOWBOARD:
         if ( !checkGpNull( id ) ) break;
         respond( true, id, gp->showBoard() );

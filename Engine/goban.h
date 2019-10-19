@@ -34,6 +34,7 @@ public:
      QString  indexToVertex( qint32 i );
      QString  xyToVertex( qint32 x, qint32 y );
       Goishi *goishiAt( qint32 x, qint32 y );
+      Goishi *goishiAt( QString pos );
         bool  onBoard( qint32 x, qint32 y );
      QString  showBoard();
      QString  xAxisLabels();
