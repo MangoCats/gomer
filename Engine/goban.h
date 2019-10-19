@@ -5,6 +5,7 @@ class Game;
 class Goishi;
 #include <QObject>
 #include <QPointer>
+#include <QVector>
 #include "game.h"
 #include "goishi.h"
 
