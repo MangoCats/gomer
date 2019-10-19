@@ -3,7 +3,7 @@
 #include "config.h"
 
 GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), gp(parent)
-{ qDebug( "GtpHandler constructor" );
+{ // qDebug( "GtpHandler constructor" );
   showBoardAfterPlay = false;
   debugWyrms = true;
   connect( this, SIGNAL(quit()), app, SLOT(quit()) );

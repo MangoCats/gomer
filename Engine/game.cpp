@@ -8,7 +8,7 @@
  * @param parent - QObject this Game "lives in", or nullptr.
  */
 Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QObject(parent), np(playerNames.size()), pt(0)
-{ qDebug( "Game constructor %d players", np );
+{ // qDebug( "Game constructor %d players", np );
   // TODO: if np < 2 or np too big, fail out.
 
   // One Goban, one Gosu per player
@@ -20,6 +20,25 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
     }
   fillGosu();
   tp = new Shiko(bp,this);
+}
+
+/**
+ * @brief Game::Game - copy constructor
+ * @param gp - object to copy
+ * @param parent - parent of the new Game object
+ */
+Game::Game(Game *gp, QObject *parent) : QObject(parent)
+{ bp = new Goban( gp->bp, this );
+  foreach ( Player *pp, gp->ppl )
+    { Gosu *sp = new Gosu( pp->sp, bp );
+      spl.append( sp );
+      ppl.append( new Player( pp->name, sp ) );
+    }
+  komi         = gp->komi;
+  np           = gp->np;
+  pt           = gp->pt;
+  stateHistory = gp->stateHistory;
+  tp = new Shiko( gp->tp, this );
 }
 
 /**

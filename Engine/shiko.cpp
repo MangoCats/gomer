@@ -1,16 +1,29 @@
 #include "shiko.h"
 
+/**
+ * @brief Shiko::Shiko - normal constructor, called at game start with an empty Goban
+ * @param pbp - passed Goban pointer, Goban this Shiko thinks about
+ * @param parent - Game this Shiko is playing
+ */
 Shiko::Shiko(Goban *pbp, Game *parent) : QObject(parent), gp(parent), bp(pbp)
-{
+{}
 
+/**
+ * @brief Shiko::Shiko - copy constructor
+ * @param tp - Shiko to copy
+ * @param parent - new Game parent
+ */
+Shiko::Shiko(Shiko *tp, Game *parent) : QObject(parent), gp(parent), bp(tp->bp)
+{ foreach ( Wyrm *wp, tp->wpl )
+    wpl.append( new Wyrm( wp, this ) );
 }
 
 /**
  * @brief Shiko::clearGoban - reset to an empty Goban state
  */
 void Shiko::clearGoban()
-{ wpl.clear();
-
+{ while ( wpl.size() > 0 )
+    wyrmCaptured( wpl.at(0) ); // Clears the wp-s in the Goishi as well as removing the Wyrm from wpl
 }
 
 /**
@@ -185,7 +198,7 @@ void  Shiko::addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c )
 
 /**
  * @brief Shiko::wyrmCaptured - called from the Game which has taken care of moving the Goishi from Goban to Gosu
- *   Shiko needs to remove this Wyrm from the list of Wyrms on the board.
+ *   Shiko needs to remove this Wyrm from the list of Wyrms on the board, and incidentally clear the Goishi wp-s.
  * @param wp - captured Wyrm
  */
 void Shiko::wyrmCaptured( Wyrm *wp )
@@ -197,7 +210,11 @@ void Shiko::wyrmCaptured( Wyrm *wp )
     { qDebug( "ERROR: Shiko::wyrmCaptured() %s not found in wpl", qPrintable( wp->show() ) );
       return;
     }
+  foreach( Goishi *ip, wp->ipl )
+    if ( ip != nullptr )
+      ip->wp = nullptr;
   wpl.removeAt( wpl.indexOf( wp ) );
+  wp->deleteLater();
 }
 
 /**

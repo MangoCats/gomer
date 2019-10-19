@@ -2,11 +2,30 @@
 
 /**
  * @brief Wyrm::Wyrm
- * @param ipp - single Goishi Wyrm
+ * @param ip - single Goishi Wyrm
  * @param parent
  */
-Wyrm::Wyrm(Goishi *ipp, Shiko *parent) : QObject(parent)
-{ addGoishi( ipp ); }
+Wyrm::Wyrm(Goishi *ip, Shiko *parent) : QObject(parent)
+{ addGoishi( ip ); }
+
+/**
+ * @brief Wyrm::Wyrm - copy constructor
+ * @param wp - Wyrm to copy
+ * @param parent - parent of the new Wyrm
+ */
+Wyrm::Wyrm(Wyrm *wp, Shiko *parent) : QObject(parent)
+{ Goban *bpn = parent->bp; // New Goban
+  foreach( Goishi *ipo, wp->ipl )
+    { Goishi *ipn = bpn->goishiAt( ipo->x, ipo->y );
+      if ( ipn == nullptr )
+        qDebug( "ERROR: nullptr in copied Wyrm" );
+       else
+        { ipn->wp = this;
+          ipl.append( ipn );
+        }
+    }
+  libertyList = wp->libertyList;
+}
 
 /**
  * @brief Wyrm::addGoishi - add one Goishi to this Wyrm

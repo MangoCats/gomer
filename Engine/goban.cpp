@@ -1,7 +1,7 @@
 #include "goban.h"
 
 Goban::Goban(Game *parent,qint32 xs,qint32 ys) : QObject(parent), gp(parent), Xsize(xs), Ysize(ys)
-{ qDebug( "Goban constructor %d x %d", Xsize, Ysize );
+{ // qDebug( "Goban constructor %d x %d", Xsize, Ysize );
   goishiChar = ".,XO3456789";
   Xlabels.append("A");  Ylabels.append("1");
   Xlabels.append("B");  Ylabels.append("2");
@@ -38,6 +38,27 @@ Goban::Goban(Game *parent,qint32 xs,qint32 ys) : QObject(parent), gp(parent), Xs
 }
 
 /**
+ * @brief Goban::Goban - copy constructor
+ * @param bp - Goban to copy
+ * @param parent - parent of the new Goban
+ */
+Goban::Goban(Goban *bp, Game *parent) : QObject(parent), gp(parent), Xsize(bp->Xsize), Ysize(bp->Ysize)
+{ Xdots      = bp->Xdots;
+  Ydots      = bp->Ydots;
+  goishiChar = bp->goishiChar;
+  Xlabels    = bp->Xlabels;
+  Ylabels    = bp->Ylabels;
+  grid.reserve( nPoints() );
+  for ( qint32 i = 0 ; i < nPoints() ; i++ )
+    { Goishi *ip = bp->grid.at(i);
+      if ( ip == nullptr )
+        grid.append( nullptr );
+       else
+        grid.append( new Goishi(ip,this) );
+    }
+}
+
+/**
  * @brief Goban::resize - board must be clear before a resize can succeed
  * @param xs - new size
  * @param ys - new size
@@ -55,6 +76,7 @@ bool Goban::resize( qint32 xs, qint32 ys )
       }
   Xsize = xs;
   Ysize = ys;
+  grid.reserve( nPoints() );
   if ( grid.size() > nPoints() )
     grid.clear();
   while ( grid.size() < nPoints() )

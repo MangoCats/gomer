@@ -17,6 +17,7 @@ class Shiko : public QObject
     Q_OBJECT
 public:
     explicit  Shiko(Goban *pbp, Game *parent);
+              Shiko(Shiko *tp, Game *parent);
         void  clearGoban();
         bool  legalMove( qint32 x, qint32 y, qint32 c );
         bool  isSelfCapture( qint32 x, qint32 y, qint32 c );

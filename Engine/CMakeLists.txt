@@ -26,16 +26,28 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5Core)
 
-add_executable(GomerEngine main.cpp       config.h.in
-                           console.cpp    console.h
-                           game.cpp       game.h
-                           goban.cpp      goban.h
-                           goishi.cpp     goishi.h
-                           gosu.cpp       gosu.h
-                           gtphandler.cpp gtphandler.h
-                           player.cpp     player.h
-                           shiko.cpp      shiko.h
-                           wyrm.cpp       wyrm.h
+add_executable(GomerEngine main.cpp
+                           console.cpp
+                           game.cpp
+                           goban.cpp
+                           goishi.cpp
+                           gosu.cpp
+                           gtphandler.cpp
+                           player.cpp
+                           shiko.cpp
+                           wyrm.cpp
               )
+
+set(SOURCES config.h.in
+            console.h
+            game.h
+            goban.h
+            goishi.h
+            gosu.h
+            gtphandler.h
+            player.h
+            shiko.h
+            wyrm.h
+   )
 
 target_link_libraries(GomerEngine Qt5::Core)

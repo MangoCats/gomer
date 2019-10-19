@@ -16,6 +16,7 @@ class Gosu : public QObject
     Q_OBJECT
 public:
     explicit  Gosu(Goban *parent = nullptr);
+              Gosu(Gosu *sp, Goban *parent = nullptr);
         void  empty();
         void  addGoishiToBowl(Goishi *ip);
         void  addGoishiToLid(Goishi *ip);

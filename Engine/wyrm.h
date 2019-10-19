@@ -11,7 +11,8 @@ class Wyrm : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Wyrm(Goishi *ipp, Shiko *parent = nullptr);
+    explicit  Wyrm( Goishi *ip, Shiko *parent = nullptr);
+              Wyrm(   Wyrm *wp, Shiko *parent = nullptr );
         void  addGoishi( Goishi *ip );
         void  mergeLibertyList( QList<qint32> );
 QList<qint32> getLibertyList( Goishi *ip );

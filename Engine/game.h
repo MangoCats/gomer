@@ -4,7 +4,6 @@
 class Goban;
 class Goishi;
 class Gosu;
-class GtpHandler;
 class Player;
 class Shiko;
 #include <QObject>
@@ -12,7 +11,6 @@ class Shiko;
 #include "goban.h"
 #include "goishi.h"
 #include "gosu.h"
-#include "gtphandler.h"
 #include "player.h"
 #include "shiko.h"
 
@@ -24,6 +22,7 @@ class Game : public QObject
     Q_OBJECT
 public:
     explicit Game(QStringList playerNames, qint32 xs = 19, qint32 ys = 19, QObject *parent = nullptr);
+             Game(Game *gp, QObject *parent = nullptr);
         void fillGosu();
         void clearGoban();
         void clearGoishi( Goishi * );
@@ -39,7 +38,6 @@ signals:
 public slots:
 
 public:
-      QPointer<GtpHandler> hp;
            QPointer<Goban> bp;
     QList<QPointer<Gosu> > spl;
   QList<QPointer<Player> > ppl;

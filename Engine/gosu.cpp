@@ -1,7 +1,19 @@
 #include "gosu.h"
 
 Gosu::Gosu(Goban *parent) : QObject(parent), bp(parent)
-{ qDebug( "Gosu constructor" );
+{ // qDebug( "Gosu constructor" );
+}
+
+/**
+ * @brief Gosu::Gosu - copy constructor
+ * @param sp - Gosu to copy
+ * @param parent - parent of the new Gosu
+ */
+Gosu::Gosu(Gosu *sp, Goban *parent) : QObject(parent), bp(parent)
+{ foreach( Goishi *ip, sp->bowl )
+    bowl.append( new Goishi(ip,bp) );
+  foreach( Goishi *ip, sp->lid )
+    lid .append( new Goishi(ip,bp) );
 }
 
 /**
@@ -22,6 +34,8 @@ void Gosu::empty()
  */
 void Gosu::addGoishiToBowl(Goishi *ip)
 { bowl.append( ip );
+  ip->x = GOSU_BOWL; // Notional position of the bowl, off the board
+  ip->y = ip->color;
   emit bowlCountChanged( bowl.size() );
 }
 
@@ -31,6 +45,11 @@ void Gosu::addGoishiToBowl(Goishi *ip)
  */
 void Gosu::addGoishiToLid(Goishi *ip)
 { lid.append( ip );
+  ip->x = GOSU_LID;  // Notional position of the lid, off the board
+  if ( bowl.size() > 0 )
+    ip->y = bowl.at(0)->color;
+   else
+    ip->y = 1 - ip->color; // Weird, and unlikely case, needs attention if playing more than 2 colors and running out of Goishi in the bowl
   emit lidCountChanged( lid.size() );
 }
 
