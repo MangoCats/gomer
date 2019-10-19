@@ -71,6 +71,7 @@ void  Wyrm::mergeLibertyList( QList<qint32> ll )
 { foreach ( qint32 l, ll )
     if ( !libertyList.contains(l) )
       libertyList.append(l);
+  std::sort(libertyList.begin(), libertyList.end()); // qSort(libertyList);
 }
 
 /**
@@ -148,6 +149,7 @@ bool Wyrm::addLiberty( qint32 i )
 { if ( libertyList.contains(i) )
     return false;
   libertyList.append(i);
+  std::sort(libertyList.begin(), libertyList.end()); // qSort(libertyList);
   return true;
 }
 

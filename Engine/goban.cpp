@@ -261,6 +261,18 @@ bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
 }
 
 /**
+ * @brief Goban::vertexToIndex
+ * @param pos - vertex string to translate
+ * @return index, or -1 if vertex is invalid
+ */
+qint32  Goban::vertexToIndex( QString pos )
+{ qint32 x,y;
+  if ( !vertexToXY( pos, &x, &y ) )
+    return -1;
+  return xyToIndex( x, y );
+}
+
+/**
  * @brief Goban::indexToXY
  * @param i - index to convert
  * @param x - pointer to X coordinate variable
@@ -324,6 +336,14 @@ Goishi *Goban::goishiAt( QString pos )
   if ( vertexToXY( pos, &x, &y ) )
     return goishiAt( x, y );
   return nullptr;
+}
+
+Goishi *Goban::goishi( qint32 i )
+{ if (( i < 0 ) || ( i > nPoints() ))
+    { qDebug( "WARNING: Goban::goishi(%d) not on board",i );
+      return nullptr;
+    }
+  return grid.at( i );
 }
 
 /**

@@ -61,6 +61,10 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_IS_LEGAL                 23
   handledCommands.append( "captures" );
 #define      COMMAND_INDEX_CAPTURES                 24
+  handledCommands.append( "countlib" );
+#define      COMMAND_INDEX_COUNTLIB                 25
+  handledCommands.append( "findlib" );
+#define      COMMAND_INDEX_FINDLIB                  26
 }
 
 /**
@@ -280,6 +284,34 @@ void  GtpHandler::receivedMessage( QString m )
         if ( gp->spl.at(c) == nullptr )
           { respond( false, id, arguments+" gosu is null" ); break; }
         respond( true, id, QString::number( gp->spl.at(c)->lid.size() ) );
+        break;
+
+      case COMMAND_INDEX_COUNTLIB:
+        if ( !checkBpNull( id ) ) break;
+        i = gp->bp->vertexToIndex( arguments );
+        if ( i < 0 )
+          { respond( false, id, "invalid vertex "+arguments ); break; }
+        ip = gp->bp->goishi( i );
+        if ( ip == nullptr )
+          { respond( false, id, "empty vertex "+arguments ); break; }
+        if ( ip->wp == nullptr )
+          { respond( false, id, "null Wyrm @ "+arguments ); break; }
+        respond( true, id, QString::number( ip->wp->libertyList.size() ) );
+        break;
+
+      case COMMAND_INDEX_FINDLIB:
+        if ( !checkBpNull( id ) ) break;
+        i = gp->bp->vertexToIndex( arguments );
+        if ( i < 0 )
+          { respond( false, id, "invalid vertex "+arguments ); break; }
+        ip = gp->bp->goishi( i );
+        if ( ip == nullptr )
+          { respond( false, id, "empty vertex "+arguments ); break; }
+        if ( ip->wp == nullptr )
+          { respond( false, id, "null Wyrm @ "+arguments ); break; }
+        foreach ( i, ip->wp->libertyList )
+          msg.append( gp->bp->indexToVertex(i)+" " );
+        respond( true, id, msg );
         break;
 
       default:

@@ -30,12 +30,14 @@ public:
         bool  placeGoishiAt( Goishi *ip, qint32 x, qint32 y );
         bool  placeGoishiAt( Goishi *ip, QString pos );
         bool  vertexToXY( QString pos, qint32 *x, qint32 *y );
-        bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
-      qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
+      qint32  vertexToIndex( QString pos );
      QString  indexToVertex( qint32 i );
      QString  xyToVertex( qint32 x, qint32 y );
+        bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
+      qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
       Goishi *goishiAt( qint32 x, qint32 y );
       Goishi *goishiAt( QString pos );
+      Goishi *goishi( qint32 i );
         bool  onBoard( qint32 x, qint32 y );
      QString  showBoard();
      QString  xAxisLabels();
