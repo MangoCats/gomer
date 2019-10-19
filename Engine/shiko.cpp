@@ -286,6 +286,5 @@ QString Shiko::showWyrms()
 { QString s = "\nWyrms:\n";
   foreach( Wyrm *wp, wpl )
     s.append( wp->show() );
-  s.append( "\n" );
   return s;
 }

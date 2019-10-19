@@ -5,7 +5,7 @@
 GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), gp(parent)
 { // qDebug( "GtpHandler constructor" );
   showBoardAfterPlay = false;
-  debugWyrms = true;
+  debugWyrms = false;
   connect( this, SIGNAL(quit()), app, SLOT(quit()) );
   Console *cp = new Console(this);
   connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
@@ -118,8 +118,10 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_HELP:
       case COMMAND_INDEX_LIST_COMMANDS:
         msg="";
-        foreach ( cmd, handledCommands )
-          msg += "\n"+cmd;
+        args = handledCommands;
+        std::sort(args.begin(),args.end());
+        foreach ( cmd, args )
+          msg += cmd+"\n";
         respond( true, id, msg );
         break;
 
@@ -369,7 +371,8 @@ void GtpHandler::respond( bool pf, qint32 id, QString responseMsg )
     r.append( QString("%1").arg(id) );
   if ( responseMsg.size() > 0 )
     r.append( " "+responseMsg );
-  r.append( "\n" );
+  if ( !r.endsWith( "\n" ) )
+    r.append("\n");
   emit response(r);
 }
 

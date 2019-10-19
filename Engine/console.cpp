@@ -17,4 +17,6 @@ void Console::readCommand()
 }
 
 void Console::sendResponse( QString msg )
-{ std::cout << msg.toUtf8().data() << std::flush; }
+{ msg += "\n";
+  std::cout << msg.toUtf8().data() << std::flush;
+}
