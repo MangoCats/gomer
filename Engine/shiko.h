@@ -22,6 +22,8 @@ public:
         bool  legalMove( qint32 x, qint32 y, qint32 c );
         bool  isSelfCapture( qint32 x, qint32 y, qint32 c );
         bool  selfCaptureRelief( qint32 x, qint32 y, qint32 c );
+        bool  isKo( qint32 x, qint32 y, qint32 c );
+        void  koEvalCapture( qint32 x, qint32 y, qint32 c, QString *state );
         void  goishiPlacedOnGoban( Goishi *ip );
         Wyrm *wyrmAt( qint32 x, qint32 y );
       qint32  collectWyrm( QList<Wyrm *> *fwplp, QList<Wyrm *> *owplp, qint32 x, qint32 y, qint32 c );
@@ -40,6 +42,7 @@ public:
           QPointer<Game> gp;
          QPointer<Goban> bp;
   QList<QPointer<Wyrm> > wpl;
+            QStringList  stateHistory; // Previous board positions
 };
 
 #endif // SHIKO_H

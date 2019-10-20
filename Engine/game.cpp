@@ -37,7 +37,6 @@ Game::Game(Game *gp, QObject *parent) : QObject(parent)
   komi         = gp->komi;
   np           = gp->np;
   pt           = gp->pt;
-  stateHistory = gp->stateHistory;
   tp = new Shiko( gp->tp, this );
 }
 
@@ -84,8 +83,6 @@ void Game::clearGoban()
             clearGoishi( spl.at(i)->takeGoishiFromLid() );
         }
     }
-
-  stateHistory.clear();
 
   // Clear all thoughts about the Goban state
   if ( tp == nullptr )

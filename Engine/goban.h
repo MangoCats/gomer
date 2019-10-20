@@ -36,6 +36,7 @@ public:
      QString  xyToVertex( qint32 x, qint32 y );
         bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
       qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
+       QChar  colorToChar( qint32 c );
       Goishi *goishiAt( qint32 x, qint32 y );
       Goishi *goishiAt( QString pos );
       Goishi *goishi( qint32 i );

@@ -16,6 +16,7 @@ Shiko::Shiko(Goban *pbp, Game *parent) : QObject(parent), gp(parent), bp(pbp)
 Shiko::Shiko(Shiko *tp, Game *parent) : QObject(parent), gp(parent), bp(tp->bp)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
+  stateHistory = tp->stateHistory;
 }
 
 /**
@@ -24,6 +25,8 @@ Shiko::Shiko(Shiko *tp, Game *parent) : QObject(parent), gp(parent), bp(tp->bp)
 void Shiko::clearGoban()
 { while ( wpl.size() > 0 )
     wyrmCaptured( wpl.at(0) ); // Clears the wp-s in the Goishi as well as removing the Wyrm from wpl
+  stateHistory.clear();
+  stateHistory.append( bp->state() ); // Move 0 state, Goban should already be clear
 }
 
 /**
@@ -34,7 +37,15 @@ void Shiko::clearGoban()
  * @return true if the move would be legal
  */
 bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
-{ if ( c != gp->pt )
+{ if ( gp == nullptr )
+    { qDebug( "WARNING: Shiko::legalMove Game null" );
+      return false;
+    }
+  if ( bp == nullptr )
+    { qDebug( "WARNING: Shiko::legalMove Goban null" );
+      return false;
+    }
+  if ( c != gp->pt )
     { qDebug( "Shiko::legalMove %d does not match current player turn %d", c, gp->pt );
       return false;
     }
@@ -50,9 +61,10 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
     { qDebug( "Shiko::legalMove %d, %d would result in self capture", x, y );
       return false;
     }
-
-  // TODO: Check gp->stateHistory for Ko
-
+  if ( isKo(x,y,c) )
+    { qDebug( "Shiko::legalMove %d, %d would result in Ko", x, y );
+      return false;
+    }
   return true;
 }
 
@@ -92,6 +104,52 @@ bool Shiko::selfCaptureRelief( qint32 x, qint32 y, qint32 c )
   if (( ip->color != c ) && ( ip->wp->inAtari() ))
     return true; // Opponent Wyrm in Atari
   return false;
+}
+
+/**
+ * @brief Shiko::isKo - neglecting self capture evaluation, check for Ko
+ * @param x
+ * @param y
+ * @param c
+ * @return true if the proposed move would result in Ko
+ */
+bool Shiko::isKo( qint32 x, qint32 y, qint32 c )
+{ QString state = bp->state();
+  // Evaluate the proposed move into state
+  state.replace( bp->xyToIndex(x,y),1,bp->colorToChar(c) );
+  if ( x > 0 )           koEvalCapture( x-1,y,c,&state );
+  if ( x < bp->Xsize-1 ) koEvalCapture( x+1,y,c,&state );
+  if ( y > 0 )           koEvalCapture( x,y-1,c,&state );
+  if ( y < bp->Ysize-1 ) koEvalCapture( x,y+1,c,&state );
+  return stateHistory.contains(state);
+}
+
+/**
+ * @brief Shiko::koEvalCapture - reflect (potential) capture at x,y in state for isKo()
+ * @param x
+ * @param y
+ * @param c
+ * @param state - state to show capture in
+ */
+void Shiko::koEvalCapture( qint32 x, qint32 y, qint32 c, QString *state )
+{ Goishi *ip = bp->goishiAt(x,y);
+  if ( ip == nullptr )
+    return; // Nothing to capture
+  if ( ip->color == c )
+    return; // Friendly Wyrm, joined not captured
+  Wyrm *wp = ip->wp;
+  if ( wp == nullptr )
+    { qDebug( "WARNING: Shiko::koEvalCapture %d %d null Wyrm",x,y );
+      return;
+    }
+  if ( !wp->inAtari() )
+    return; // No capture here
+  foreach ( ip, wp->ipl )
+    { if ( ip == nullptr )
+        qDebug( "WARNING: Shiko::koEvalCapture %d %d null Goishi in Wyrm",x,y );
+       else
+        state->replace( bp->xyToIndex(ip->x,ip->y),1,bp->goishiChar.at(0) );
+    }
 }
 
 /**
@@ -142,6 +200,9 @@ void Shiko::goishiPlacedOnGoban( Goishi *ip )
   // Take away the opponent liberties at the newly placed Goishi grid location
   foreach ( Wyrm *owp, owpl )
     owp->removeLiberty( bp->xyToIndex( ip->x, ip->y ) );
+
+  // Save this move in the state history
+  stateHistory.append( bp->state() );
 }
 
 /**

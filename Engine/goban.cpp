@@ -106,14 +106,20 @@ QString Goban::state()
     { if ( grid.at(i) == nullptr )
         s.append( goishiChar.at(0) );
        else
-        { qint32 c = grid.at(i)->color;
-          if (( c > (goishiChar.size() - 2) ) || ( c < 0 ))
-            s.append( "!" );
-           else
-            s.append( goishiChar.at(c+1) );
-        }
+        s.append( colorToChar( grid.at(i)->color ) );
     }
   return s;
+}
+
+/**
+ * @brief Goban::colorToChar
+ * @param c - color index
+ * @return Character corresponding to the color index
+ */
+QChar Goban::colorToChar( qint32 c )
+{ if (( c > (goishiChar.size() - 3) ) || ( c < 0 ))
+    return QChar( '!' );
+  return goishiChar.at(c+2);
 }
 
 /**

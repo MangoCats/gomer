@@ -45,7 +45,6 @@ public:
                     qreal  komi;
                    qint32  np;           // Number of players
                    qint32  pt;           // Which player's turn is is?
-              QStringList  stateHistory; // Previous board positions
 };
 
 #endif // GAME_H
