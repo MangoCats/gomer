@@ -5,7 +5,7 @@
  * @param pbp - passed Goban pointer, Goban this Shiko thinks about
  * @param parent - Game this Shiko is playing
  */
-Shiko::Shiko(Goban *pbp, Game *parent) : QObject(parent), gp(parent), bp(pbp)
+Shiko::Shiko(Game *parent) : QObject(parent), gp(parent), bp(parent->bp)
 {}
 
 /**
@@ -27,6 +27,26 @@ void Shiko::clearGoban()
     wyrmCaptured( wpl.at(0) ); // Clears the wp-s in the Goishi as well as removing the Wyrm from wpl
   stateHistory.clear();
   stateHistory.append( bp->state() ); // Move 0 state, Goban should already be clear
+}
+
+/**
+ * @brief Shiko::allLegalMoves
+ * @param c - color to move
+ * @return list of all legal moves for color c, by index
+ */
+QList<qint32> Shiko::allLegalMoves( qint32 c )
+{ QList<qint32> lml;
+  if ( bp == nullptr )
+    { qDebug( "WARNING: Shiko::allLegalMoves Goban null" );
+      return lml;
+    }
+  qint32 x,y;
+  for ( qint32 i = 0; i < bp->nPoints() ; i++ )
+    { bp->indexToXY( i, &x, &y );
+      if ( legalMove(x,y,c) )
+        lml.append(i);
+    }
+  return lml;
 }
 
 /**
@@ -53,16 +73,17 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
     { qDebug( "Shiko::legalMove %d, %d is not on Goban",x,y );
       return false;
     }
+  QString v = bp->xyToVertex(x,y);
   if ( bp->goishiAt(x,y) != nullptr )
-    { qDebug( "Shiko::legalMove Goishi already present at %d, %d", x, y );
+    { qDebug( "Shiko::legalMove Goishi already present at %s", qPrintable(v) );
       return false; // Goishi already placed there
     }
   if ( isSelfCapture(x,y,c) )
-    { qDebug( "Shiko::legalMove %d, %d would result in self capture", x, y );
+    { qDebug( "Shiko::legalMove %s would result in self capture", qPrintable(v) );
       return false;
     }
   if ( isKo(x,y,c) )
-    { qDebug( "Shiko::legalMove %d, %d would result in Ko", x, y );
+    { qDebug( "Shiko::legalMove %s would result in Ko", qPrintable(v) );
       return false;
     }
   return true;

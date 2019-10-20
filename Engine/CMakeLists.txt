@@ -34,6 +34,7 @@ add_executable(GomerEngine main.cpp
                            gosu.cpp
                            gtphandler.cpp
                            player.cpp
+                           sakudo.cpp
                            shiko.cpp
                            wyrm.cpp
               )
@@ -46,6 +47,7 @@ set(SOURCES config.h.in
             gosu.h
             gtphandler.h
             player.h
+            sakudo.h
             shiko.h
             wyrm.h
    )

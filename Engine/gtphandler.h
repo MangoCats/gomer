@@ -23,6 +23,7 @@ public:
         bool  checkGpNull( qint32 id );
         bool  checkBpNull( qint32 id );
         bool  checkTpNull( qint32 id );
+        bool  checkMpNull( qint32 id );
       qint32  interpretColor( QString cs );
 
 signals:

@@ -49,22 +49,36 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_PLAY                     17
   handledCommands.append( "p" );
 #define      COMMAND_INDEX_P                        18
+  handledCommands.append( "debug_wyrms" );
+#define      COMMAND_INDEX_DEBUG_WYRMS              19
   handledCommands.append( "showboard_after_play" );
-#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     19
+#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     20
   handledCommands.append( "sap" );
-#define      COMMAND_INDEX_SAP                      20
+#define      COMMAND_INDEX_SAP                      21
   handledCommands.append( "noboard_after_play" );
-#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       21
+#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       22
   handledCommands.append( "nap" );
-#define      COMMAND_INDEX_NAP                      22
+#define      COMMAND_INDEX_NAP                      23
   handledCommands.append( "is_legal" );
-#define      COMMAND_INDEX_IS_LEGAL                 23
+#define      COMMAND_INDEX_IS_LEGAL                 24
   handledCommands.append( "captures" );
-#define      COMMAND_INDEX_CAPTURES                 24
+#define      COMMAND_INDEX_CAPTURES                 25
   handledCommands.append( "countlib" );
-#define      COMMAND_INDEX_COUNTLIB                 25
+#define      COMMAND_INDEX_COUNTLIB                 26
   handledCommands.append( "findlib" );
-#define      COMMAND_INDEX_FINDLIB                  26
+#define      COMMAND_INDEX_FINDLIB                  27
+  handledCommands.append( "genmove_black" );
+#define      COMMAND_INDEX_GENMOVE_BLACK            28
+  handledCommands.append( "genmove_white" );
+#define      COMMAND_INDEX_GENMOVE_WHITE            29
+  handledCommands.append( "genmove" );
+#define      COMMAND_INDEX_GENMOVE                  30
+  handledCommands.append( "g" );
+#define      COMMAND_INDEX_G                        31
+  handledCommands.append( "reg_genmove" );
+#define      COMMAND_INDEX_REG_GENMOVE              32
+  handledCommands.append( "gg_genmove" );
+#define      COMMAND_INDEX_GG_GENMOVE               33
 }
 
 /**
@@ -87,6 +101,7 @@ void  GtpHandler::receivedMessage( QString m )
   QStringList args = arguments.split(QRegExp("[\r\n\t ]+"), QString::SkipEmptyParts);
   QString msg,cmd;
   qint32 sz,c,x,y,i;
+  quint32 seed;
   Goishi *ip;
   bool success,ok;
   switch ( handledCommands.indexOf(command_name) )
@@ -233,7 +248,7 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_P:
         if ( !checkGpNull( id ) ) break;
         c = interpretColor( args.at(0) );
-        if (( c < 0 ) || ( c > gp->np ))
+        if (( c < 0 ) || ( c >= gp->np ))
           { respond( false, id, "invalid color "+args.at(0) ); break; }
         if ( !checkBpNull( id ) ) break;
         if ( args.at(1) == "pass" )
@@ -252,6 +267,11 @@ void  GtpHandler::receivedMessage( QString m )
         respond( true, id, msg );
         break;
 
+      case COMMAND_INDEX_DEBUG_WYRMS:
+        debugWyrms = !debugWyrms;
+        respond( true, id, debugWyrms ? "Wyrm debug ON" : "Wyrm debug OFF" );
+        break;
+
       case COMMAND_INDEX_SHOWBOARD_AFTER_PLAY:
       case COMMAND_INDEX_SAP:
         showBoardAfterPlay = true;
@@ -267,7 +287,7 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_IS_LEGAL:
         if ( !checkGpNull( id ) ) break;
         c = interpretColor( args.at(0) );
-        if (( c < 0 ) || ( c > gp->np ))
+        if (( c < 0 ) || ( c >= gp->np ))
           { respond( false, id, "invalid color "+args.at(0) ); break; }
         if ( !checkBpNull( id ) ) break;
         if ( !gp->bp->vertexToXY( args.at(1), &x, &y ) )
@@ -279,7 +299,7 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_CAPTURES:
         if ( !checkGpNull( id ) ) break;
         c = interpretColor( arguments );
-        if (( c < 0 ) || ( c > gp->np ))
+        if (( c < 0 ) || ( c >= gp->np ))
           { respond( false, id, "invalid color "+arguments ); break; }
         if ( gp->spl.size() <= c )
           { respond( false, id, "no gosu found for "+arguments ); break; }
@@ -314,6 +334,71 @@ void  GtpHandler::receivedMessage( QString m )
         foreach ( i, ip->wp->libertyList )
           msg.append( gp->bp->indexToVertex(i)+" " );
         respond( true, id, msg );
+        break;
+
+      case COMMAND_INDEX_GENMOVE_BLACK:
+        if ( !checkMpNull( id ) ) break;
+        cmd = gp->mp->genmove(0);
+        if ( !gp->playGoishi( cmd, 0 ) )
+          { respond( false, id, "problem playing black "+cmd ); break; }
+        respond( true, id, cmd );
+        break;
+
+      case COMMAND_INDEX_GENMOVE_WHITE:
+        if ( !checkMpNull( id ) ) break;
+        cmd = gp->mp->genmove(1);
+        if ( !gp->playGoishi( cmd, 1 ) )
+          { respond( false, id, "problem playing white "+cmd ); break; }
+        respond( true, id, cmd );
+        break;
+
+      case COMMAND_INDEX_G:
+        if ( !checkMpNull( id ) ) break;
+        c = gp->pt;
+        cmd = gp->mp->genmove(c);
+        if ( !gp->playGoishi( cmd, c ) )
+          { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
+        msg = "\n";
+        msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
+        msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
+        respond( true, id, cmd+msg );
+        break;
+
+      case COMMAND_INDEX_GENMOVE:
+        if ( !checkMpNull( id ) ) break;
+        c = interpretColor( arguments );
+        if (( c < 0 ) || ( c >= gp->np ))
+          { respond( false, id, "invalid color "+arguments ); break; }
+        cmd = gp->mp->genmove(c);
+        if ( !gp->playGoishi( cmd, c ) )
+          { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
+        msg = "\n";
+        msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
+        msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
+        respond( true, id, cmd+msg );
+        break;
+
+      case COMMAND_INDEX_REG_GENMOVE:
+        if ( !checkMpNull( id ) ) break;
+        c = interpretColor( arguments );
+        if (( c < 0 ) || ( c >= gp->np ))
+          { respond( false, id, "invalid color "+arguments ); break; }
+        respond( true, id, gp->mp->genmove(c) );
+        break;
+
+      case COMMAND_INDEX_GG_GENMOVE:
+        if ( !checkMpNull( id ) ) break;
+        c = interpretColor( args.at(0) );
+        if (( c < 0 ) || ( c >= gp->np ))
+          { respond( false, id, "invalid color "+args.at(0) ); break; }
+        if ( args.size() > 1 )
+          { ok = true;
+            seed = args.at(1).toUInt( &ok );
+            if ( !ok )
+              { respond( false, id, "invalid seed "+args.at(1) ); break; }
+            gp->mp->rng.seed( seed );
+          }
+        respond( true, id, gp->mp->genmove(c) );
         break;
 
       default:
@@ -354,6 +439,18 @@ bool  GtpHandler::checkTpNull( qint32 id )
     }
   if ( gp->tp == nullptr )
     { respond( false, id, "Shiko pointer null" );
+      return false;
+    }
+  return true;
+}
+
+bool  GtpHandler::checkMpNull( qint32 id )
+{ if ( gp == nullptr )
+    { respond( false, id, "game pointer null" );
+      return false;
+    }
+  if ( gp->mp == nullptr )
+    { respond( false, id, "Sakudo pointer null" );
       return false;
     }
   return true;

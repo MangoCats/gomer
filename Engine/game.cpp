@@ -19,7 +19,8 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
       ppl.append( new Player(playerNames.at(i), sp) );
     }
   fillGosu();
-  tp = new Shiko(bp,this);
+  tp = new Shiko(this);
+  mp = new Sakudo(this);
 }
 
 /**
@@ -167,13 +168,13 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
       return false;
     }
   Goishi *ip = spl.at(c)->takeGoishiFromBowl();
-  if ( ip->color != c )
-    { qDebug( "UNEXPECTED: wrong color %d Goishi in bowl %d", ip->color, c );
-      return false;
-    }
   if ( ip == nullptr )
     { qDebug( "Game::playGoishi Gosu bowl empty?  Creating new Goishi." );
       ip = new Goishi(c,bp);
+    }
+  if ( ip->color != c )
+    { qDebug( "UNEXPECTED: wrong color %d Goishi in bowl %d", ip->color, c );
+      return false;
     }
   if ( !bp->placeGoishiAt( ip, x, y ) )
     { qDebug( "Game::playGoishi problem during Goban::placeGoishiAt()" );
@@ -187,6 +188,24 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
 
   return true;
 }
+
+/**
+ * @brief Game::playGoishi - overload, takes vertex and color
+ * @param v
+ * @param c
+ * @return true if played
+ */
+bool Game::playGoishi( QString v, qint32 c )
+{ qint32 x,y;
+  if ( bp == nullptr )
+    { qDebug( "WARNING: Game::playGoishi Goban null" );
+      return false;
+    }
+  bp->vertexToXY( v, &x, &y );
+  return playGoishi( x,y,c );
+}
+
+
 /**
  * @brief Game::advancePlayer - Advance player turn to the next player, reset to player 0 when last player has played
  */

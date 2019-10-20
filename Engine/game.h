@@ -5,6 +5,7 @@ class Goban;
 class Goishi;
 class Gosu;
 class Player;
+class Sakudo;
 class Shiko;
 #include <QObject>
 #include <QPointer>
@@ -12,6 +13,7 @@ class Shiko;
 #include "goishi.h"
 #include "gosu.h"
 #include "player.h"
+#include "sakudo.h"
 #include "shiko.h"
 
 /**
@@ -29,6 +31,7 @@ public:
         bool resizeGoban( qint32 xs, qint32 ys );
      QString showBoard();
         bool playGoishi( qint32 x, qint32 y, qint32 c );
+        bool playGoishi( QString v, qint32 c );
         void capture( Wyrm * );
         void pass();
         void advancePlayer();
@@ -41,6 +44,7 @@ public:
            QPointer<Goban> bp;
     QList<QPointer<Gosu> > spl;
   QList<QPointer<Player> > ppl;
+          QPointer<Sakudo> mp;
            QPointer<Shiko> tp;
                     qreal  komi;
                    qint32  np;           // Number of players
