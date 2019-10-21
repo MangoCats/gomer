@@ -169,7 +169,7 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
     }
   Goishi *ip = spl.at(c)->takeGoishiFromBowl();
   if ( ip == nullptr )
-    { qDebug( "Game::playGoishi Gosu bowl empty?  Creating new Goishi." );
+    { // qDebug( "Game::playGoishi Gosu bowl empty?  Creating new Goishi." );
       ip = new Goishi(c,bp);
     }
   if ( ip->color != c )

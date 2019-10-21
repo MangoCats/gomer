@@ -66,24 +66,24 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
       return false;
     }
   if ( c != gp->pt )
-    { qDebug( "Shiko::legalMove %d does not match current player turn %d", c, gp->pt );
+    { qDebug( "Shiko::legalMove() %d does not match current player turn %d", c, gp->pt );
       return false;
     }
   if ( !bp->onBoard(x,y) )
-    { qDebug( "Shiko::legalMove %d, %d is not on Goban",x,y );
+    { qDebug( "Shiko::legalMove() %d, %d is not on Goban",x,y );
       return false;
     }
   QString v = bp->xyToVertex(x,y);
   if ( bp->goishiAt(x,y) != nullptr )
-    { qDebug( "Shiko::legalMove Goishi already present at %s", qPrintable(v) );
+    { // qDebug( "Shiko::legalMove() Goishi already present at %s", qPrintable(v) );
       return false; // Goishi already placed there
     }
   if ( isSelfCapture(x,y,c) )
-    { qDebug( "Shiko::legalMove %s would result in self capture", qPrintable(v) );
+    { // qDebug( "Shiko::legalMove() %s would result in self capture", qPrintable(v) );
       return false;
     }
   if ( isKo(x,y,c) )
-    { qDebug( "Shiko::legalMove %s would result in Ko", qPrintable(v) );
+    { // qDebug( "Shiko::legalMove() %s would result in Ko", qPrintable(v) );
       return false;
     }
   return true;

@@ -44,6 +44,8 @@ QString Sakudo::genmoveRandy( qint32 c )
 
 /**
  * @brief Sakudo::genmoveKilroy - return a move that captures the most opponents stones possible
+ *   Kilroy is relentlessly aggressive, and not smart at all.  Lack of any defense or attention
+ *   to building life means Kilroy will not be winning many games.
  * @param c - color to generate a move for
  * @return proposed move as a vertex, or pass or resign
  */
@@ -80,28 +82,103 @@ QString Sakudo::genmoveKilroy( qint32 c )
 
   // Of the attackable Wyrms with minLib liberties, which has the most Goishi?
   qint32 maxGoishi = 0;
-  Wyrm *awp = nullptr;
   foreach ( Wyrm *wp, owpl )
     if ( wp->libertyList.size() == minLib )
       if ( wp->ipl.size() > maxGoishi )
-        { maxGoishi = wp->ipl.size();
-          awp = wp;
-        }
-  if ( awp == nullptr )
-    { qDebug( "SURPRISED: Sakudo::genmoveKilroy awp null" );
+        maxGoishi = wp->ipl.size();
+
+  // Make a list of all attackable Wyrms with minLib liberties and maxGoishi
+  QList<Wyrm *>awpl;
+  foreach ( Wyrm *wp, owpl )
+    if ( wp->libertyList.size() <= minLib )
+      if ( wp->ipl.size() >= maxGoishi )
+        awpl.append(wp);
+
+  if ( awpl.size() < 1 )
+    { qDebug( "SURPRISED: Sakudo::genmoveKilroy awpl empty" );
       return genmoveRandy(c);
     }
   QList<qint32> aapl; // Available attack points list
-  foreach ( qint32 i, awp->libertyList )
-    if ( tp->legalMoveIndex(i,c) )
-      aapl.append( i );
+  foreach ( Wyrm *wp, awpl )
+    foreach ( qint32 i, wp->libertyList )
+      if ( tp->legalMoveIndex(i,c) )
+        aapl.append( i );
+
   if ( aapl.size() < 1 )
     { qDebug( "SURPRISED: Sakudo::genmoveKilroy aapl.size() == 0" );
       return genmoveRandy(c);
     }
+
+  // Just one attack point, nothing further to optimize
   if ( aapl.size() == 1 )
     return bp->indexToVertex(aapl.at( 0 ));
-  return bp->indexToVertex(aapl.at( rng.bounded(0,aapl.size()) ));
+
+  // Look for attack points which impact the maximum number of opponent Wyrms
+  qint32 maxImpact = 0;
+  foreach( qint32 i, aapl )
+    { qint32 impact = 0;
+      foreach ( Wyrm *wp, owpl )
+        if ( wp->libertyList.contains( i ) )
+          impact++;
+      if ( impact > maxImpact )
+        maxImpact = impact;
+    }
+  QList<qint32> mapl;
+  foreach( qint32 i, aapl )
+    { qint32 impact = 0;
+      foreach ( Wyrm *wp, owpl )
+        if ( wp->libertyList.contains( i ) )
+          impact++;
+      if ( impact >= maxImpact )
+        mapl.append(i);
+    }
+
+  if ( mapl.size() < 1 )
+    { qDebug( "SURPRISED: Sakudo::genmoveKilroy mapl.size() == 0" );
+      return genmoveRandy(c);
+    }
+
+  // Just one attack point, nothing further to optimize
+  if ( mapl.size() == 1 )
+    return bp->indexToVertex(mapl.at( 0 ));
+
+  // Which point joins the maximum number of friendly Goishi
+  QList<Wyrm *>fwpl;
+  foreach ( Wyrm *wp, tp->wpl )
+    foreach ( qint32 i, mapl )
+      if ( wp->color() == c )
+        if ( wp->libertyList.contains( i ) )
+          fwpl.append( wp );
+
+  qint32 mxGoishi = 0;
+  foreach( qint32 i, mapl )
+    { qint32 count = 0;
+      foreach ( Wyrm *wp, fwpl )
+        if ( wp->libertyList.contains( i ) )
+          count += wp->ipl.size();
+      if ( count > mxGoishi )
+        mxGoishi = count;
+    }
+  QList<qint32> xapl;
+  foreach( qint32 i, mapl )
+    { qint32 count = 0;
+      foreach ( Wyrm *wp, fwpl )
+        if ( wp->libertyList.contains( i ) )
+          count++;
+      if ( count >= mxGoishi )
+        xapl.append(i);
+    }
+
+  // No friendly Wyrms touching, choose at random among the previous list
+  if ( xapl.size() < 1 )
+    return bp->indexToVertex(mapl.at( rng.bounded(0,mapl.size()) ));
+
+  // Just one attack point, nothing further to optimize
+  if ( xapl.size() == 1 )
+    return bp->indexToVertex(xapl.at( 0 ));
+
+  // Choosing at random from equivalent options
+  return bp->indexToVertex(xapl.at( rng.bounded(0,xapl.size()) ));
 }
 
 /**
