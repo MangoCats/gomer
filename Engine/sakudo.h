@@ -22,6 +22,8 @@ public:
      QString  genmove( qint32 c );
      QString  genmoveRandy( qint32 c );
      QString  genmoveKilroy( qint32 c );
+     QString  genmoveTerry( qint32 c );
+        bool  canBeAttacked( Wyrm *wp, qint32 c );
 
 signals:
 

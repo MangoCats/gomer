@@ -21,6 +21,7 @@ public:
         void  clearGoban();
 QList<qint32> allLegalMoves( qint32 c );
         bool  legalMove( qint32 x, qint32 y, qint32 c );
+        bool  legalMoveIndex( qint32 i, qint32 c );
         bool  isSelfCapture( qint32 x, qint32 y, qint32 c );
         bool  selfCaptureRelief( qint32 x, qint32 y, qint32 c );
         bool  isKo( qint32 x, qint32 y, qint32 c );

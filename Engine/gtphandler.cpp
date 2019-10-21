@@ -79,6 +79,8 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), g
 #define      COMMAND_INDEX_REG_GENMOVE              32
   handledCommands.append( "gg_genmove" );
 #define      COMMAND_INDEX_GG_GENMOVE               33
+  handledCommands.append( "level" );
+#define      COMMAND_INDEX_LEVEL                    34
 }
 
 /**
@@ -284,6 +286,16 @@ void  GtpHandler::receivedMessage( QString m )
         respond( true, id );
         break;
 
+      case COMMAND_INDEX_LEVEL:
+        if ( !checkMpNull( id ) ) break;
+        ok = true;
+        i = arguments.toInt( &ok );
+        if (( !ok ) || ( i < 0 ))
+          { respond( false, id, "incorrect argument "+arguments ); break; }
+        gp->mp->level = i;
+        respond( true, id );
+        break;
+
       case COMMAND_INDEX_IS_LEGAL:
         if ( !checkGpNull( id ) ) break;
         c = interpretColor( args.at(0) );
@@ -339,16 +351,18 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_GENMOVE_BLACK:
         if ( !checkMpNull( id ) ) break;
         cmd = gp->mp->genmove(0);
-        if ( !gp->playGoishi( cmd, 0 ) )
-          { respond( false, id, "problem playing black "+cmd ); break; }
+        if ( gp->bp->onBoard( cmd ) )
+          if ( !gp->playGoishi( cmd, 0 ) )
+            { respond( false, id, "problem playing black "+cmd ); break; }
         respond( true, id, cmd );
         break;
 
       case COMMAND_INDEX_GENMOVE_WHITE:
         if ( !checkMpNull( id ) ) break;
         cmd = gp->mp->genmove(1);
-        if ( !gp->playGoishi( cmd, 1 ) )
-          { respond( false, id, "problem playing white "+cmd ); break; }
+        if ( gp->bp->onBoard( cmd ) )
+          if ( !gp->playGoishi( cmd, 1 ) )
+            { respond( false, id, "problem playing white "+cmd ); break; }
         respond( true, id, cmd );
         break;
 
@@ -356,8 +370,9 @@ void  GtpHandler::receivedMessage( QString m )
         if ( !checkMpNull( id ) ) break;
         c = gp->pt;
         cmd = gp->mp->genmove(c);
-        if ( !gp->playGoishi( cmd, c ) )
-          { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
+        if ( gp->bp->onBoard( cmd ) )
+          if ( !gp->playGoishi( cmd, c ) )
+            { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
         msg = "\n";
         msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
         msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
@@ -370,8 +385,9 @@ void  GtpHandler::receivedMessage( QString m )
         if (( c < 0 ) || ( c >= gp->np ))
           { respond( false, id, "invalid color "+arguments ); break; }
         cmd = gp->mp->genmove(c);
-        if ( !gp->playGoishi( cmd, c ) )
-          { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
+        if ( gp->bp->onBoard( cmd ) )
+          if ( !gp->playGoishi( cmd, c ) )
+            { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
         msg = "\n";
         msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
         msg.append( debugWyrms ? gp->tp->showWyrms() : "" );

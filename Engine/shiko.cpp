@@ -90,6 +90,22 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
 }
 
 /**
+ * @brief Shiko::legalMoveIndex
+ * @param i - index of position to try to move
+ * @param c - color to try to move
+ * @return true if move is legal
+ */
+bool Shiko::legalMoveIndex( qint32 i, qint32 c )
+{ qint32 x,y;
+  if ( bp == nullptr )
+    { qDebug( "WARNING: Shiko::legalMoveIndex Goban null" );
+      return false;
+    }
+  bp->indexToXY( i, &x, &y );
+  return legalMove( x, y, c );
+}
+
+/**
  * @brief Shiko::isSelfCapture
  * @param x
  * @param y

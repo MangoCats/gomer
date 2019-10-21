@@ -216,25 +216,25 @@ bool Goban::placeGoishiAt( Goishi *ip, qint32 x, qint32 y )
 /**
  * @brief Goban::placeGoishiAt - place a Goishi on the Goban at the described coordinates
  * @param ip - pointer to Goishi to place
- * @param pos - string description of the coordinates
+ * @param v - string description of the coordinates
  * @return true if successful
  */
-bool  Goban::placeGoishiAt( Goishi *ip, QString pos )
+bool  Goban::placeGoishiAt( Goishi *ip, QString v )
 { qint32 x,y;
-  if ( !vertexToXY(pos,&x,&y) )
+  if ( !vertexToXY(v,&x,&y) )
     return false;
   return placeGoishiAt( ip, x, y );
 }
 
 /**
  * @brief Goban::vertexToXY
- * @param pos - vertex as string
+ * @param v - vertex as string
  * @param x - pointer to x coordinate
  * @param y - pointer to x coordinate
  * @return true if vertex conversion to xy was successful
  */
-bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
-{ pos = pos.toUpper();
+bool  Goban::vertexToXY( QString v, qint32 *x, qint32 *y )
+{ v = v.toUpper();
   *x = Xsize;
   if ( *x > Xlabels.size() )
     { qDebug( "WARNING: Xsize larger than available labels." );
@@ -243,10 +243,10 @@ bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
   bool done = false;
   while ( !done )
     { if ( *x <= 0 )
-        { qDebug( "Goban::vertexToXY(%s) no match found in Xlabels", qPrintable( pos ) );
+        { qDebug( "Goban::vertexToXY(%s) no match found in Xlabels", qPrintable( v ) );
           return false;
         }
-      if ( pos.startsWith( Xlabels.at(--*x) ) )
+      if ( v.startsWith( Xlabels.at(--*x) ) )
         done = true;
     }
   *y = Ysize;
@@ -257,10 +257,10 @@ bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
   done = false;
   while ( !done )
     { if ( *y <= 0 )
-        { qDebug( "Goban::vertexToXY(%s) no match found in Ylabels", qPrintable( pos ) );
+        { qDebug( "Goban::vertexToXY(%s) no match found in Ylabels", qPrintable( v ) );
           return false;
         }
-      if ( pos.endsWith( Ylabels.at(--*y) ) )
+      if ( v.endsWith( Ylabels.at(--*y) ) )
         done = true;
     }
   return true;
@@ -268,12 +268,12 @@ bool  Goban::vertexToXY( QString pos, qint32 *x, qint32 *y )
 
 /**
  * @brief Goban::vertexToIndex
- * @param pos - vertex string to translate
+ * @param v - vertex string to translate
  * @return index, or -1 if vertex is invalid
  */
-qint32  Goban::vertexToIndex( QString pos )
+qint32  Goban::vertexToIndex( QString v )
 { qint32 x,y;
-  if ( !vertexToXY( pos, &x, &y ) )
+  if ( !vertexToXY( v, &x, &y ) )
     return -1;
   return xyToIndex( x, y );
 }
@@ -336,10 +336,10 @@ Goishi *Goban::goishiAt( qint32 x, qint32 y )
   return grid.at( x + Xsize * y );
 }
 
-Goishi *Goban::goishiAt( QString pos )
+Goishi *Goban::goishiAt( QString v )
 { qint32 x = -1;
   qint32 y = -1;
-  if ( vertexToXY( pos, &x, &y ) )
+  if ( vertexToXY( v, &x, &y ) )
     return goishiAt( x, y );
   return nullptr;
 }
@@ -365,6 +365,15 @@ bool  Goban::onBoard( qint32 x, qint32 y )
   if ( y >= Ysize ) return false;
   return true;
 }
+
+bool  Goban::onBoard( QString v )
+{ if (( v == "pass" ) || ( v == "resign" ))
+    return false;
+  qint32 x,y;
+  vertexToXY( v, &x, &y );
+  return onBoard( x, y );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
