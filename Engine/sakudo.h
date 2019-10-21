@@ -18,7 +18,7 @@ class Sakudo : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Sakudo(Game *parent = nullptr);
+    explicit  Sakudo( Game *p );
      QString  genmove( qint32 c );
      QString  genmoveRandy( qint32 c );
      QString  genmoveKilroy( qint32 c );

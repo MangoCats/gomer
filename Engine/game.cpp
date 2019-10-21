@@ -5,9 +5,9 @@
  * @param playerNames - list of player names, size implies the number of players
  * @param xs - board X size
  * @param ys - board Y size
- * @param parent - QObject this Game "lives in", or nullptr.
+ * @param p - QObject this Game "lives in", or nullptr.
  */
-Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QObject(parent), np(playerNames.size()), pt(0)
+Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *p) : QObject(p), np(playerNames.size()), pt(0)
 { // qDebug( "Game constructor %d players", np );
   // TODO: if np < 2 or np too big, fail out.
 
@@ -26,9 +26,9 @@ Game::Game(QStringList playerNames, qint32 xs, qint32 ys, QObject *parent) : QOb
 /**
  * @brief Game::Game - copy constructor
  * @param gp - object to copy
- * @param parent - parent of the new Game object
+ * @param p - parent of the new Game object
  */
-Game::Game(Game *gp, QObject *parent) : QObject(parent)
+Game::Game(Game *gp, QObject *p) : QObject(p)
 { bp = new Goban( gp->bp, this );
   foreach ( Player *pp, gp->ppl )
     { Gosu *sp = new Gosu( pp->sp, bp );
@@ -197,6 +197,10 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
  */
 bool Game::playGoishi( QString v, qint32 c )
 { qint32 x,y;
+  if ( v == "pass" )
+    { pass();
+      return true;
+    }
   if ( bp == nullptr )
     { qDebug( "WARNING: Game::playGoishi Goban null" );
       return false;
@@ -210,7 +214,8 @@ bool Game::playGoishi( QString v, qint32 c )
  * @brief Game::advancePlayer - Advance player turn to the next player, reset to player 0 when last player has played
  */
 void Game::advancePlayer()
-{ if ( ++pt >= np )
+{ qDebug( "Advance player" );
+  if ( ++pt >= np )
     pt = 0;
 }
 

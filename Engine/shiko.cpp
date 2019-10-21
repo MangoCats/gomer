@@ -3,17 +3,17 @@
 /**
  * @brief Shiko::Shiko - normal constructor, called at game start with an empty Goban
  * @param pbp - passed Goban pointer, Goban this Shiko thinks about
- * @param parent - Game this Shiko is playing
+ * @param p - parent, Game this Shiko is playing
  */
-Shiko::Shiko(Game *parent) : QObject(parent), gp(parent), bp(parent->bp)
+Shiko::Shiko(Game *p) : QObject(p), gp(p), bp(p->bp), cp(new Chiiki(this))
 {}
 
 /**
  * @brief Shiko::Shiko - copy constructor
  * @param tp - Shiko to copy
- * @param parent - new Game parent
+ * @param p - new Game parent
  */
-Shiko::Shiko(Shiko *tp, Game *parent) : QObject(parent), gp(parent), bp(tp->bp)
+Shiko::Shiko(Shiko *tp, Game *p) : QObject(p), gp(p), bp(tp->bp), cp(tp->cp)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
   stateHistory = tp->stateHistory;

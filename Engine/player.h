@@ -12,7 +12,7 @@ class Player : public QObject
 {
     Q_OBJECT
 public:
-    explicit Player(QString n, Gosu *parent = nullptr);
+    explicit Player( QString n, Gosu *p );
 
 signals:
 

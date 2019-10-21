@@ -15,11 +15,11 @@ class Gosu : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Gosu(Goban *parent = nullptr);
-              Gosu(Gosu *sp, Goban *parent = nullptr);
+    explicit  Gosu( Goban *p );
+              Gosu( Gosu *sp, Goban *p );
         void  empty();
-        void  addGoishiToBowl(Goishi *ip);
-        void  addGoishiToLid(Goishi *ip);
+        void  addGoishiToBowl( Goishi * );
+        void  addGoishiToLid( Goishi * );
       qint32  goishiInBowl() { return bowl.size(); }
       qint32  goishiInLid()  { return  lid.size(); }
       Goishi *takeGoishiFromBowl();

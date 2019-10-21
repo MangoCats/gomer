@@ -19,8 +19,8 @@ class Goishi : public QObject
 {
     Q_OBJECT
 public:
-    explicit Goishi(qint32 c, Goban *parent = nullptr);
-             Goishi(Goishi *ip, Goban *parent = nullptr);
+    explicit Goishi( qint32 c, Goban *p );
+             Goishi( Goishi *ip, Goban *p );
 
 signals:
 

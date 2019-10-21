@@ -27,6 +27,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5Core)
 
 add_executable(GomerEngine main.cpp
+                           chiiki.cpp
                            console.cpp
                            game.cpp
                            goban.cpp
@@ -40,6 +41,7 @@ add_executable(GomerEngine main.cpp
               )
 
 set(SOURCES config.h.in
+            chiiki.h
             console.h
             game.h
             goban.h

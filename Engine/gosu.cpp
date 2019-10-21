@@ -1,15 +1,15 @@
 #include "gosu.h"
 
-Gosu::Gosu(Goban *parent) : QObject(parent), bp(parent)
+Gosu::Gosu(Goban *p) : QObject(p), bp(p)
 { // qDebug( "Gosu constructor" );
 }
 
 /**
  * @brief Gosu::Gosu - copy constructor
  * @param sp - Gosu to copy
- * @param parent - parent of the new Gosu
+ * @param p - parent of the new Gosu
  */
-Gosu::Gosu(Gosu *sp, Goban *parent) : QObject(parent), bp(parent)
+Gosu::Gosu(Gosu *sp, Goban *p) : QObject(p), bp(p)
 { foreach( Goishi *ip, sp->bowl )
     bowl.append( new Goishi(ip,bp) );
   foreach( Goishi *ip, sp->lid )

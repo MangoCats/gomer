@@ -2,7 +2,7 @@
 #include "console.h"
 #include "config.h"
 
-GtpHandler::GtpHandler(QCoreApplication *app, Game *parent) : QObject(parent), gp(parent)
+GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
 { // qDebug( "GtpHandler constructor" );
   showBoardAfterPlay = false;
   debugWyrms = false;
@@ -351,7 +351,7 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_GENMOVE_BLACK:
         if ( !checkMpNull( id ) ) break;
         cmd = gp->mp->genmove(0);
-        if ( gp->bp->onBoard( cmd ) )
+        if ( gp->bp->onBoard( cmd ) || ( cmd == "pass" ) )
           if ( !gp->playGoishi( cmd, 0 ) )
             { respond( false, id, "problem playing black "+cmd ); break; }
         respond( true, id, cmd );
@@ -360,7 +360,7 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_GENMOVE_WHITE:
         if ( !checkMpNull( id ) ) break;
         cmd = gp->mp->genmove(1);
-        if ( gp->bp->onBoard( cmd ) )
+        if ( gp->bp->onBoard( cmd ) || ( cmd == "pass" ) )
           if ( !gp->playGoishi( cmd, 1 ) )
             { respond( false, id, "problem playing white "+cmd ); break; }
         respond( true, id, cmd );
@@ -370,7 +370,7 @@ void  GtpHandler::receivedMessage( QString m )
         if ( !checkMpNull( id ) ) break;
         c = gp->pt;
         cmd = gp->mp->genmove(c);
-        if ( gp->bp->onBoard( cmd ) )
+        if ( gp->bp->onBoard( cmd ) || ( cmd == "pass" ) )
           if ( !gp->playGoishi( cmd, c ) )
             { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
         msg = "\n";
@@ -385,7 +385,7 @@ void  GtpHandler::receivedMessage( QString m )
         if (( c < 0 ) || ( c >= gp->np ))
           { respond( false, id, "invalid color "+arguments ); break; }
         cmd = gp->mp->genmove(c);
-        if ( gp->bp->onBoard( cmd ) )
+        if ( gp->bp->onBoard( cmd ) || ( cmd == "pass" ) )
           if ( !gp->playGoishi( cmd, c ) )
             { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
         msg = "\n";

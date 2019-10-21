@@ -3,9 +3,9 @@
 /**
  * @brief Wyrm::Wyrm
  * @param ip - single Goishi Wyrm
- * @param parent
+ * @param p - parent
  */
-Wyrm::Wyrm(Goishi *ip, Shiko *parent) : QObject(parent)
+Wyrm::Wyrm(Goishi *ip, Shiko *p) : QObject(p)
 { addGoishi( ip ); }
 
 /**
@@ -13,8 +13,8 @@ Wyrm::Wyrm(Goishi *ip, Shiko *parent) : QObject(parent)
  * @param wp - Wyrm to copy
  * @param parent - parent of the new Wyrm
  */
-Wyrm::Wyrm(Wyrm *wp, Shiko *parent) : QObject(parent)
-{ Goban *bpn = parent->bp; // New Goban
+Wyrm::Wyrm(Wyrm *wp, Shiko *p) : QObject(p)
+{ Goban *bpn = p->bp; // New Goban
   foreach( Goishi *ipo, wp->ipl )
     { Goishi *ipn = bpn->goishiAt( ipo->x, ipo->y );
       if ( ipn == nullptr )

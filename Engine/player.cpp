@@ -1,7 +1,6 @@
 #include "player.h"
 
-Player::Player(QString n, Gosu *parent) : QObject(parent), name( n )
+Player::Player(QString n, Gosu *p) : QObject(p), name(n), sp(p)
 { // qDebug( "Player constructor %s", qPrintable( n ) );
-  sp = parent;
   bp = sp->bp;
 }

@@ -23,8 +23,8 @@ class Game : public QObject
 {
     Q_OBJECT
 public:
-    explicit Game(QStringList playerNames, qint32 xs = 19, qint32 ys = 19, QObject *parent = nullptr);
-             Game(Game *gp, QObject *parent = nullptr);
+    explicit Game( QStringList playerNames, qint32 xs = 19, qint32 ys = 19, QObject *p = nullptr );
+             Game( Game *gp, QObject *p = nullptr );
         void fillGosu();
         void clearGoban();
         void clearGoishi( Goishi * );

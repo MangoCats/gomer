@@ -1,10 +1,12 @@
 #ifndef SHIKO_H
 #define SHIKO_H
-
+\
+class Chiiki;
 class Game;
 class Goban;
 class Wyrm;
 #include <QObject>
+#include "chiiki.h"
 #include "game.h"
 #include "goban.h"
 #include "wyrm.h"
@@ -16,8 +18,8 @@ class Shiko : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Shiko(Game *parent);
-              Shiko(Shiko *tp, Game *parent);
+    explicit  Shiko( Game *p );
+              Shiko( Shiko *tp, Game *p );
         void  clearGoban();
 QList<qint32> allLegalMoves( qint32 c );
         bool  legalMove( qint32 x, qint32 y, qint32 c );
@@ -43,6 +45,7 @@ public slots:
 public:
           QPointer<Game> gp;
          QPointer<Goban> bp;
+        QPointer<Chiiki> cp;
   QList<QPointer<Wyrm> > wpl;
             QStringList  stateHistory; // Previous board positions
 };
