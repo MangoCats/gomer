@@ -38,6 +38,7 @@ QList<qint32> allLegalMoves( qint32 c );
         void  addCaptureLiberties( Goishi *ip );
         void  addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c );
      QString  showWyrms();
+        void  evaluateLife();
 
 signals:
 

@@ -55,6 +55,24 @@ QString Ryoiki::show()
 }
 
 /**
+ * @brief Ryoiki::eyes
+ * @return the number of eyes this Ryoiki "counts for"
+ */
+qint32 Ryoiki::eyes()
+{ if ( color == NO_PLAYER )
+    return 0;
+  qint32 sz = hpl.size();
+  if ( sz < 1 )
+    return 0;
+  if ( sz < 4 )
+    return 1;
+  if ( sz >= 7 )
+    return 2;
+  // TODO: more in-depth analysis of the 4,5,6 shape (pattern matching?) to determine 1 vs 2 eyes
+  return 2;
+}
+
+/**
  * @brief Chiiki::Chiiki - basic constructor, whole Goban analysis
  *   of territory
  * @param p - parent Shiko

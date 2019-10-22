@@ -38,6 +38,7 @@ public:
     explicit  Ryoiki( Chiiki *p );
         void  addHata( Hata *hp ) { if ( !hpl.contains( hp ) ) hpl.append( hp ); }
      QString  show();
+      qint32  eyes();
 
                    qint32  color;  // Color of the surrounding Goishi, -1 if mixed
            QPointer<Goban> bp;

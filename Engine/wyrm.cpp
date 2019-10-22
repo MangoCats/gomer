@@ -5,7 +5,7 @@
  * @param ip - single Goishi Wyrm
  * @param p - parent
  */
-Wyrm::Wyrm(Goishi *ip, Shiko *p) : QObject(p)
+Wyrm::Wyrm(Goishi *ip, Shiko *p) : QObject(p), tp(p)
 { addGoishi( ip ); }
 
 /**
@@ -13,7 +13,7 @@ Wyrm::Wyrm(Goishi *ip, Shiko *p) : QObject(p)
  * @param wp - Wyrm to copy
  * @param parent - parent of the new Wyrm
  */
-Wyrm::Wyrm(Wyrm *wp, Shiko *p) : QObject(p)
+Wyrm::Wyrm(Wyrm *wp, Shiko *p) : QObject(p), tp(p)
 { Goban *bpn = p->bp; // New Goban
   foreach( Goishi *ipo, wp->ipl )
     { Goishi *ipn = bpn->goishiAt( ipo->x, ipo->y );
@@ -171,4 +171,73 @@ QString Wyrm::show()
     w.append( " " + bp->indexToVertex( i ) );
   w.append( "\n" );
   return w;
+}
+
+/**
+ * @brief Wyrm::adjacentRyoiki
+ * @return a list of all Ryoiki this Wyrm touches
+ */
+QList<Ryoiki *> Wyrm::adjacentRyoiki()
+{ QList<Ryoiki *> arpl;
+  if ( tp == nullptr )
+    { qDebug( "Wyrm::adjacentRyoiki() Shiko null" );
+      return arpl;
+    }
+  Chiiki *cp = tp->cp;
+  if ( cp == nullptr )
+    { qDebug( "Wyrm::adjacentRyoiki() Chiiki null" );
+      return arpl;
+    }
+  Goban *bp = cp->bp;
+  if ( bp == nullptr )
+    { qDebug( "Wyrm::adjacentRyoiki() Goban null" );
+      return arpl;
+    }
+  foreach ( Goishi *ip, ipl ) // Work through each Goishi in this Wyrm
+    { if ( ip == nullptr )
+        qDebug( "Wyrm::adjacentRyoiki() Goishi null" );
+       else
+        { qint32 x = ip->x;
+          qint32 y = ip->y;
+          if ( x > 0 )            addRyoiki( cp, x-1, y, arpl );
+          if ( x < bp->Xsize -1 ) addRyoiki( cp, x+1, y, arpl );
+          if ( y > 0 )            addRyoiki( cp, x, y-1, arpl );
+          if ( y < bp->Ysize -1 ) addRyoiki( cp, x, y+1, arpl );
+        }
+    }
+  return arpl;
+}
+
+/**
+ * @brief Wyrm::addRyoiki - read a single grid point looking for
+ *   novel Ryoiki to add to the list.
+ * @param cp - Chiiki to get the Ryoiki from
+ * @param x - grid coordinate to check
+ * @param y - grid coordinate to check
+ * @param arpl - adjacent Ryoiki pointer list
+ */
+void Wyrm::addRyoiki( Chiiki *cp, qint32 x, qint32 y, QList<Ryoiki *>& arpl )
+{ qint32 i = cp->bp->xyToIndex(x,y);
+  if (( i < 0 ) || ( i >= cp->bp->nPoints() ))
+    { qDebug( "Wyrm::addRyoiki() %d, %d off Goban",x,y );
+      return;
+    }
+  if ( cp->hGrid.at(i) == nullptr )
+    return;
+  qint32 ri = cp->hGrid.at(i)->ri;
+  if (( ri < 0 ) || ( ri >= cp->rpl.size() ))
+    { qDebug( "Wyrm::addRyoiki() ri %d out of range [0,%d)",ri,cp->rpl.size() );
+      return;
+    }
+  Ryoiki *rp = cp->rpl.at( ri );
+  if ( rp == nullptr )
+    { qDebug( "Wyrm::addRyoiki() Ryoiki null" );
+      return;
+    }
+  if (( rp->color != color() ) && ( rp->color != NO_PLAYER ))
+    { qDebug( "Wyrm::addRyoiki() Ryoiki color %d mismatch to Wyrm color %d", rp->color, color() );
+      return;
+    }
+  if ( !arpl.contains( rp ) )
+    arpl.append( rp );
 }

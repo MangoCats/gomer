@@ -251,6 +251,8 @@ void Shiko::goishiPlacedOnGoban( Goishi *ip )
   stateHistory.append( bp->state() );
 
   cp->update(); // Update Chiiki
+
+  evaluateLife();
 }
 
 /**
@@ -396,4 +398,23 @@ QString Shiko::showWyrms()
   foreach( Wyrm *wp, wpl )
     s.append( wp->show() );
   return s;
+}
+
+/**
+ * @brief Shiko::evaluateLife - Chiiki has been recently updated, now
+ *   re-evaluate the life status of all Wyrms
+ */
+void Shiko::evaluateLife()
+{ foreach ( Wyrm *wp, wpl )
+    { qint32 eyes = 0;
+      QList<Ryoiki *> arpl = wp->adjacentRyoiki();
+      foreach ( Ryoiki *rp, arpl )
+        { if ( rp->color == wp->color() )
+            eyes += rp->eyes();
+        }
+      if ( eyes > 1 )
+        wp->lifeOrDeath = WYRM_LIVE;
+       else
+        wp->lifeOrDeath = WYRM_UNSETTLED;
+    }
 }
