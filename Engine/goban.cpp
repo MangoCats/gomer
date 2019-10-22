@@ -352,6 +352,13 @@ Goishi *Goban::goishi( qint32 i )
   return grid.at( i );
 }
 
+qint32 Goban::color( qint32 i )
+{ Goishi *ip = goishi(i);
+  if ( ip == nullptr )
+    return NO_PLAYER;
+  return ip->color;
+}
+
 /**
  * @brief Goban::onBoard
  * @param x

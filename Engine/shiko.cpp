@@ -17,6 +17,7 @@ Shiko::Shiko(Shiko *tp, Game *p) : QObject(p), gp(p), bp(tp->bp), cp(tp->cp)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
   stateHistory = tp->stateHistory;
+  cp = new Chiiki( tp->cp, this );
 }
 
 /**
@@ -27,6 +28,14 @@ void Shiko::clearGoban()
     wyrmCaptured( wpl.at(0) ); // Clears the wp-s in the Goishi as well as removing the Wyrm from wpl
   stateHistory.clear();
   stateHistory.append( bp->state() ); // Move 0 state, Goban should already be clear
+}
+
+/**
+ * @brief Shiko::resizeGoban - board has changed size, adjust analysis structures to match
+ */
+void Shiko::resizeGoban()
+{ if ( cp != nullptr )
+    cp->resizeGoban();
 }
 
 /**

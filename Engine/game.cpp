@@ -130,6 +130,8 @@ bool Game::resizeGoban( qint32 xs, qint32 ys )
   bool success = bp->resize( xs, ys );
   if ( success )
     fillGosu();
+  if ( tp != nullptr )
+    tp->resizeGoban();
   return success;
 }
 

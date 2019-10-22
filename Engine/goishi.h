@@ -8,10 +8,6 @@ class Wyrm;
 #include "goban.h"
 #include "wyrm.h"
 
-// X coordinates when in Gosu, Y coordinate is the color of the Gosu owner
-#define GOSU_BOWL -2
-#define GOSU_LID  -3
-
 /**
  * @brief The Goishi class - a stone
  */

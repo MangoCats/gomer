@@ -9,6 +9,14 @@ class Goishi;
 #include "game.h"
 #include "goishi.h"
 
+// Notional no player and undetermined player indices (like colors, but not colors)
+#define NO_PLAYER -1
+#define UNDETERMINED_PLAYER -2
+
+// X coordinates when in Gosu, Y coordinate is the color of the Gosu owner
+#define GOSU_BOWL -2
+#define GOSU_LID  -3
+
 /**
  * @brief The Goban class - a generalized playing board
  *
@@ -40,6 +48,7 @@ public:
       Goishi *goishiAt( qint32 x, qint32 y );
       Goishi *goishiAt( QString v );
       Goishi *goishi( qint32 i );
+      qint32  color( qint32 i );
         bool  onBoard( qint32 x, qint32 y );
         bool  onBoard( QString v );
      QString  showBoard();
@@ -56,8 +65,8 @@ public slots:
 public:
               QPointer<Game> gp;
                      qint32  Xsize,Ysize;
-               QList<qint32> Xdots,Ydots;
   QVector<QPointer<Goishi> > grid;
+               QList<qint32> Xdots,Ydots;
                     QString  goishiChar;
                 QStringList  Xlabels,Ylabels;
 };
