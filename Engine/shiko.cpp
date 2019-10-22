@@ -249,6 +249,8 @@ void Shiko::goishiPlacedOnGoban( Goishi *ip )
 
   // Save this move in the state history
   stateHistory.append( bp->state() );
+
+  cp->update(); // Update Chiiki
 }
 
 /**

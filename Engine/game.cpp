@@ -216,7 +216,7 @@ bool Game::playGoishi( QString v, qint32 c )
  * @brief Game::advancePlayer - Advance player turn to the next player, reset to player 0 when last player has played
  */
 void Game::advancePlayer()
-{ qDebug( "Advance player" );
+{ // qDebug( "Advance player" );
   if ( ++pt >= np )
     pt = 0;
 }

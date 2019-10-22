@@ -39,6 +39,7 @@ public:
       QStringList  handledCommands;
              bool  showBoardAfterPlay;
              bool  debugWyrms;
+             bool  debugRyoiki;
 };
 
 #endif // GTPHANDLER_H

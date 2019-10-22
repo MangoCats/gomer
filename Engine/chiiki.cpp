@@ -7,8 +7,7 @@
  * @param pri - Ryoiki index this Hata pertains to
  */
 Hata::Hata( Chiiki *p, qint32 pi, qint32 pri ) : QObject(p), i(pi), ri(pri), bp(p->bp)
-{ color = NO_PLAYER; // Unknown, at first
-}
+{}
 
 /**
  * @brief Hata::Hata - copy constructor
@@ -16,8 +15,7 @@ Hata::Hata( Chiiki *p, qint32 pi, qint32 pri ) : QObject(p), i(pi), ri(pri), bp(
  * @param p - new Chiiki parent
  */
 Hata::Hata( Hata *php, Chiiki *p ) : QObject(p), bp(p->bp)
-{ color   = php->color;
-  i       = php->i;
+{ i       = php->i;
   ri      = php->ri;
 }
 
@@ -37,13 +35,24 @@ qint32 Hata::y()
   return y;
 }
 
+QString Hata::show()
+{ return bp->indexToVertex(i) + " "; }
+
 /**
  * @brief Ryoiki::Ryoiki - a group of Hata, forms a region
  *   like a Wyrm of free space / liberties.
  * @param p - Chiiki parent
  */
-Ryoiki::Ryoiki( Chiiki *p ) : QObject(p)
-{}
+Ryoiki::Ryoiki( Chiiki *p ) : QObject(p), bp(p->bp)
+{ color = NO_PLAYER; // Unknown, at first
+}
+
+QString Ryoiki::show()
+{ QString s = QString( "%1 " ).arg( bp->colorToChar( color ) );
+  foreach ( Hata *hp, hpl )
+    s.append( hp->show() );
+  return s + "\n";
+}
 
 /**
  * @brief Chiiki::Chiiki - basic constructor, whole Goban analysis
@@ -80,6 +89,13 @@ Chiiki::Chiiki(Chiiki *pcp,Shiko *p) : QObject(p), bp(pcp->bp), tp(p)
           ryoikiListAdd( nhp );
         }
     }
+}
+
+QString Chiiki::showRyoiki()
+{ QString s;
+  foreach ( Ryoiki *rp, rpl )
+    s.append( rp->show() );
+  return "\n" + s;
 }
 
 /**
@@ -217,8 +233,8 @@ void Chiiki::hCheck( int x, int y, int ri )
 
 
 /**
- * @brief Chiiki::update - work through the Goban to set Hata everywhere
- *   there are no Goishi
+ * @brief Chiiki::update - work through the Goban to set
+ *   Hata everywhere there are no Goishi
  */
 void Chiiki::update()
 { clear();
@@ -246,7 +262,7 @@ void Chiiki::update()
           if ( ++j >= rp->hpl.size() ) done = true;
         }
       foreach ( Hata *hp, rp->hpl )
-        hp->color = rc;
+        rp->color = rc;
     }
 }
 

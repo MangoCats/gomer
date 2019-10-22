@@ -5,7 +5,8 @@
 GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
 { // qDebug( "GtpHandler constructor" );
   showBoardAfterPlay = false;
-  debugWyrms = false;
+  debugWyrms  = false;
+  debugRyoiki = false;
   connect( this, SIGNAL(quit()), app, SLOT(quit()) );
   Console *cp = new Console(this);
   connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
@@ -51,36 +52,38 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
 #define      COMMAND_INDEX_P                        18
   handledCommands.append( "debug_wyrms" );
 #define      COMMAND_INDEX_DEBUG_WYRMS              19
+  handledCommands.append( "debug_ryoiki" );
+#define      COMMAND_INDEX_DEBUG_RYOIKI             20
   handledCommands.append( "showboard_after_play" );
-#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     20
+#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     21
   handledCommands.append( "sap" );
-#define      COMMAND_INDEX_SAP                      21
+#define      COMMAND_INDEX_SAP                      22
   handledCommands.append( "noboard_after_play" );
-#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       22
+#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       23
   handledCommands.append( "nap" );
-#define      COMMAND_INDEX_NAP                      23
+#define      COMMAND_INDEX_NAP                      24
   handledCommands.append( "is_legal" );
-#define      COMMAND_INDEX_IS_LEGAL                 24
+#define      COMMAND_INDEX_IS_LEGAL                 25
   handledCommands.append( "captures" );
-#define      COMMAND_INDEX_CAPTURES                 25
+#define      COMMAND_INDEX_CAPTURES                 26
   handledCommands.append( "countlib" );
-#define      COMMAND_INDEX_COUNTLIB                 26
+#define      COMMAND_INDEX_COUNTLIB                 27
   handledCommands.append( "findlib" );
-#define      COMMAND_INDEX_FINDLIB                  27
+#define      COMMAND_INDEX_FINDLIB                  28
   handledCommands.append( "genmove_black" );
-#define      COMMAND_INDEX_GENMOVE_BLACK            28
+#define      COMMAND_INDEX_GENMOVE_BLACK            29
   handledCommands.append( "genmove_white" );
-#define      COMMAND_INDEX_GENMOVE_WHITE            29
+#define      COMMAND_INDEX_GENMOVE_WHITE            30
   handledCommands.append( "genmove" );
-#define      COMMAND_INDEX_GENMOVE                  30
+#define      COMMAND_INDEX_GENMOVE                  31
   handledCommands.append( "g" );
-#define      COMMAND_INDEX_G                        31
+#define      COMMAND_INDEX_G                        32
   handledCommands.append( "reg_genmove" );
-#define      COMMAND_INDEX_REG_GENMOVE              32
+#define      COMMAND_INDEX_REG_GENMOVE              33
   handledCommands.append( "gg_genmove" );
-#define      COMMAND_INDEX_GG_GENMOVE               33
+#define      COMMAND_INDEX_GG_GENMOVE               34
   handledCommands.append( "level" );
-#define      COMMAND_INDEX_LEVEL                    34
+#define      COMMAND_INDEX_LEVEL                    35
 }
 
 /**
@@ -266,12 +269,18 @@ void  GtpHandler::receivedMessage( QString m )
           }
         msg = showBoardAfterPlay ? gp->showBoard() : "";
         msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
+        msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
         respond( true, id, msg );
         break;
 
       case COMMAND_INDEX_DEBUG_WYRMS:
         debugWyrms = !debugWyrms;
         respond( true, id, debugWyrms ? "Wyrm debug ON" : "Wyrm debug OFF" );
+        break;
+
+      case COMMAND_INDEX_DEBUG_RYOIKI:
+        debugRyoiki = !debugRyoiki;
+        respond( true, id, debugRyoiki ? "Ryoiki debug ON" : "Ryoiki debug OFF" );
         break;
 
       case COMMAND_INDEX_SHOWBOARD_AFTER_PLAY:
@@ -375,7 +384,8 @@ void  GtpHandler::receivedMessage( QString m )
             { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
         msg = "\n";
         msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
-        msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
+        msg.append( debugWyrms  ? gp->tp->showWyrms() : "" );
+        msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
         respond( true, id, cmd+msg );
         break;
 
@@ -391,6 +401,7 @@ void  GtpHandler::receivedMessage( QString m )
         msg = "\n";
         msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
         msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
+        msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
         respond( true, id, cmd+msg );
         break;
 

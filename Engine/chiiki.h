@@ -20,8 +20,8 @@ public:
                 Hata( Hata *php, Chiiki *p );
         qint32  x();
         qint32  y();
+       QString  show();
 
-        qint32  color;  // Color of the surrounding Goishi, -1 if mixed
         qint32  i;      // Goban position, as index
         qint32  ri;     // index of the Ryoiki in the Chiiki rpl this Hata is in
 QPointer<Goban> bp;
@@ -37,7 +37,10 @@ class Ryoiki : public QObject
 public:
     explicit  Ryoiki( Chiiki *p );
         void  addHata( Hata *hp ) { if ( !hpl.contains( hp ) ) hpl.append( hp ); }
+     QString  show();
 
+                   qint32  color;  // Color of the surrounding Goishi, -1 if mixed
+           QPointer<Goban> bp;
     QList<QPointer<Hata> > hpl;
 };
 
@@ -59,6 +62,7 @@ public:
         void  hFill( qint32 x, qint32 y, qint32 ri );
         void  hCheck( int x, int y, int ri );
         bool  ryoikiColor( int x, int y, int *rc );
+     QString  showRyoiki();
 
 signals:
 
