@@ -268,19 +268,22 @@ void Chiiki::update()
   // Determine the color of each Ryoiki
   for ( int k = 0; k < rpl.size(); k++ )
     { Ryoiki *rp = rpl.at(k);
-      int rc = UNDETERMINED_PLAYER;
-      bool done = ( rp->hpl.size() <= 0 );
-      int j = 0;
-      while( !done )
-        { Hata *hp = rp->hpl.at(j);
-          if ( hp->x() > 0 )               done |= ryoikiColor( hp->x()-1, hp->y(), &rc );
-          if ( hp->x() < (bp->Xsize - 1) ) done |= ryoikiColor( hp->x()+1, hp->y(), &rc );
-          if ( hp->y() > 0 )               done |= ryoikiColor( hp->x(), hp->y()-1, &rc );
-          if ( hp->y() < (bp->Ysize - 1) ) done |= ryoikiColor( hp->x(), hp->y()+1, &rc );
-          if ( ++j >= rp->hpl.size() ) done = true;
+      if ( rp == nullptr )
+        qDebug( "Chiiki::update() Ryoiki null" );
+       else
+        { int rc = UNDETERMINED_PLAYER;
+          bool done = ( rp->hpl.size() <= 0 );
+          int j = 0;
+          while( !done )
+            { Hata *hp = rp->hpl.at(j);
+              if ( hp->x() > 0 )               done |= ryoikiColor( hp->x()-1, hp->y(), &rc );
+              if ( hp->x() < (bp->Xsize - 1) ) done |= ryoikiColor( hp->x()+1, hp->y(), &rc );
+              if ( hp->y() > 0 )               done |= ryoikiColor( hp->x(), hp->y()-1, &rc );
+              if ( hp->y() < (bp->Ysize - 1) ) done |= ryoikiColor( hp->x(), hp->y()+1, &rc );
+              if ( ++j >= rp->hpl.size() ) done = true;
+            }
+          rp->color = rc;
         }
-      foreach ( Hata *hp, rp->hpl )
-        rp->color = rc;
     }
 }
 
@@ -309,5 +312,33 @@ bool Chiiki::ryoikiColor( int x, int y, int *rc )
     return false; // Continuing the trend
   *rc = NO_PLAYER;       // Contrasting neighbor found, territory is in dispute
   return true;
+}
+
+/**
+ * @brief Chiiki::colorAt
+ * @param i - index of grid position to read
+ * @return color of Ryoiki at i
+ */
+qint32  Chiiki::colorAt( qint32 i )
+{ if (( i < 0 ) || ( i >= bp->nPoints() ))
+    { qDebug( "Chiiki::colorAt(%d) out of range", i );
+      return NO_PLAYER;
+    }
+  Hata *hp = hGrid.at(i);
+  if ( hp == nullptr )
+    { qDebug( "Chiiki::colorAt(%d) not in a Ryoiki, unusual to request it", i );
+      return NO_PLAYER;
+    }
+  qint32 ri = hp->ri;
+  if (( ri < 0 ) || ( ri >= rpl.size() ))
+    { qDebug( "Chiiki::colorAt() ri %d out of range", ri );
+      return NO_PLAYER;
+    }
+  Ryoiki *rp = rpl.at(ri);
+  if ( rp == nullptr )
+    { qDebug( "Chiiki::colorAt() Ryoiki null" );
+      return NO_PLAYER;
+    }
+  return rp->color;
 }
 

@@ -63,6 +63,7 @@ public:
         void  hFill( qint32 x, qint32 y, qint32 ri );
         void  hCheck( int x, int y, int ri );
         bool  ryoikiColor( int x, int y, int *rc );
+      qint32  colorAt( qint32 i );
      QString  showRyoiki();
 
 signals:

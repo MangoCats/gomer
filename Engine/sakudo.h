@@ -1,12 +1,14 @@
 #ifndef SAKUDO_H
 #define SAKUDO_H
 
+class Chiiki;
 class Game;
 class Goban;
 class Shiko;
 #include <QObject>
 #include <QPointer>
 #include <QRandomGenerator>
+#include "chiiki.h"
 #include "game.h"
 #include "goban.h"
 #include "shiko.h"
@@ -19,6 +21,7 @@ class Sakudo : public QObject
     Q_OBJECT
 public:
     explicit  Sakudo( Game *p );
+        bool  allInOwnRyoiki( qint32 c, const QList<qint32>& ml );
      QString  genmove( qint32 c );
      QString  genmoveRandy( qint32 c );
      QString  genmoveKilroy( qint32 c );

@@ -28,6 +28,25 @@ QString Sakudo::genmove( qint32 c )
     }
 }
 
+
+/**
+ * @brief Sakudo::allInOwnRyoiki
+ * @param c - color to check
+ * @param ml - move list (indices)
+ * @return true if every index in ml is in a Ryoiki owned by c
+ */
+bool Sakudo::allInOwnRyoiki( qint32 c, const QList<qint32>& ml )
+{ Chiiki *cp = tp->cp;
+  if ( cp == nullptr )
+    { qDebug( "Sakudo::allInOwnRyoiki Chiiki null" );
+      return false;
+    }
+  foreach ( qint32 i, ml )
+    if ( cp->colorAt(i) != c )
+      return false;
+  return true;
+}
+
 /**
  * @brief Sakudo::genmoveRandy - return a random legal move, pass if none available
  * @param c - color to generate a move for
@@ -37,7 +56,7 @@ QString Sakudo::genmoveRandy( qint32 c )
 { if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
   QList<qint32> lml = tp->allLegalMoves(c);
-  if ( lml.size() < 1 )
+  if (( lml.size() < 1 ) || allInOwnRyoiki( c, lml ))
     return "pass";
   return bp->indexToVertex(lml.at( rng.bounded(0,lml.size()) ));
 }
@@ -53,7 +72,7 @@ QString Sakudo::genmoveKilroy( qint32 c )
 { if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
   QList<qint32> lml = tp->allLegalMoves(c);
-  if ( lml.size() < 1 )
+  if (( lml.size() < 1 ) || allInOwnRyoiki( c, lml ))
     return "pass";
   qint32 x,y;
   // First move?
@@ -77,8 +96,11 @@ QString Sakudo::genmoveKilroy( qint32 c )
             }
         }
     }
-  if ( owpl.size() < 1 )    // Nothing to attack, make a random move
-    return genmoveRandy(c);
+  if ( owpl.size() < 1 )    // Nothing to attack, make a random move on the first turn
+    { if ( tp->stateHistory.size() <= gp->np )
+        return genmoveRandy(c);
+      return "pass";
+    }
 
   // Of the attackable Wyrms with minLib liberties, which has the most Goishi?
   qint32 maxGoishi = 0;
@@ -96,8 +118,9 @@ QString Sakudo::genmoveKilroy( qint32 c )
 
   if ( awpl.size() < 1 )
     { qDebug( "SURPRISED: Sakudo::genmoveKilroy awpl empty" );
-      return genmoveRandy(c);
+      return "pass";
     }
+
   QList<qint32> aapl; // Available attack points list
   foreach ( Wyrm *wp, awpl )
     foreach ( qint32 i, wp->libertyList )
@@ -190,9 +213,10 @@ QString Sakudo::genmoveKilroy( qint32 c )
 bool Sakudo::canBeAttacked( Wyrm *wp, qint32 c )
 { if ( wp->color() == c )
     return false;
+  if ( wp->lifeOrDeath == WYRM_LIVE )
+    return false;
   foreach ( qint32 i, wp->libertyList )
     if ( tp->legalMoveIndex(i,c) )
-      // TODO: check if this Wyrm has unassailable life
       return true;
   return false;
 }
