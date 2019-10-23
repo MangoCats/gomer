@@ -408,10 +408,10 @@ void Shiko::evaluateLife()
 { foreach ( Wyrm *wp, wpl )
     { qint32 eyes = 0;
       QList<Ryoiki *> arpl = wp->adjacentRyoiki();
-      foreach ( Ryoiki *rp, arpl )
-        { if ( rp->color == wp->color() )
-            eyes += rp->eyes();
-        }
+//      foreach ( Ryoiki *rp, arpl )
+  //      { if ( rp->owner == wp->color() )
+    //        eyes += rp->eyes();
+      //  }
       if ( eyes > 1 )
         wp->lifeOrDeath = WYRM_LIVE;
        else

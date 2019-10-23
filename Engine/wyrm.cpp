@@ -218,24 +218,20 @@ QList<Ryoiki *> Wyrm::adjacentRyoiki()
  */
 void Wyrm::addRyoiki( Chiiki *cp, qint32 x, qint32 y, QList<Ryoiki *>& arpl )
 { qint32 i = cp->bp->xyToIndex(x,y);
+  qint32 np = cp->tp->gp->np;
   if (( i < 0 ) || ( i >= cp->bp->nPoints() ))
     { qDebug( "Wyrm::addRyoiki() %d, %d off Goban",x,y );
       return;
     }
-  if ( cp->hGrid.at(i) == nullptr )
+  if ( cp->rGrid.at(np).at(i) == nullptr )
     return;
-  qint32 ri = cp->hGrid.at(i)->ri;
-  if (( ri < 0 ) || ( ri >= cp->rpl.size() ))
-    { qDebug( "Wyrm::addRyoiki() ri %d out of range [0,%d)",ri,cp->rpl.size() );
-      return;
-    }
-  Ryoiki *rp = cp->rpl.at( ri );
+  Ryoiki *rp = cp->rGrid.at(np).at(i);
   if ( rp == nullptr )
     { qDebug( "Wyrm::addRyoiki() Ryoiki null" );
       return;
     }
-  if (( rp->color != color() ) && ( rp->color != NO_PLAYER ))
-    { qDebug( "Wyrm::addRyoiki() Ryoiki color %d mismatch to Wyrm color %d", rp->color, color() );
+  if (( rp->owner != color() ) && ( rp->owner != NO_PLAYER ))
+    { qDebug( "Wyrm::addRyoiki() Ryoiki color %d mismatch to Wyrm color %d", rp->owner, color() );
       return;
     }
   if ( !arpl.contains( rp ) )

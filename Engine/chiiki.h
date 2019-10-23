@@ -3,46 +3,31 @@
 
 class Goban;
 class Shiko;
-class Ryoiki;
+class Wyrm;
 #include <QObject>
 #include <QPointer>
 #include "goban.h"
 #include "shiko.h"
+#include "wyrm.h"
 
 /**
- * @brief The Hata 旗 class - describes one grid point's territorial properties
- */
-class Hata : public QObject
-{
-    Q_OBJECT
-public:
-      explicit  Hata( Chiiki *p, qint32 i, qint32 ri );
-                Hata( Hata *php, Chiiki *p );
-        qint32  x();
-        qint32  y();
-       QString  show();
-
-        qint32  i;      // Goban position, as index
-        qint32  ri;     // index of the Ryoiki in the Chiiki rpl this Hata is in
-QPointer<Goban> bp;
-};
-
-/**
- * @brief The Ryoiki 領域 class - a region, defined as
- *   a group of Hata - like a Wyrm of free space.
+ * @brief The Ryoiki 領域 class - a Region, defined as a group
+ *   of Goban intersection points - like a Wyrm of free space.
  */
 class Ryoiki : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Ryoiki( Chiiki *p );
-        void  addHata( Hata *hp ) { if ( !hpl.contains( hp ) ) hpl.append( hp ); }
+    explicit  Ryoiki( qint32 plp, Chiiki *p );
+              Ryoiki( Ryoiki *rp, Chiiki *p );
+        void  addGobanIndex( qint32 i ) { if ( !bi.contains( i ) ) bi.append( i ); }
      QString  show();
-      qint32  eyes();
 
-                   qint32  color;  // Color of the surrounding Goishi, -1 if mixed
-           QPointer<Goban> bp;
-    QList<QPointer<Hata> > hpl;
+                qint32  player; // Player's Goishi which bound this Ryoiki, if == total number of players then this Ryoiki borders any color Goishi
+                qint32  owner;  // For Ryoiki which may border any Goishi, if only one color is bordered then this is the owner
+        QPointer<Goban> bp;     // Goban this is on
+          QList<qint32> bi;     // List of Goban index points in this Ryoiki
+ QList<QPointer<Wyrm> > wpl;    // All Wyrm which border this Ryoiki
 };
 
 /**
@@ -57,24 +42,23 @@ public:
         void  resizeGoban();
         void  clear();
         void  update();
-        Hata *hata( qint32 i );
-        bool  addHata( qint32 i, qint32 ri );
-        bool  ryoikiListAdd( Hata * );
-        void  hFill( qint32 x, qint32 y, qint32 ri );
-        void  hCheck( int x, int y, int ri );
-        bool  ryoikiColor( int x, int y, int *rc );
+        bool  addIndex( qint32 );
+        bool  fill( qint32 x, qint32 y, Ryoiki *rp );
+        bool  ryoikiOwner( qint32 x, qint32 y, qint32 *rc );
+        void  collectWyrms( qint32 x, qint32 y, Ryoiki *rp );
       qint32  colorAt( qint32 i );
      QString  showRyoiki();
+     QString  showRyoiki( qint32 c );
 
 signals:
 
 public slots:
 
 public:
-             QPointer<Goban> bp;
-             QPointer<Shiko> tp;
-    QVector<QPointer<Hata >> hGrid; // Hata, arranged on the Goban
-    QList<QPointer<Ryoiki >> rpl;   // the same Hata, grouped in regions (like Wyrms of empty space)
+                     QPointer<Goban> bp;
+                     QPointer<Shiko> tp;
+QVector<QVector<QPointer<Ryoiki> > > rGrid; // pointer back from every Goban intersection to the applicable Ryoiki, one for each color and one for all
+  QVector<QList<QPointer<Ryoiki> > > rpm;   // the Ryoiki in list form, one list for each color and one for all Goishi
 };
 
 #endif // CHIIKI_H

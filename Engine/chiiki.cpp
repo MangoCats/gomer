@@ -1,75 +1,34 @@
 #include "chiiki.h"
 
 /**
- * @brief Hata::Hata - basic constructor
- * @param p - Chiiki parent
- * @param pi - Goban index this Hata pertains to
- * @param pri - Ryoiki index this Hata pertains to
+ * @brief Ryoiki::Ryoiki - a solidly connected set of points
+ *   may be bounded by a single color of stones, or all stones.
+ *   like a Wyrm of free space / liberties / opponent stones.
+ * @param plp - Which player's Goishi form the border, if == total number of players then all Goishi border it
+ * @param p   - Chiiki parent
  */
-Hata::Hata( Chiiki *p, qint32 pi, qint32 pri ) : QObject(p), i(pi), ri(pri), bp(p->bp)
-{}
+Ryoiki::Ryoiki( qint32 plp, Chiiki *p ) : QObject(p), bp(p->bp)
+{ player = plp;       // Redundant with the pl storage index in the Chiiki, but not too costly to save here too.
+  owner  = NO_PLAYER; // Unknown, at first, only has meaning player == total number of players
+}
 
 /**
- * @brief Hata::Hata - copy constructor
- * @param php - previous Hata to copy
- * @param p - new Chiiki parent
+ * @brief Ryoiki::Ryoiki - copy constructor
+ * @param rp - Ryoiki to copy
+ * @param p - Chiiki parent of the new Ryoiki
  */
-Hata::Hata( Hata *php, Chiiki *p ) : QObject(p), bp(p->bp)
-{ i       = php->i;
-  ri      = php->ri;
-}
-
-qint32 Hata::x()
-{ if ( bp == nullptr )
-    return -1;
-  qint32 x,y;
-  bp->indexToXY(i,&x,&y);
-  return x;
-}
-
-qint32 Hata::y()
-{ if ( bp == nullptr )
-    return -1;
-  qint32 x,y;
-  bp->indexToXY(i,&x,&y);
-  return y;
-}
-
-QString Hata::show()
-{ return bp->indexToVertex(i) + " "; }
-
-/**
- * @brief Ryoiki::Ryoiki - a group of Hata, forms a region
- *   like a Wyrm of free space / liberties.
- * @param p - Chiiki parent
- */
-Ryoiki::Ryoiki( Chiiki *p ) : QObject(p), bp(p->bp)
-{ color = NO_PLAYER; // Unknown, at first
+Ryoiki::Ryoiki( Ryoiki *rp, Chiiki *p ) : QObject(p), bp(p->bp)
+{ player = rp->player;
+  owner  = rp->owner;
+  bi     = rp->bi;
+  wpl    = rp->wpl;
 }
 
 QString Ryoiki::show()
-{ QString s = QString( "%1 " ).arg( bp->colorToChar( color ) );
-  foreach ( Hata *hp, hpl )
-    s.append( hp->show() );
+{ QString s = QString( "%1 " ).arg( bp->colorToChar( owner ) );
+  foreach ( qint32 i, bi )
+    s.append( bp->indexToVertex(i)+" " );
   return s + "\n";
-}
-
-/**
- * @brief Ryoiki::eyes
- * @return the number of eyes this Ryoiki "counts for"
- */
-qint32 Ryoiki::eyes()
-{ if ( color == NO_PLAYER )
-    return 0;
-  qint32 sz = hpl.size();
-  if ( sz < 1 )
-    return 0;
-  if ( sz < 4 )
-    return 1;
-  if ( sz >= 7 )
-    return 2;
-  // TODO: more in-depth analysis of the 4,5,6 shape (pattern matching?) to determine 1 vs 2 eyes
-  return 2;
 }
 
 /**
@@ -86,167 +45,107 @@ Chiiki::Chiiki(Shiko *p) : QObject(p), bp(p->bp), tp(p)
  * @param pcp - pointer to the Chiiki this is making a copy of
  * @param p - Shiko parent of the new Chiiki
  */
-Chiiki::Chiiki(Chiiki *pcp,Shiko *p) : QObject(p), bp(pcp->bp), tp(p)
-{ if ( bp == nullptr )
-    { qDebug( "WARNING: Chiiki::copy constructor Goban null" );
-      return;
-    }
-  resizeGoban();
-  qint32 nPoints = bp->nPoints();
-  qint32 nRyoiki = pcp->rpl.size();
-  while ( rpl.size() < nRyoiki )
-    rpl.append( new Ryoiki(this) );
-  hGrid.reserve( nPoints );
-  for ( qint32 i = 0 ; i < nPoints ; i++ )
-    { Hata *hp = pcp->hGrid.at(i);
-      if ( hp == nullptr )
-        hGrid.append( nullptr );
-       else
-        { Hata *nhp = new Hata( hp, this );
-          hGrid.append( nhp );
-          ryoikiListAdd( nhp );
-        }
-    }
+Chiiki::Chiiki( Chiiki *pcp, Shiko *p ) : QObject(p), bp(pcp->bp), tp(p)
+{ if ( tp == nullptr )     { qDebug( "WARNING: Chiiki::resizeGoban() Shiko null" ); return; }
+  if ( tp->gp == nullptr ) { qDebug( "WARNING: Chiiki::resizeGoban() Game null" ); return; }
+  qint32 np = tp->gp->np;          // Number of Players in this Game
+  resizeGoban();                   // Size the local data structures to match the currrent Goban
+  for ( qint32 pl = 0; pl <= np; pl++ )
+    { foreach ( Ryoiki *rp, pcp->rpm.at(pl) )
+        rpm[pl].append( new Ryoiki( rp, this ) );
+      foreach ( Ryoiki *rp, rpm.at(pl) )
+        foreach ( qint32 i, rp->bi )
+          rGrid[pl].replace( i, rp );
+    } // for pl
 }
 
-QString Chiiki::showRyoiki()
+QString  Chiiki::showRyoiki()
+{ return showRyoiki( tp->gp->np ); }
+
+QString Chiiki::showRyoiki( qint32 c )
 { QString s;
-  foreach ( Ryoiki *rp, rpl )
+  foreach ( Ryoiki *rp, rpm.at(c) )
     s.append( rp->show() );
   return "\n" + s;
 }
 
 /**
- * @brief Chiiki::ryoikiListAdd
- * @param hp - Hata to add (ri preset)
- * @return true if successful
- */
-bool Chiiki::ryoikiListAdd( Hata *hp )
-{ if ( hp->ri >= rpl.size() )
-    { qDebug( "UNEXPECTED: ri %d rpl.size() %d", hp->ri, rpl.size() );
-      return false;
-    }
-  rpl.at(hp->ri)->addHata(hp);
-  return true;
-}
-
-/**
- * @brief Chiiki::addHata - allocate a new Hata and store it
- * @param i - Goban index to place Hata at
- * @param ri - Ryoiki index to store Hata in
- * @return true if successful
- */
-bool Chiiki::addHata( qint32 i, qint32 ri )
-{ if (( i < 0 ) || ( i >= hGrid.size() ))
-    { qDebug( "PROBLEM: Chiiki::addHata i %d hGrid.size() %d",i, hGrid.size() );
-      return false;
-    }
-  if ( hGrid.at(i) != nullptr )
-    { qDebug( "Chiiki::addHata expected nullptr at %d",i );
-      return false;
-    }
-  Hata *hp = new Hata( this, i, ri );
-  if ( !ryoikiListAdd( hp ) )
-    { hp->deleteLater();
-      return false;
-    }
-  hGrid.replace( i, hp );
-  return true;
-}
-
-/**
  * @brief Chiiki::resizeGoban - also used for initial allocation
- *   make sure the hGrid has at least as many entries as the
+ *   make sure the rGrid has at least as many entries as the
  *   current Goban has grid points.
  */
 void Chiiki::resizeGoban()
-{ if ( bp == nullptr )
-    { qDebug( "WARNING: Chiiki::resizeGoban() Goban null" );
-      return;
-    }
-  qint32 nPoints = bp->nPoints();
-  hGrid.reserve( nPoints );
-  clear();
-  while ( hGrid.size() < nPoints )
-    hGrid.append( nullptr );
+{ clear();                         // Rebuild the grids
 }
 
 /**
- * @brief Chiiki::clear - erase existing objects
+ * @brief Chiiki::clear - erase existing grids and lists
  *   in preparation for a new full search
  */
 void Chiiki::clear()
-{ for ( qint32 i = 0; i < hGrid.size() ; i++ )
-    if ( hGrid.at(i) != nullptr )
-      { hGrid.at(i)->deleteLater();
-        hGrid.replace(i,nullptr);
-      }
-  foreach( Ryoiki *rp, rpl )
-    rp->deleteLater();
-  rpl.clear();
-}
-
-/**
- * @brief Chiiki::hata - bounds checked accessor of the hGrid
- * @param i - index to retrieve
- * @return Hata at i
- */
-Hata *Chiiki::hata( qint32 i )
-{ if (( i < 0 ) || ( i >= hGrid.size() ))
-    { qDebug( "WARNING: Chiiki::hata(%d) out of range",i );
-      return nullptr;
+{ foreach ( QVector<QPointer<Ryoiki> > grid, rGrid )
+    grid.clear();
+  rGrid.clear();
+  foreach ( QList<QPointer<Ryoiki> > rpl, rpm )
+    { foreach ( Ryoiki *rp, rpl )
+        rp->deleteLater();
+      rpl.clear();
     }
-  return hGrid.at(i);
+  rpm.clear();
+
+  // Rebuild the empty grids
+  if ( bp == nullptr )     { qDebug( "WARNING: Chiiki::clear() Goban null" ); return; }
+  if ( tp == nullptr )     { qDebug( "WARNING: Chiiki::clear() Shiko null" ); return; }
+  if ( tp->gp == nullptr ) { qDebug( "WARNING: Chiiki::clear() Game null" ); return; }
+  qint32 nPoints = bp->nPoints();  // Number of points on the Goban
+  qint32 np = tp->gp->np;          // Number of Players in this Game
+  rGrid.reserve( np + 1 );
+  QVector<QPointer<Ryoiki> > rgBlank;
+  while ( rGrid.size() <= np )
+    rGrid.append( rgBlank );
+  for ( qint32 pl = 0 ; pl <= np ; pl++ )
+    { rGrid[pl].reserve( nPoints );
+      while ( rGrid.at(pl).size() < nPoints )
+        rGrid[pl].append( nullptr );
+    }
+
+  // Rebuild the empty lists
+  QList<QPointer<Ryoiki> > rlBlank;
+  while ( rpm.size() <= np )
+    rpm.append( rlBlank );
 }
 
 /**
- * @brief Chiiki::hFill - floodfill unclaimed territory with
- *  Hata in Ryoiki index ri
+ * @brief Chiiki::fill - floodfill between the defined Goishi
  * @param x - coordinate to look for unfilled neighbors from
  * @param y - coordinate to look for unfilled neighbors from
- * @param ri - Ryoiki index to fill this territory with
+ * @param rp - Ryoiki pointer to fill this territory with
+ * @return true if rp was set in rGrid[pl][x,y]
  */
-void Chiiki::hFill( int x, int y, int ri )
+bool Chiiki::fill( qint32 x, qint32 y, Ryoiki *rp )
 { int i = bp->xyToIndex(x,y);
   if (( i < 0 ) || ( i >= bp->nPoints() ))
-    return;
-  if ( bp->goishi( i ) != nullptr )
-    return; // floodfill search does not pass a stone
-  addHata( i, ri );
-  if ( x > 0 )                 hCheck( x-1, y, ri );
-  if ( x < ( bp->Xsize - 1 ) ) hCheck( x+1, y, ri );
-  if ( y > 0 )                 hCheck( x, y-1, ri );
-  if ( y < ( bp->Ysize - 1 ) ) hCheck( x, y+1, ri );
-}
-
-/**
- * @brief Chiiki::hCheck
- * @param x - coordinate to check for stone
- * @param y - coordinate to check for stone
- * @param ri - Ryoiki index for these Hata
- */
-void Chiiki::hCheck( int x, int y, int ri )
-{ if ( bp == nullptr )
-    return;
-  int i = bp->xyToIndex( x,y );
-  if (( i < 0 ) || ( i >= bp->nPoints() ))
-    return; // Board is not ready yet, happens at first initialization
-  if ( hGrid.size() < i )
-    { qDebug( "ERROR: hGrid not ready yet" );
-      return;
+    return false;
+  Goishi *ip = bp->goishi( i );   // get Goishi on this point
+  qint32 pl = rp->player;
+  if ( ip != nullptr )            // Is there a Goishi?
+    { if ( pl == bp->gp->np )
+        return false;             // floodfill does not pass any stone when pl == np
+      if ( pl == ip->color )
+        return false;             // floodfill does not pass stone of own color
     }
-  if ( hGrid.at( i ) != nullptr )
-    { Hata *hp = hGrid.at(i);
-      if ( hp->ri != ri )
-        { QString msg = QString( "ERROR: hCheck @(%1,%2,%3) encountered another territory index %4" ).arg(x).arg(y).arg(ri).arg(hp->ri);
-          qDebug( qPrintable( msg ) );
-        }
-      return; // already marked
+  Ryoiki *xrp = rGrid[pl].at(i);  // Extant Ryoiki pointer at x,y in rGrid pl
+  if ( xrp != nullptr )
+    { if ( xrp != rp )
+        qDebug( "Chiiki::fill unexpected encounter of Ryoiki mismatch at %d(%d,%d)", pl, x, y );
+      return false;  // Bumped into existing Ryoiki, stop this branch of the floodfill here.
     }
-  if ( bp->color(i) > NO_PLAYER )
-    return; // floodfill search does not pass a stone
-  // Empty grid, continue the floodfill from here
-  hFill( x, y, ri );
+  rGrid[pl][i] = rp; // Mark this grid point with the rp Ryoiki
+  if ( x > 0 )                 fill( x-1, y, rp ); // Check for open neighbors
+  if ( x < ( bp->Xsize - 1 ) ) fill( x+1, y, rp );
+  if ( y > 0 )                 fill( x, y-1, rp );
+  if ( y < ( bp->Ysize - 1 ) ) fill( x, y+1, rp );
+  return true;
 }
 
 
@@ -256,89 +155,129 @@ void Chiiki::hCheck( int x, int y, int ri )
  */
 void Chiiki::update()
 { clear();
+  if ( bp == nullptr )     { qDebug( "WARNING: Chiiki::update() Goban null" ); return; }
+  if ( tp == nullptr )     { qDebug( "WARNING: Chiiki::update() Shiko null" ); return; }
+  if ( tp->gp == nullptr ) { qDebug( "WARNING: Chiiki::update() Game null"  ); return; }
+  qint32 np = tp->gp->np;
+  Ryoiki *rp = nullptr;
   // Determine how many Ryoiki there are, and what coordinates they each cover
-  for ( int x = 0; x < bp->Xsize; x++ )
-    for ( int y = 0; y < bp->Ysize; y++ )
-      { qint32 i = bp->xyToIndex( x, y );
-        if (( hata(i) == nullptr ) && ( bp->goishi(i) == nullptr ))
-          { rpl.append( new Ryoiki(this) );
-            hFill( x, y, rpl.size()-1 );
-          }
-      }
-  // Determine the color of each Ryoiki
-  for ( int k = 0; k < rpl.size(); k++ )
-    { Ryoiki *rp = rpl.at(k);
+  for ( qint32 pl = 0; pl <= np; pl++ )  // Once for each player, then one more time for all players
+    for ( qint32 x = 0; x < bp->Xsize; x++ )
+      for ( qint32 y = 0; y < bp->Ysize; y++ )
+        { qint32 i = bp->xyToIndex( x, y );
+          if ( rGrid[pl].at(i) == nullptr )
+            { if ( rp == nullptr )            // Need a new Ryoiki?
+                rp = new Ryoiki( pl, this );
+              if ( fill( x, y, rp ) )     // Did the Ryoiki get placed?
+                { rpm[pl].append( rp );
+                  rp = nullptr;
+                }
+            }
+        }
+  if ( rp != nullptr ) // Was the last Ryoiki unused?
+    rp->deleteLater();
+  // Determine the owner of each Ryoiki in the np grid
+  for ( qint32 k = 0; k < rpm.at(np).size(); k++ )
+    { Ryoiki *rp = rpm.at(np).at(k);
       if ( rp == nullptr )
         qDebug( "Chiiki::update() Ryoiki null" );
        else
-        { int rc = UNDETERMINED_PLAYER;
-          bool done = ( rp->hpl.size() <= 0 );
-          int j = 0;
+        { qint32 ro = UNDETERMINED_PLAYER;
+          bool done = ( rp->bi.size() <= 0 );
+          qint32 j = 0;
           while( !done )
-            { Hata *hp = rp->hpl.at(j);
-              if ( hp->x() > 0 )               done |= ryoikiColor( hp->x()-1, hp->y(), &rc );
-              if ( hp->x() < (bp->Xsize - 1) ) done |= ryoikiColor( hp->x()+1, hp->y(), &rc );
-              if ( hp->y() > 0 )               done |= ryoikiColor( hp->x(), hp->y()-1, &rc );
-              if ( hp->y() < (bp->Ysize - 1) ) done |= ryoikiColor( hp->x(), hp->y()+1, &rc );
-              if ( ++j >= rp->hpl.size() ) done = true;
+            { qint32 i = rp->bi.at(j);
+              qint32 x,y;
+              bp->indexToXY( i, &x, &y );
+              if ( x > 0 )               done |= ryoikiOwner( x-1, y, &ro );
+              if ( x < (bp->Xsize - 1) ) done |= ryoikiOwner( x+1, y, &ro );
+              if ( y > 0 )               done |= ryoikiOwner( x, y-1, &ro );
+              if ( y < (bp->Ysize - 1) ) done |= ryoikiOwner( x, y+1, &ro );
+              if ( ++j >= rp->bi.size() ) done = true;
             }
-          rp->color = rc;
+          rp->owner = ro;
         }
     }
+  // Determine all adjacent, relevant Wyrms to each Ryoiki
+  for ( qint32 pl = 0; pl <= np; pl++ )
+    for ( qint32 k = 0; k < rpm.at(np).size(); k++ )
+      { Ryoiki *rp = rpm.at(pl).at(k);
+        foreach ( qint32 i, rp->bi )
+          { qint32 x,y;
+            bp->indexToXY( i, &x, &y );
+            if ( x > 0 )              collectWyrms( x-1, y, rp );
+            if ( x < (bp->Xsize -1) ) collectWyrms( x+1, y, rp );
+            if ( y > 0 )              collectWyrms( x, y-1, rp );
+            if ( y < (bp->Ysize -1) ) collectWyrms( x, y+1, rp );
+          }
+      }
 }
 
 /**
- * @brief Chiiki::ryoikiColor - judging adjacent Goishi to a Ryoiki and the current color determination
+ * @brief Chiiki::collectWyrms
+ * @param x - coordinate to check
+ * @param y - coordinate to check
+ * @param rp - Ryoiki to collect Wyrms for
+ */
+void Chiiki::collectWyrms( qint32 x, qint32 y, Ryoiki *rp )
+{ qint32 i   = bp->xyToIndex(x,y);
+  Goishi *ip = bp->goishi(i);
+  if ( ip == nullptr ) // Any Wyrm here to collect?
+    return;
+  qint32 pl = rp->player;
+  if ( pl < tp->gp->np )   // Collect all colors?
+    if ( pl != ip->color ) // Wyrm of a collectable color?
+      return;
+  Wyrm *wp = ip->wp;
+  if ( wp == nullptr )
+    { qDebug( "UNEXPECTED: Chiiki::collectWyrms() found a null Wyrm" );
+      return;
+    }
+  if ( !rp->wpl.contains( wp ) )
+    rp->wpl.append( wp );
+}
+
+/**
+ * @brief Chiiki::ryoikiOwner - judging adjacent Goishi to a Ryoiki and the current color determination
  *   determine the continuing color evaluation of the Ryoiki
  * @param x - coordinate to evaluate
  * @param y - coordinate to evaluate
- * @param rc - current color assignment
+ * @param ro - current owner assignment
  * @return true if the current color assignment has become disputed
  */
-bool Chiiki::ryoikiColor( int x, int y, int *rc )
+bool Chiiki::ryoikiOwner( qint32 x, qint32 y, qint32 *ro )
 { int i = bp->xyToIndex(x,y);
   if ( bp->nPoints() <= i )
     return true;
   Goishi *ip = bp->goishi( i );
   if ( ip == nullptr )
     return false; // No info here
-  if ( *rc == NO_PLAYER )
+  if ( *ro == NO_PLAYER )
     return true; // Done before we start
-  if ( *rc == UNDETERMINED_PLAYER )
-    { *rc = ip->color;
+  if ( *ro == UNDETERMINED_PLAYER )
+    { *ro = ip->color;
       return false;
     }
-  if ( *rc == ip->color )
-    return false; // Continuing the trend
-  *rc = NO_PLAYER;       // Contrasting neighbor found, territory is in dispute
+  if ( *ro == ip->color )
+    return false;   // Continuing the trend
+  *ro = NO_PLAYER;  // Contrasting neighbor found, territory is in dispute
   return true;
 }
 
 /**
  * @brief Chiiki::colorAt
  * @param i - index of grid position to read
- * @return color of Ryoiki at i
+ * @return color (owner) of Ryoiki at i
  */
 qint32  Chiiki::colorAt( qint32 i )
-{ if (( i < 0 ) || ( i >= bp->nPoints() ))
-    { qDebug( "Chiiki::colorAt(%d) out of range", i );
-      return NO_PLAYER;
-    }
-  Hata *hp = hGrid.at(i);
-  if ( hp == nullptr )
-    { qDebug( "Chiiki::colorAt(%d) not in a Ryoiki, unusual to request it", i );
-      return NO_PLAYER;
-    }
-  qint32 ri = hp->ri;
-  if (( ri < 0 ) || ( ri >= rpl.size() ))
-    { qDebug( "Chiiki::colorAt() ri %d out of range", ri );
-      return NO_PLAYER;
-    }
-  Ryoiki *rp = rpl.at(ri);
-  if ( rp == nullptr )
-    { qDebug( "Chiiki::colorAt() Ryoiki null" );
-      return NO_PLAYER;
-    }
-  return rp->color;
+{ if ( bp == nullptr )                     { qDebug( "WARNING: Chiiki::colorAt() Goban null" ); return NO_PLAYER; }
+  if ( tp == nullptr )                     { qDebug( "WARNING: Chiiki::colorAt() Shiko null" ); return NO_PLAYER; }
+  if ( tp->gp == nullptr )                 { qDebug( "WARNING: Chiiki::colorAt() Game null"  ); return NO_PLAYER; }
+  if (( i < 0 ) || ( i >= bp->nPoints() )) { qDebug( "Chiiki::colorAt(%d) out of range", i   ); return NO_PLAYER; }
+  qint32 np = tp->gp->np;
+  if ( rGrid.size() < np )                 { qDebug( "Chiiki::colorAt() rGrid too small %d %d", rGrid.size(), np );     return NO_PLAYER; }
+  Ryoiki *rp = rGrid.at(np).at(i);
+  if ( rp == nullptr )                     { qDebug( "Chiiki::colorAt(%d) not in a Ryoiki, unusual to request it", i ); return NO_PLAYER; }
+  return rp->owner;
 }
 

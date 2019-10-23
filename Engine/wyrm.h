@@ -13,6 +13,10 @@ class Shiko;
 #define WYRM_UNSETTLED  0
 #define WYRM_DEAD      -1
 
+/**
+ * @brief The Wyrm class - A solidly connected group of Goishi
+ *   aka Worm, Chain, String.
+ */
 class Wyrm : public QObject
 {
     Q_OBJECT

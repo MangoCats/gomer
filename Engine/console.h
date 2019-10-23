@@ -5,6 +5,9 @@
 #include <QSocketNotifier>
 #include <iostream>
 
+/**
+ * @brief The Console class - connects messages to/from stdout/stdin
+ */
 class Console : public QObject
 {
     Q_OBJECT
