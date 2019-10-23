@@ -217,7 +217,7 @@ QList<Ryoiki *> Wyrm::adjacentRyoiki()
  * @param arpl - adjacent Ryoiki pointer list
  */
 void Wyrm::addRyoiki( Chiiki *cp, qint32 x, qint32 y, QList<Ryoiki *>& arpl )
-{ qint32 i = cp->bp->xyToIndex(x,y);
+{ qint32 i  = cp->bp->xyToIndex(x,y);
   qint32 np = cp->tp->gp->np;
   if (( i < 0 ) || ( i >= cp->bp->nPoints() ))
     { qDebug( "Wyrm::addRyoiki() %d, %d off Goban",x,y );

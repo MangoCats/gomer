@@ -137,10 +137,11 @@ bool Chiiki::fill( qint32 x, qint32 y, Ryoiki *rp )
   Ryoiki *xrp = rGrid[pl].at(i);  // Extant Ryoiki pointer at x,y in rGrid pl
   if ( xrp != nullptr )
     { if ( xrp != rp )
-        qDebug( "Chiiki::fill unexpected encounter of Ryoiki mismatch at %d(%d,%d)", pl, x, y );
+        qDebug( "Chiiki::fill unexpected encounter of Ryoiki mismatch at %d(%d,%d) %p %p", pl, x, y, (void *)xrp, (void *)rp );
       return false;  // Bumped into existing Ryoiki, stop this branch of the floodfill here.
     }
   rGrid[pl][i] = rp; // Mark this grid point with the rp Ryoiki
+  rp->addGobanIndex(i);
   if ( x > 0 )                 fill( x-1, y, rp ); // Check for open neighbors
   if ( x < ( bp->Xsize - 1 ) ) fill( x+1, y, rp );
   if ( y > 0 )                 fill( x, y-1, rp );
@@ -162,28 +163,32 @@ void Chiiki::update()
   Ryoiki *rp = nullptr;
   // Determine how many Ryoiki there are, and what coordinates they each cover
   for ( qint32 pl = 0; pl <= np; pl++ )  // Once for each player, then one more time for all players
-    for ( qint32 x = 0; x < bp->Xsize; x++ )
-      for ( qint32 y = 0; y < bp->Ysize; y++ )
-        { qint32 i = bp->xyToIndex( x, y );
-          if ( rGrid[pl].at(i) == nullptr )
-            { if ( rp == nullptr )            // Need a new Ryoiki?
-                rp = new Ryoiki( pl, this );
-              if ( fill( x, y, rp ) )     // Did the Ryoiki get placed?
-                { rpm[pl].append( rp );
-                  rp = nullptr;
-                }
-            }
-        }
+    { if ( rp != nullptr )
+        rp->player = pl;
+      for ( qint32 x = 0; x < bp->Xsize; x++ )
+        for ( qint32 y = 0; y < bp->Ysize; y++ )
+          { qint32 i = bp->xyToIndex( x, y );
+            if ( rGrid[pl].at(i) == nullptr )
+              { if ( rp == nullptr )            // Need a new Ryoiki?
+                  rp = new Ryoiki( pl, this );
+                if ( fill( x, y, rp ) )     // Did the Ryoiki get placed?
+                  { rpm[pl].append( rp );
+                    rp = nullptr;
+                  }
+              }
+          }
+    }
   if ( rp != nullptr ) // Was the last Ryoiki unused?
     rp->deleteLater();
   // Determine the owner of each Ryoiki in the np grid
   for ( qint32 k = 0; k < rpm.at(np).size(); k++ )
-    { Ryoiki *rp = rpm.at(np).at(k);
+    { rp = rpm.at(np).at(k);
       if ( rp == nullptr )
         qDebug( "Chiiki::update() Ryoiki null" );
        else
         { qint32 ro = UNDETERMINED_PLAYER;
           bool done = ( rp->bi.size() <= 0 );
+          if ( done ) qDebug( "why are we here with no Goban indices in the Ryoiki? %d", k );
           qint32 j = 0;
           while( !done )
             { qint32 i = rp->bi.at(j);
@@ -198,10 +203,11 @@ void Chiiki::update()
           rp->owner = ro;
         }
     }
+
   // Determine all adjacent, relevant Wyrms to each Ryoiki
   for ( qint32 pl = 0; pl <= np; pl++ )
-    for ( qint32 k = 0; k < rpm.at(np).size(); k++ )
-      { Ryoiki *rp = rpm.at(pl).at(k);
+    for ( qint32 k = 0; k < rpm.at(pl).size(); k++ )
+      { rp = rpm.at(pl).at(k);
         foreach ( qint32 i, rp->bi )
           { qint32 x,y;
             bp->indexToXY( i, &x, &y );
@@ -246,14 +252,14 @@ void Chiiki::collectWyrms( qint32 x, qint32 y, Ryoiki *rp )
  * @return true if the current color assignment has become disputed
  */
 bool Chiiki::ryoikiOwner( qint32 x, qint32 y, qint32 *ro )
-{ int i = bp->xyToIndex(x,y);
-  if ( bp->nPoints() <= i )
+{ if ( *ro == NO_PLAYER )
+    return true; // Done before we start
+  qint32 i = bp->xyToIndex(x,y);
+  if (( i < 0 ) || ( i >= bp->nPoints() ))
     return true;
   Goishi *ip = bp->goishi( i );
   if ( ip == nullptr )
     return false; // No info here
-  if ( *ro == NO_PLAYER )
-    return true; // Done before we start
   if ( *ro == UNDETERMINED_PLAYER )
     { *ro = ip->color;
       return false;
