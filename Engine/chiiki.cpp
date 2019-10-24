@@ -1,37 +1,6 @@
 #include "chiiki.h"
 
 /**
- * @brief Ryoiki::Ryoiki - a solidly connected set of points
- *   may be bounded by a single color of stones, or all stones.
- *   like a Wyrm of free space / liberties / opponent stones.
- * @param plp - Which player's Goishi form the border, if == total number of players then all Goishi border it
- * @param p   - Chiiki parent
- */
-Ryoiki::Ryoiki( qint32 plp, Chiiki *p ) : QObject(p), bp(p->bp)
-{ player = plp;       // Redundant with the pl storage index in the Chiiki, but not too costly to save here too.
-  owner  = NO_PLAYER; // Unknown, at first, only has meaning player == total number of players
-}
-
-/**
- * @brief Ryoiki::Ryoiki - copy constructor
- * @param rp - Ryoiki to copy
- * @param p - Chiiki parent of the new Ryoiki
- */
-Ryoiki::Ryoiki( Ryoiki *rp, Chiiki *p ) : QObject(p), bp(p->bp)
-{ player = rp->player;
-  owner  = rp->owner;
-  bi     = rp->bi;
-  wpl    = rp->wpl;
-}
-
-QString Ryoiki::show()
-{ QString s = QString( "%1 " ).arg( bp->colorToChar( owner ) );
-  foreach ( qint32 i, bi )
-    s.append( bp->indexToVertex(i)+" " );
-  return s + "\n";
-}
-
-/**
  * @brief Chiiki::Chiiki - basic constructor, whole Goban analysis
  *   of territory
  * @param p - parent Shiko
@@ -69,7 +38,7 @@ QString  Chiiki::showRyoiki()
 QString Chiiki::showRyoiki( qint32 c )
 { QString s;
   foreach ( Ryoiki *rp, rpm.at(c) )
-    s.append( rp->show() );
+    s.append( bp->showChiho( rp ) );
   return "\n" + s;
 }
 
@@ -120,41 +89,6 @@ void Chiiki::clear()
 }
 
 /**
- * @brief Chiiki::fill - floodfill between the defined Goishi
- * @param x - coordinate to look for unfilled neighbors from
- * @param y - coordinate to look for unfilled neighbors from
- * @param rp - Ryoiki pointer to fill this territory with
- * @return true if rp was set in rGrid[pl][x,y]
- */
-bool Chiiki::fill( qint32 x, qint32 y, Ryoiki *rp )
-{ int i = bp->xyToIndex(x,y);
-  if (( i < 0 ) || ( i >= bp->nPoints() ))
-    return false;
-  Goishi *ip = bp->goishi( i );   // get Goishi on this point
-  qint32 pl = rp->player;
-  if ( ip != nullptr )            // Is there a Goishi?
-    { if ( pl == bp->gp->np )
-        return false;             // floodfill does not pass any stone when pl == np
-      if ( pl == ip->color )
-        return false;             // floodfill does not pass stone of own color
-    }
-  Ryoiki *xrp = rGrid[pl].at(i);  // Extant Ryoiki pointer at x,y in rGrid pl
-  if ( xrp != nullptr )
-    { if ( xrp != rp )
-        qDebug( "Chiiki::fill unexpected encounter of Ryoiki mismatch at %d(%d,%d) %p %p", pl, x, y, (void *)xrp, (void *)rp );
-      return false;  // Bumped into existing Ryoiki, stop this branch of the floodfill here.
-    }
-  rGrid[pl][i] = rp; // Mark this grid point with the rp Ryoiki
-  rp->addGobanIndex(i);
-  if ( x > 0 )                 fill( x-1, y, rp ); // Check for open neighbors
-  if ( x < ( bp->Xsize - 1 ) ) fill( x+1, y, rp );
-  if ( y > 0 )                 fill( x, y-1, rp );
-  if ( y < ( bp->Ysize - 1 ) ) fill( x, y+1, rp );
-  return true;
-}
-
-
-/**
  * @brief Chiiki::update - work through the Goban to set
  *   Hata everywhere there are no Goishi
  */
@@ -166,8 +100,15 @@ void Chiiki::update()
   qint32 np = tp->gp->np;
   Ryoiki *rp = nullptr;
   // Determine how many Ryoiki there are, and what coordinates they each cover
+  // TODO: determine if there is any value in the per-player Ryoiki
   for ( qint32 pl = 0; pl <= np; pl++ )  // Once for each player, then one more time for all players
-    { if ( rp != nullptr )
+    { bool rule = false; // Searching for not c
+      qint32 c = pl;
+      if ( pl >= np )
+        { c = NO_PLAYER; // Search for empty space
+          rule = true;
+        }
+      if ( rp != nullptr )
         rp->player = pl;
       for ( qint32 x = 0; x < bp->Xsize; x++ )
         for ( qint32 y = 0; y < bp->Ysize; y++ )
@@ -175,10 +116,13 @@ void Chiiki::update()
             if ( rGrid[pl].at(i) == nullptr )
               { if ( rp == nullptr )            // Need a new Ryoiki?
                   rp = new Ryoiki( pl, this );
-                if ( fill( x, y, rp ) )     // Did the Ryoiki get placed?
-                  { rpm[pl].append( rp );
-                    rp = nullptr;
-                  }
+                if ( rGrid[pl][i] == nullptr )         // Is there already a Ryoiki defined here?
+                  if ( bp->fill( x, y, c, rule, rp ) ) // Did a new Ryoiki get placed?
+                    { rpm[pl].append( rp );            // Add another Ryoiki to the matrix
+                      foreach ( qint32 ii, rp->bi )
+                        rGrid[pl][ii] = rp;            // Mark all grid points with the rp Ryoiki
+                      rp = nullptr;
+                    }
               }
           }
     }

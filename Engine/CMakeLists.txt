@@ -27,6 +27,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5Core)
 
 add_executable(GomerEngine main.cpp
+                           chiho.cpp
                            chiiki.cpp
                            console.cpp
                            game.cpp
@@ -35,12 +36,14 @@ add_executable(GomerEngine main.cpp
                            gosu.cpp
                            gtphandler.cpp
                            player.cpp
+                           ryoiki.cpp
                            sakudo.cpp
                            shiko.cpp
                            wyrm.cpp
               )
 
 set(SOURCES config.h.in
+            chiho.h
             chiiki.h
             console.h
             game.h
@@ -49,6 +52,7 @@ set(SOURCES config.h.in
             gosu.h
             gtphandler.h
             player.h
+            ryoiki.h
             sakudo.h
             shiko.h
             wyrm.h

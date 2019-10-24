@@ -2,36 +2,19 @@
 #define CHIIKI_H
 
 class Goban;
+class Ryoiki;
 class Shiko;
 class Wyrm;
 #include <QObject>
 #include <QPointer>
 #include "goban.h"
+#include "ryoiki.h"
 #include "shiko.h"
 #include "wyrm.h"
 
 /**
- * @brief The Ryoiki 領域 class - a Region, defined as a group
- *   of Goban intersection points - like a Wyrm of free space.
- */
-class Ryoiki : public QObject
-{
-    Q_OBJECT
-public:
-    explicit  Ryoiki( qint32 plp, Chiiki *p );
-              Ryoiki( Ryoiki *rp, Chiiki *p );
-        void  addGobanIndex( qint32 i ) { if ( !bi.contains( i ) ) bi.append( i ); }
-     QString  show();
-
-                qint32  player; // Player's Goishi which bound this Ryoiki, if == total number of players then this Ryoiki borders any color Goishi
-                qint32  owner;  // For Ryoiki which may border any Goishi, if only one color is bordered then this is the owner
-        QPointer<Goban> bp;     // Goban this is on
-          QList<qint32> bi;     // List of Goban index points in this Ryoiki
- QList<QPointer<Wyrm> > wpl;    // All Wyrm which border this Ryoiki
-};
-
-/**
  * @brief The Chiiki 地域 class - calculating and estimating territory
+ *   the collection of Ryoiki for the current Goban position
  */
 class Chiiki : public QObject
 {
@@ -42,8 +25,6 @@ public:
         void  resizeGoban();
         void  clear();
         void  update();
-        bool  addIndex( qint32 );
-        bool  fill( qint32 x, qint32 y, Ryoiki *rp );
         bool  ryoikiOwner( qint32 x, qint32 y, qint32 *rc );
         void  collectWyrms( qint32 x, qint32 y, Ryoiki *rp );
       qint32  colorAt( qint32 i );

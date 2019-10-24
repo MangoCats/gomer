@@ -1,11 +1,13 @@
 #ifndef GOBAN_H
 #define GOBAN_H
 
+class Chiho;
 class Game;
 class Goishi;
 #include <QObject>
 #include <QPointer>
 #include <QVector>
+#include "chiho.h"
 #include "game.h"
 #include "goishi.h"
 
@@ -52,10 +54,12 @@ public:
         bool  onBoard( qint32 x, qint32 y );
         bool  onBoard( QString v );
      QString  showBoard();
+     QString  showChiho( Chiho *hp );
      QString  xAxisLabels();
      QString  centerString( QString s, qint32 len );
      QString  asciiGoishi( qint32 x, qint32 y );
-
+        bool  fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
+        bool  fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
 
 signals:
         void  boardChanged( QString );

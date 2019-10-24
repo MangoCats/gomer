@@ -1,12 +1,14 @@
 #ifndef WYRM_H
 #define WYRM_H
 
+class Chiho;
 class Goishi;
 class Ryoiki;
 class Shiko;
 #include <QObject>
+#include "chiho.h"
 #include "goishi.h"
-#include "chiiki.h"
+#include "ryoiki.h"
 #include "shiko.h"
 
 #define WYRM_LIVE       1
@@ -15,9 +17,9 @@ class Shiko;
 
 /**
  * @brief The Wyrm class - A solidly connected group of Goishi
- *   aka Worm, Chain, String.
+ *   aka Worm, Chain, String, Block, Group, Army.
  */
-class Wyrm : public QObject
+class Wyrm : public Chiho
 {
     Q_OBJECT
 public:

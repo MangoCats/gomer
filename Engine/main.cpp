@@ -12,3 +12,22 @@ int main(int argc, char *argv[])
     new GtpHandler(&a,gp);
     return a.exec();
 }
+
+// Common variable names / usage:
+// i - index onto a Goban
+// x - coordinate on a Goban
+// y - coordinate on a Goban
+// c - color (0 = black, 1 = white, -1 = neither, -2 = not yet determined, 2+ for weird games)
+// pl - player number, used when inner loops are concerned with color
+// p - pointer to parent object
+// bp - Goban pointer  - the board
+// cp - Chiiki pointer
+// gp - Game pointer
+// hp - Chiho pointer  - holds a region definition
+// ip - Goishi pointer
+// mp - Sakudo pointer - makes moves
+// pp - Player pointer
+// rp - Ryoiki pointer - regions of free space
+// sp - Gosu pointer
+// tp - Shiko pointer  - thinks about the Goban
+// wp - Wyrm pointer   - regions of connected Goishi

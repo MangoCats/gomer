@@ -402,19 +402,39 @@ QString Shiko::showWyrms()
 
 /**
  * @brief Shiko::evaluateLife - Chiiki has been recently updated, now
- *   re-evaluate the life status of all Wyrms
+ *   re-evaluate the life status of all Wyrms, first by Bensons algorithm:
+ *   https://senseis.xmp.net/?BensonsAlgorithm
+ *   https://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
+ *     see particularly section 4 pp. 21-22
+ *   Note: Benson's unconditional life rules break down for N players > 2
+ *     because the additional players can effectively "escape" suicide by
+ *     combination and capture of each other.
  */
 void Shiko::evaluateLife()
-{ foreach ( Wyrm *wp, wpl )
-    { qint32 eyes = 0;
-      QList<Ryoiki *> arpl = wp->adjacentRyoiki();
-//      foreach ( Ryoiki *rp, arpl )
-  //      { if ( rp->owner == wp->color() )
-    //        eyes += rp->eyes();
-      //  }
-      if ( eyes > 1 )
-        wp->lifeOrDeath = WYRM_LIVE;
-       else
-        wp->lifeOrDeath = WYRM_UNSETTLED;
+{ if ( gp == nullptr ) { qDebug( "Shiko::evaluateLife() Game null" ); return; }
+  if ( bp == nullptr ) { qDebug( "Shiko::evaluateLife() Goban null" ); return; }
+  qint32 np = gp->np;
+  QList<QPointer<Wyrm> > plwpl;
+  for ( qint32 pl = 0; pl < np; pl++ )
+    { // Collect Wyrms only of the current player's color
+      plwpl.clear();
+      foreach ( Wyrm *wp, wpl )
+        { if ( wp == nullptr )
+            qDebug( "Shiko::evaluateLife() Wyrm null" );
+           else
+            { if ( wp->color() == pl )
+                plwpl.append( wp );
+            }
+        }
+      // Now, strip out the non-pass-alive Wyrms until only pass-alive Wyrms remain
+      bool allAlive = false;
+      while ( !allAlive )
+        { allAlive = true; // assume true until proven false on this pass
+          // First, determine "small and vital spaces"
+          // Next, remove any Wyrm which does not have at least two vital spaces
+          // If any were removed and any remain, do it again until none are removed or none remain
+        }
     }
 }
+
+// TODO: considering a base class for both Wyrm and Ryoiki to do the basic floodfill work

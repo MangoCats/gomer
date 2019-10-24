@@ -5,15 +5,17 @@
  * @param ip - single Goishi Wyrm
  * @param p - parent
  */
-Wyrm::Wyrm(Goishi *ip, Shiko *p) : QObject(p), tp(p)
-{ addGoishi( ip ); }
+Wyrm::Wyrm(Goishi *ip, Shiko *p) : Chiho(p), tp(p)
+{ addGoishi( ip );
+  addGobanIndex(tp->bp->xyToIndex(ip->x,ip->y));
+}
 
 /**
  * @brief Wyrm::Wyrm - copy constructor
  * @param wp - Wyrm to copy
  * @param parent - parent of the new Wyrm
  */
-Wyrm::Wyrm(Wyrm *wp, Shiko *p) : QObject(p), tp(p)
+Wyrm::Wyrm(Wyrm *wp, Shiko *p) : Chiho(p), tp(p)
 { Goban *bpn = p->bp; // New Goban
   foreach( Goishi *ipo, wp->ipl )
     { Goishi *ipn = bpn->goishiAt( ipo->x, ipo->y );
@@ -52,6 +54,7 @@ void Wyrm::addGoishi( Goishi *ip )
         }
       mergeLibertyList( getLibertyList( ip ) );
       qint32 i = bp->xyToIndex( ip->x, ip->y );
+      addGobanIndex(i);
       if ( libertyList.contains( i ) )
         libertyList.removeAt( libertyList.indexOf( i ) );
        // can happen that the liberty list doesn't contain i when we are merging 2 or more Wyrms with a newly placed Goishi
@@ -164,9 +167,9 @@ QString Wyrm::show()
   Goban *bp = ipl.at(0)->bp;
   if ( bp == nullptr )
     return "Goban nullptr\n";
-  foreach( Goishi *ip, ipl )
-    w.append( bp->xyToVertex( ip->x, ip->y )+" " );
-  w.append( "Libs:" );
+  w.append( bp->showChiho( this ) );
+  w.chop(1); // Remove the newline
+  w.append( " Libs:" );
   foreach( qint32 i, libertyList )
     w.append( " " + bp->indexToVertex( i ) );
   w.append( "\n" );
