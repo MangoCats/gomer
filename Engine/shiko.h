@@ -18,27 +18,31 @@ class Shiko : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Shiko( Game *p );
-              Shiko( Shiko *tp, Game *p );
-        void  clearGoban();
-        void  resizeGoban();
-QList<qint32> allLegalMoves( qint32 c );
-        bool  legalMove( qint32 x, qint32 y, qint32 c );
-        bool  legalMoveIndex( qint32 i, qint32 c );
-        bool  isSelfCapture( qint32 x, qint32 y, qint32 c );
-        bool  selfCaptureRelief( qint32 x, qint32 y, qint32 c );
-        bool  isKo( qint32 x, qint32 y, qint32 c );
-        void  koEvalCapture( qint32 x, qint32 y, qint32 c, QString *state );
-        void  goishiPlacedOnGoban( Goishi *ip );
-        Wyrm *wyrmAt( qint32 x, qint32 y );
-      qint32  collectWyrm( QList<Wyrm *> *fwplp, QList<Wyrm *> *owplp, qint32 x, qint32 y, qint32 c );
-        void  mergeWyrms( Wyrm *wp, Wyrm *wp2 );
-        void  wyrmCaptured( Wyrm *wp );
-        void  addCaptureLiberties( Wyrm *wp );
-        void  addCaptureLiberties( Goishi *ip );
-        void  addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c );
-     QString  showWyrms();
-        void  evaluateLife();
+      explicit  Shiko( Game *p );
+                Shiko( Shiko *tp, Game *p );
+          void  clearGoban();
+          void  resizeGoban();
+  QList<qint32> allLegalMoves( qint32 c );
+          bool  legalMove( qint32 x, qint32 y, qint32 c );
+          bool  legalMoveIndex( qint32 i, qint32 c );
+          bool  isSelfCapture( qint32 x, qint32 y, qint32 c );
+          bool  selfCaptureRelief( qint32 x, qint32 y, qint32 c );
+          bool  isKo( qint32 x, qint32 y, qint32 c );
+          void  koEvalCapture( qint32 x, qint32 y, qint32 c, QString *state );
+          void  goishiPlacedOnGoban( Goishi *ip );
+          Wyrm *wyrmAt( qint32 x, qint32 y );
+        qint32  collectWyrm( QList<Wyrm *> *fwplp, QList<Wyrm *> *owplp, qint32 x, qint32 y, qint32 c );
+          void  mergeWyrms( Wyrm *wp, Wyrm *wp2 );
+          void  wyrmCaptured( Wyrm *wp );
+          void  addCaptureLiberties( Wyrm *wp );
+          void  addCaptureLiberties( Goishi *ip );
+          void  addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c );
+       QString  showWyrms();
+ QList<Chiho *> bensonsChiho( QList<Wyrm *> cwpl );
+  QList<Wyrm *> copyWyrmsColored( qint32 c );
+          bool  isVital( Wyrm *wp, Chiho *rp );
+        qint32  vitalCount( Wyrm *wp, const QList<Chiho *>& crpl );
+          void  evaluateLife();
 
 signals:
 

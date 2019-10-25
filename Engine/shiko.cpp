@@ -401,6 +401,73 @@ QString Shiko::showWyrms()
 }
 
 /**
+ * @brief Shiko::bensonsChiho - First, calculate Ryoiki around just the passed Wyrms
+ *   Then, remove any occupied by opponent grid points from them.
+ * @param cwpl - list of Wyrms to calculate the Ryoiki around
+ * @return List of Bensons pass-alive algorithm Ryoiki for the given Wyrms
+ */
+QList<Chiho *> Shiko::bensonsChiho( QList<Wyrm *> cwpl )
+{ QList<Chiho *> bhpl;
+  if ( cwpl.size() < 1 )
+    return bhpl;
+  qint32 c = cwpl.at(0)->color();
+  bhpl = bp->fillByRule( c, false );
+  // TODO: scrub the Chiho to remove points with (opponent) Goishi
+
+  return bhpl;
+}
+
+/**
+ * @brief Shiko::copyWyrmsColored
+ * @param c - color to match
+ * @return list of newly copied Wyrms that match color c
+ */
+QList<Wyrm *> Shiko::copyWyrmsColored( qint32 c )
+{ QList<Wyrm *> cwpl;
+  foreach ( Wyrm *wp, wpl )
+    { if ( wp == nullptr )
+        qDebug( "Shiko::copyWyrmsColored() Wyrm null" );
+       else
+        { if ( wp->color() == c )
+            cwpl.append( new Wyrm( wp, this ) );
+        }
+    }
+  return cwpl;
+}
+
+/**
+ * @brief Shiko::isVital - is this Ryoiki vital to the Wyrm?
+ *   Basically, all gridpoints of the Ryoiki must
+ * @param wp - Wyrm to examine
+ * @param rp - Chiho to examine
+ * @return true if the Ryoiki is vital to the Wyrm
+ */
+bool Shiko::isVital( Wyrm *wp, Chiho *hp )
+{ if ( wp == nullptr ) { qDebug( "Shiko::isVital Wyrm null"   ); return false; }
+  if ( hp == nullptr ) { qDebug( "Shiko::isVital Chiho null" ); return false; }
+  if ( hp->bi.size() <= 0 ) { qDebug( "Shiko::isVital Chiho size 0" ); return false; }
+  if ( wp->libertyList.size() <= 0 ) { qDebug( "Shiko::isVital Wyrm libertyList size 0" ); return false; }
+  foreach ( qint32 i, hp->bi )
+    if ( !wp->libertyList.contains(i) )
+      return false;
+  return true;
+}
+
+/**
+ * @brief Shiko::vitalCount - determining if a Wyrm is pass-alive by counting vital nearby Chiho
+ * @param wp - Wyrm pointer
+ * @param crpl - color-matched Chiho pointer list
+ * @return the number of vital Chiho adjacent to wp
+ */
+qint32 Shiko::vitalCount( Wyrm *wp, const QList<Chiho *>& chpl )
+{ qint32 vc = 0;
+  foreach ( Chiho *hp, chpl )
+    if ( isVital( wp, hp ) )
+      vc++;
+  return vc;
+}
+
+/**
  * @brief Shiko::evaluateLife - Chiiki has been recently updated, now
  *   re-evaluate the life status of all Wyrms, first by Bensons algorithm:
  *   https://senseis.xmp.net/?BensonsAlgorithm
@@ -414,27 +481,33 @@ void Shiko::evaluateLife()
 { if ( gp == nullptr ) { qDebug( "Shiko::evaluateLife() Game null" ); return; }
   if ( bp == nullptr ) { qDebug( "Shiko::evaluateLife() Goban null" ); return; }
   qint32 np = gp->np;
-  QList<QPointer<Wyrm> > plwpl;
-  for ( qint32 pl = 0; pl < np; pl++ )
-    { // Collect Wyrms only of the current player's color
-      plwpl.clear();
-      foreach ( Wyrm *wp, wpl )
-        { if ( wp == nullptr )
-            qDebug( "Shiko::evaluateLife() Wyrm null" );
-           else
-            { if ( wp->color() == pl )
-                plwpl.append( wp );
+   QList<Wyrm *> cwpl;
+  QList<Chiho *> chpl;
+  for ( qint32 c = 0; c < np; c++ )
+    { cwpl.clear();
+      cwpl = copyWyrmsColored( c );  // Collect Wyrms only of the current player's color
+      bool allAlive = false;         // Now, strip out the non-pass-alive Wyrms until only pass-alive Wyrms remain
+      while ( !allAlive )
+        { foreach ( Chiho *hp, chpl )
+            hp->deleteLater();       // Clean up the Ryoiki list
+          chpl.clear();
+          chpl = bensonsChiho( cwpl );
+          allAlive = true;           // assume true until proven false on this pass
+          qint32 j = 0;
+          while ( j < cwpl.size() )  // Examine every Wyrm colored c
+            { Wyrm *wp = cwpl.at(j);
+              if ( vitalCount( wp, chpl ) > 1 )
+                j++;
+               else
+                { allAlive = false;
+                  cwpl.removeAt(j);  // Remove any Wyrm which does not have at least two vital Ryoiki
+                  wp->deleteLater();
+                }
             }
         }
-      // Now, strip out the non-pass-alive Wyrms until only pass-alive Wyrms remain
-      bool allAlive = false;
-      while ( !allAlive )
-        { allAlive = true; // assume true until proven false on this pass
-          // First, determine "small and vital spaces"
-          // Next, remove any Wyrm which does not have at least two vital spaces
-          // If any were removed and any remain, do it again until none are removed or none remain
-        }
+      // TODO: mark Wyrms in the Shiko as alive or dead
+      foreach ( Wyrm *wp, cwpl )
+        wp->deleteLater();
+      cwpl.clear();
     }
 }
-
-// TODO: considering a base class for both Wyrm and Ryoiki to do the basic floodfill work

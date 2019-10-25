@@ -431,6 +431,31 @@ bool Goban::fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
 }
 
 /**
+ * @brief Goban::fillByRules
+ * @param c - color
+ * @param rule - to fill by vs color
+ * @return list of all Chiho for the current Goban state which match c-rule
+ */
+QList<Chiho *> Goban::fillByRule( qint32 c, bool rule )
+{ QList<Chiho *> hpl;
+  Chiho *hp = nullptr;
+  qint32 x,y;
+  for ( qint32 i = 0; i < nPoints(); i++ )
+    { if ( hp == nullptr )
+        hp = new Chiho( this );
+      indexToXY( i,&x,&y );
+      if ( fill( x, y, c, rule, hp ) )
+        { hpl.append( hp );
+          hp = nullptr;
+        }
+    }
+  if ( hp != nullptr )
+    hp->deleteLater();
+  return hpl;
+}
+
+
+/**
  * @brief Goban::fillRuleCheck
  * @param x - coordinate to check
  * @param y - coordinate to check

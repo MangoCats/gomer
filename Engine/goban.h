@@ -30,39 +30,40 @@ class Goban : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Goban( Game *p, qint32 xs=19, qint32 ys=19 );
-              Goban( Goban *bp, Game *p );
-        bool  resize( qint32 xs, qint32 ys );
-      qint32  nPoints() { return Xsize * Ysize; }
-     QString  state();
-      Goishi *takeGoishi( qint32 i );
-        void  removeGoishi( Goishi *ip );
-        bool  placeGoishi( Goishi *ip, qint32 i );
-        bool  placeGoishiAt( Goishi *ip, qint32 x, qint32 y );
-        bool  placeGoishiAt( Goishi *ip, QString v );
-        bool  vertexToXY( QString v, qint32 *x, qint32 *y );
-      qint32  vertexToIndex( QString v );
-     QString  indexToVertex( qint32 i );
-     QString  xyToVertex( qint32 x, qint32 y );
-        bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
-      qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
-       QChar  colorToChar( qint32 c );
-      Goishi *goishiAt( qint32 x, qint32 y );
-      Goishi *goishiAt( QString v );
-      Goishi *goishi( qint32 i );
-      qint32  color( qint32 i );
-        bool  onBoard( qint32 x, qint32 y );
-        bool  onBoard( QString v );
-     QString  showBoard();
-     QString  showChiho( Chiho *hp );
-     QString  xAxisLabels();
-     QString  centerString( QString s, qint32 len );
-     QString  asciiGoishi( qint32 x, qint32 y );
-        bool  fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
-        bool  fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
+     explicit  Goban( Game *p, qint32 xs=19, qint32 ys=19 );
+               Goban( Goban *bp, Game *p );
+         bool  resize( qint32 xs, qint32 ys );
+       qint32  nPoints() { return Xsize * Ysize; }
+      QString  state();
+       Goishi *takeGoishi( qint32 i );
+         void  removeGoishi( Goishi *ip );
+         bool  placeGoishi( Goishi *ip, qint32 i );
+         bool  placeGoishiAt( Goishi *ip, qint32 x, qint32 y );
+         bool  placeGoishiAt( Goishi *ip, QString v );
+         bool  vertexToXY( QString v, qint32 *x, qint32 *y );
+       qint32  vertexToIndex( QString v );
+      QString  indexToVertex( qint32 i );
+      QString  xyToVertex( qint32 x, qint32 y );
+         bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
+       qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
+        QChar  colorToChar( qint32 c );
+       Goishi *goishiAt( qint32 x, qint32 y );
+       Goishi *goishiAt( QString v );
+       Goishi *goishi( qint32 i );
+       qint32  color( qint32 i );
+         bool  onBoard( qint32 x, qint32 y );
+         bool  onBoard( QString v );
+      QString  showBoard();
+      QString  showChiho( Chiho *hp );
+      QString  xAxisLabels();
+      QString  centerString( QString s, qint32 len );
+      QString  asciiGoishi( qint32 x, qint32 y );
+QList<Chiho *> fillByRule( qint32 c, bool rule );
+         bool  fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
+         bool  fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
 
 signals:
-        void  boardChanged( QString );
+         void  boardChanged( QString );
 
 public slots:
 
