@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
 
 // Common variable names / usage:
 // i - index onto a Goban
+// j - loop control index
+// k - loop control index
 // x - coordinate on a Goban
 // y - coordinate on a Goban
 // c - color (0 = black, 1 = white, -1 = neither, -2 = not yet determined, 2+ for weird games)

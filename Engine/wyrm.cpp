@@ -7,7 +7,7 @@
  */
 Wyrm::Wyrm(Goishi *ip, Shiko *p) : Chiho(p), tp(p)
 { addGoishi( ip );
-  addGobanIndex(tp->bp->xyToIndex(ip->x,ip->y));
+  addGobanIndex( tp->bp->xyToIndex(ip->x,ip->y) );
 }
 
 /**
@@ -16,7 +16,7 @@ Wyrm::Wyrm(Goishi *ip, Shiko *p) : Chiho(p), tp(p)
  * @param parent - parent of the new Wyrm
  */
 Wyrm::Wyrm(Wyrm *wp, Shiko *p) : Chiho(p), tp(p)
-{ Goban *bpn = p->bp; // New Goban
+{ Goban *bpn = p->bp; // New Goban (can be the same Goban as the one being copied from)
   foreach( Goishi *ipo, wp->ipl )
     { Goishi *ipn = bpn->goishiAt( ipo->x, ipo->y );
       if ( ipn == nullptr )

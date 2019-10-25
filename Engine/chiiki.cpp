@@ -31,14 +31,21 @@ Chiiki::Chiiki( Chiiki *pcp, Shiko *p ) : QObject(p), bp(pcp->bp), tp(p)
 QString  Chiiki::showRyoiki()
 { QString s;
   for ( qint32 pl = 0; pl <= tp->gp->np; pl++ )
-    s += QString( "Ryoiki %1:%2\n" ).arg(pl).arg(showRyoiki(pl) );
+    s += QString( "Ryoiki %1:%2\n" )
+             .arg( pl )
+             .arg( showRyoiki(pl) );
   return s;
 }
 
 QString Chiiki::showRyoiki( qint32 c )
 { QString s;
+  qint32 np = tp->gp->np;
+
   foreach ( Ryoiki *rp, rpm.at(c) )
-    s.append( bp->showChiho( rp ) );
+    { if ( c == np )
+        s.append( QString("%1 ").arg( tp->bp->colorToChar( rp->owner ) ) );
+      s.append( bp->showChiho( rp ) );
+    }
   return "\n" + s;
 }
 

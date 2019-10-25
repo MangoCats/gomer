@@ -63,9 +63,10 @@ QList<qint32> Shiko::allLegalMoves( qint32 c )
  * @param x - coordinate to place Goishi
  * @param y - coordinate to place Goishi
  * @param c - color of Goishi to place
+ * @param anyColor - if true, allow moves by not current player
  * @return true if the move would be legal
  */
-bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
+bool Shiko::legalMove( qint32 x, qint32 y, qint32 c, bool anyColor )
 { if ( gp == nullptr )
     { qDebug( "WARNING: Shiko::legalMove Game null" );
       return false;
@@ -74,7 +75,7 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
     { qDebug( "WARNING: Shiko::legalMove Goban null" );
       return false;
     }
-  if ( c != gp->pt )
+  if (( !anyColor ) && ( c != gp->pt ))
     { qDebug( "Shiko::legalMove() %d does not match current player turn %d", c, gp->pt );
       return false;
     }
@@ -102,16 +103,17 @@ bool Shiko::legalMove( qint32 x, qint32 y, qint32 c )
  * @brief Shiko::legalMoveIndex
  * @param i - index of position to try to move
  * @param c - color to try to move
+ * @param anyColor - if true, allow moves by not current player
  * @return true if move is legal
  */
-bool Shiko::legalMoveIndex( qint32 i, qint32 c )
+bool Shiko::legalMoveIndex( qint32 i, qint32 c, bool anyColor )
 { qint32 x,y;
   if ( bp == nullptr )
     { qDebug( "WARNING: Shiko::legalMoveIndex Goban null" );
       return false;
     }
   bp->indexToXY( i, &x, &y );
-  return legalMove( x, y, c );
+  return legalMove( x, y, c, anyColor );
 }
 
 /**
@@ -145,9 +147,14 @@ bool Shiko::selfCaptureRelief( qint32 x, qint32 y, qint32 c )
 { Goishi *ip = bp->goishiAt( x,y );
   if ( ip == nullptr )
     return true; // Empty grid - new liberty
-  if (( ip->color == c ) && ( !ip->wp->inAtari() ))
+  Wyrm *wp = ip->wp;
+  if ( wp == nullptr )
+    { qDebug( "UNEXPECTED: Shiko::selfCaptureRelief %d Goishi @ %d,%d Wyrm null", c, x, y );
+      return false;
+    }
+  if (( ip->color == c ) && ( !wp->inAtari() ))
     return true; // Friendly Wyrm not in Atari
-  if (( ip->color != c ) && ( ip->wp->inAtari() ))
+  if (( ip->color != c ) && ( wp->inAtari() ))
     return true; // Opponent Wyrm in Atari
   return false;
 }
@@ -308,6 +315,37 @@ void  Shiko::addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c )
 }
 
 /**
+ * @brief Shiko::testLibertyCount
+ * @param i - index where Goishi might be theoretically placed
+ * @param c - color of the theoretical Goishi placed there
+ * @return number of liberties the resulting Wyrm would enjoy if this Goishi were so placed...
+ */
+qint32 Shiko::testLibertyCount( qint32 i, qint32 c )
+{ qint32 lc = 0;
+  qint32 x,y;
+  bp->indexToXY( i, &x, &y );
+  if ( x > 0 )             lc += armLibertyCount( x-1, y, c );
+  if ( x < bp->Xsize - 1 ) lc += armLibertyCount( x+1, y, c );
+  if ( y > 0 )             lc += armLibertyCount( x, y-1, c );
+  if ( y < bp->Ysize - 1 ) lc += armLibertyCount( x, y+1, c );
+  return lc;
+}
+
+qint32 Shiko::armLibertyCount( qint32 x, qint32 y, qint32 c )
+{ Goishi *ip = bp->goishiAt(x,y);
+  if ( ip == nullptr )
+    return 1;
+  if ( ip->color != c )
+    return 0;
+  Wyrm *wp = ip->wp;
+  if ( wp == nullptr )
+    { qDebug("UNEXPECTED: Shiko::armLibertyCount() Wyrm null" );
+      return 0;
+    }
+  return wp->libertyList.size() - 1;
+}
+
+/**
  * @brief Shiko::wyrmCaptured - called from the Game which has taken care of moving the Goishi from Goban to Gosu
  *   Shiko needs to remove this Wyrm from the list of Wyrms on the board, and incidentally clear the Goishi wp-s.
  * @param wp - captured Wyrm
@@ -401,46 +439,96 @@ QString Shiko::showWyrms()
 }
 
 /**
- * @brief Shiko::bensonsChiho - First, calculate Ryoiki around just the passed Wyrms
- *   Then, remove any occupied by opponent grid points from them.
- * @param cwpl - list of Wyrms to calculate the Ryoiki around
+ * @brief Shiko::bensonsChiho - First, calculate Chiho around the Wyrms
+ *   on Benson's board.  Then, remove any occupied by opponent on the Game board
+ *   grid points from them.
+ * @param bbp - Bensons working Goban, with opponent Goishi removed
+ * #param c - color we are
  * @return List of Bensons pass-alive algorithm Ryoiki for the given Wyrms
  */
-QList<Chiho *> Shiko::bensonsChiho( QList<Wyrm *> cwpl )
+QList<Chiho *> Shiko::bensonsChiho( Goban *bbp, qint32 c )
 { QList<Chiho *> bhpl;
-  if ( cwpl.size() < 1 )
-    return bhpl;
-  qint32 c = cwpl.at(0)->color();
-  bhpl = bp->fillByRule( c, false );
-  // TODO: scrub the Chiho to remove points with (opponent) Goishi
-
+  bhpl = bbp->fillByRule( c, false );
+  // Now, the Benson "special treatment" - remove points filled by opponent Goishi
+  qint32 j = 0;
+  while ( j < bhpl.size() )
+    { Chiho *hp = bhpl.at(j);
+      if ( hp == nullptr )
+        qDebug( "UNEXPECTED: Shiko::bensonsChiho Chiho null" );
+       else
+        { qint32 k = 0;
+          while ( k < hp->bi.size() )
+            if ( bp->color( hp->bi.at(k) ) != NO_PLAYER )
+              hp->bi.removeAt( k );
+             else
+              k++;
+          if ( hp->bi.size() < 1 )
+            { qDebug( "UNEXPECTED: Shiko::bensonsChiho Chiho empty" );
+              hp->deleteLater();
+              hp = nullptr;
+            }
+        }
+      if ( hp == nullptr )
+        bhpl.removeAt( j );
+       else
+        j++;
+    }
   return bhpl;
 }
 
 /**
- * @brief Shiko::copyWyrmsColored
+ * @brief Shiko::onlyWyrmsColored - remove all Wyrms not colored c
+ * @param bbp - Goban to operate on (NOT the Game Goban!)
  * @param c - color to match
- * @return list of newly copied Wyrms that match color c
  */
-QList<Wyrm *> Shiko::copyWyrmsColored( qint32 c )
-{ QList<Wyrm *> cwpl;
-  foreach ( Wyrm *wp, wpl )
-    { if ( wp == nullptr )
-        qDebug( "Shiko::copyWyrmsColored() Wyrm null" );
-       else
-        { if ( wp->color() == c )
-            cwpl.append( new Wyrm( wp, this ) );
-        }
+void Shiko::onlyWyrmsColored( Goban *bbp, qint32 c )
+{ for ( qint32 i = 0; i < bbp->nPoints(); i++ )
+    { Goishi *ip = bbp->goishi(i);
+      if ( ip != nullptr )
+        if ( ip->color != c )
+          bbp->takeGoishi(i)->deleteLater();
     }
-  return cwpl;
 }
 
 /**
- * @brief Shiko::isVital - is this Ryoiki vital to the Wyrm?
- *   Basically, all gridpoints of the Ryoiki must
+ * @brief Shiko::allWyrms
+ * @param bbp - Goban to read
+ * @return list of all Wyrms on the Goban
+ */
+QList<Wyrm *> Shiko::allWyrms( Goban *bbp )
+{ QList<Wyrm *>awpl;
+  for ( qint32 i = 0; i < bbp->nPoints(); i++ )
+     { Goishi *ip = bbp->goishi(i);
+       if ( ip != nullptr )
+         { Wyrm *wp = ip->wp;
+           if ( wp != nullptr )
+             if ( !awpl.contains( wp ) )
+               awpl.append( wp );
+         }
+     }
+  return awpl;
+}
+
+/**
+ * @brief Shiko::clearWyrm
+ * @param bbp - Goban to operate on - not the Game Goban
+ * @param wp - Wyrm to remove from the Goban
+ */
+void  Shiko::clearWyrm( Goban *bbp, Wyrm *wp )
+{ foreach ( Goishi *ip, wp->ipl )
+    { if ( ip->bp != bbp )
+        qDebug( "UNEXPECTED: Shiko::clearWyrm mismatch between Wyrm's Goishi's Goban and passed Goban" );
+       else
+        bbp->removeGoishi( ip );
+    }
+}
+
+/**
+ * @brief Shiko::isVital - is this Chiho vital to the Wyrm?
+ *   Basically, all gridpoints of the Chiho must
  * @param wp - Wyrm to examine
  * @param rp - Chiho to examine
- * @return true if the Ryoiki is vital to the Wyrm
+ * @return true if the Chiho is vital to the Wyrm
  */
 bool Shiko::isVital( Wyrm *wp, Chiho *hp )
 { if ( wp == nullptr ) { qDebug( "Shiko::isVital Wyrm null"   ); return false; }
@@ -468,6 +556,20 @@ qint32 Shiko::vitalCount( Wyrm *wp, const QList<Chiho *>& chpl )
 }
 
 /**
+ * @brief Shiko::passEyes
+ * @param wp - Wyrm to evaluate
+ * @param chpl -  a fully reduced Bensons Chiho list (all false eyes removed)
+ * @return list of all Goban index grid points contained in vital
+ */
+QList<qint32> Shiko::passEyes( Wyrm *wp, const QList<Chiho *>& chpl )
+{ QList<qint32> pel;
+  foreach ( Chiho *hp, chpl )
+    if ( isVital( wp, hp ) )
+      pel.append( hp->bi );
+  return pel;
+}
+
+/**
  * @brief Shiko::evaluateLife - Chiiki has been recently updated, now
  *   re-evaluate the life status of all Wyrms, first by Bensons algorithm:
  *   https://senseis.xmp.net/?BensonsAlgorithm
@@ -481,33 +583,48 @@ void Shiko::evaluateLife()
 { if ( gp == nullptr ) { qDebug( "Shiko::evaluateLife() Game null" ); return; }
   if ( bp == nullptr ) { qDebug( "Shiko::evaluateLife() Goban null" ); return; }
   qint32 np = gp->np;
+          Chiho *hp  = nullptr;
+           Wyrm *wp  = nullptr;
+           Wyrm *cwp = nullptr;
+          Goban *bbp = new Goban( bp, gp ); // Benson's Goban
    QList<Wyrm *> cwpl;
   QList<Chiho *> chpl;
+  foreach ( wp, wpl )          // Mark all Wyrms in this Shiko as undetermined
+    { wp->lifeOrDeath = WYRM_UNSETTLED;
+      wp->passEyes.clear();          // Re-count eyes every time
+    }
   for ( qint32 c = 0; c < np; c++ )
-    { cwpl.clear();
-      cwpl = copyWyrmsColored( c );  // Collect Wyrms only of the current player's color
+    { onlyWyrmsColored( bbp, c );    // Remove Wyrms not matching the current player's color from the bbp
       bool allAlive = false;         // Now, strip out the non-pass-alive Wyrms until only pass-alive Wyrms remain
       while ( !allAlive )
-        { foreach ( Chiho *hp, chpl )
-            hp->deleteLater();       // Clean up the Ryoiki list
+        { foreach ( hp, chpl )
+            hp->deleteLater();       // Clean up the Chiho list from the previous pass (if any)
           chpl.clear();
-          chpl = bensonsChiho( cwpl );
+          chpl = bensonsChiho( bbp, c );
+          cwpl = allWyrms( bbp );
           allAlive = true;           // assume true until proven false on this pass
           qint32 j = 0;
           while ( j < cwpl.size() )  // Examine every Wyrm colored c
-            { Wyrm *wp = cwpl.at(j);
-              if ( vitalCount( wp, chpl ) > 1 )
+            { cwp = cwpl.at(j);
+              if ( vitalCount( cwp, chpl ) > 1 )
                 j++;
                else
                 { allAlive = false;
+                  clearWyrm( bbp, cwp );
                   cwpl.removeAt(j);  // Remove any Wyrm which does not have at least two vital Ryoiki
-                  wp->deleteLater();
+                  cwp->deleteLater();
                 }
             }
         }
-      // TODO: mark Wyrms in the Shiko as alive or dead
-      foreach ( Wyrm *wp, cwpl )
-        wp->deleteLater();
+      foreach ( cwp, cwpl )          // Wyrms remaining in cwpl are alive
+        { wp = bp->grid.at( cwp->bi.at(0) )->wp; // Go to the Shiko's Goban to get the Wyrm
+          wp->passEyes    = passEyes( cwp, chpl );
+          wp->lifeOrDeath = WYRM_LIVE;
+          cwp->deleteLater();
+        }
       cwpl.clear();
     }
+  foreach ( hp, chpl )
+    hp->deleteLater();               // Clean up the Chiho list from the last pass
+  bbp->deleteLater();
 }

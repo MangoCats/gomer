@@ -44,6 +44,7 @@ public slots:
 public:
   QList<QPointer<Goishi> > ipl;          // List of all Goishi in this Wyrm
              QList<qint32> libertyList;  // List of all this Wyrm's liberties, by grid index
+             QList<qint32> passEyes;     // All grid points contained in pass eyes (eyes which will not collapse if player always passes)
                    qint32  lifeOrDeath;  // Current calculated status
            QPointer<Shiko> tp;           // The Shiko which holds this Wyrm
 

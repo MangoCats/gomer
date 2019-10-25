@@ -84,6 +84,10 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
 #define      COMMAND_INDEX_GG_GENMOVE               34
   handledCommands.append( "level" );
 #define      COMMAND_INDEX_LEVEL                    35
+  handledCommands.append( "d" );
+#define      COMMAND_INDEX_D                        36
+  handledCommands.append( "e" );
+#define      COMMAND_INDEX_E                        37
 }
 
 /**
@@ -271,6 +275,19 @@ void  GtpHandler::receivedMessage( QString m )
         msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
         msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
         respond( true, id, msg );
+        break;
+
+      case COMMAND_INDEX_D:
+        debugWyrms = true;
+        debugRyoiki = true;
+        showBoardAfterPlay = true;
+        respond( true, id, "All debug ON" );
+        break;
+
+      case COMMAND_INDEX_E:
+        debugWyrms = false;
+        debugRyoiki = false;
+        respond( true, id, "All debug OFF" );
         break;
 
       case COMMAND_INDEX_DEBUG_WYRMS:

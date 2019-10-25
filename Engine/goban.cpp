@@ -148,6 +148,10 @@ void Goban::removeGoishi( Goishi *ip )
     { qDebug( "WARNING: Goban::removeGoishi( nullptr )" );
       return;
     }
+  if ( ip->bp != this )
+    { qDebug( "WARNING: Goban::removeGoishi() Goishi Goban pointer mismatch" );
+      return;
+    }
   qint32 i = xyToIndex( ip->x, ip->y );
   if (( i < 0 ) || ( i >= nPoints() ))
     { qDebug( "WARNING: Goban::removeGoishi() @ %d, %d not on board", ip->x, ip->y );
@@ -408,70 +412,6 @@ QString Goban::showBoard()
   return bs;
 }
 
-/**
- * @brief Goban::fill
- * @param x - coordinate to check
- * @param y - coordinate to check
- * @param c  - color-state of the grid points to fill, NO_PLAYER means no Goishi present
- * @param rule - should the fill area be == c (true) or != c (false)
- * @param hp - Chiho that is recording this floodfill result
- * @return true if x,y matches the c-rule
- */
-bool Goban::fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
-{ if ( !fillRuleCheck(x,y,c,rule,hp) )
-    return false; // Done with this branch of the search
-  // This gridpoint matches the rules, save it
-  hp->addGobanIndex( xyToIndex(x,y) );
-  // And search the neighbors
-  if ( x > 0 )         fill( x-1,y,c,rule,hp );
-  if ( x < Xsize - 1 ) fill( x+1,y,c,rule,hp );
-  if ( y > 0 )         fill( x,y-1,c,rule,hp );
-  if ( y < Ysize - 1 ) fill( x,y+1,c,rule,hp );
-  return true; // x,y met the c-rule condition
-}
-
-/**
- * @brief Goban::fillByRules
- * @param c - color
- * @param rule - to fill by vs color
- * @return list of all Chiho for the current Goban state which match c-rule
- */
-QList<Chiho *> Goban::fillByRule( qint32 c, bool rule )
-{ QList<Chiho *> hpl;
-  Chiho *hp = nullptr;
-  qint32 x,y;
-  for ( qint32 i = 0; i < nPoints(); i++ )
-    { if ( hp == nullptr )
-        hp = new Chiho( this );
-      indexToXY( i,&x,&y );
-      if ( fill( x, y, c, rule, hp ) )
-        { hpl.append( hp );
-          hp = nullptr;
-        }
-    }
-  if ( hp != nullptr )
-    hp->deleteLater();
-  return hpl;
-}
-
-
-/**
- * @brief Goban::fillRuleCheck
- * @param x - coordinate to check
- * @param y - coordinate to check
- * @param c  - color-state of the grid points to fill, NO_PLAYER means no Goishi present
- * @param rule - should the fill area be == c (true) or != c (false)
- * @param hp - Chiho that is recording this floodfill result
- * @return true if the c-rule is met at x,y
- */
-bool Goban::fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
-{ qint32 i = xyToIndex(x,y);
-  if ( hp->contains(i) )
-    return false; // Already been here
-  if ( c == color(i) )
-    return rule;  // Looking for c, and found it
-  return !rule;   // Didn't find c
-}
 
 QString Goban::showChiho( Chiho *hp )
 { QString s;
@@ -540,4 +480,70 @@ QString Goban::asciiGoishi( qint32 x, qint32 y )
       return "*";
     }
   return centerString( goishiChar.at( c+2 ), 2 );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Goban::fillByRules
+ * @param c - color to test while filling
+ * @param rule - to fill by vs color, true = match, false = does not match
+ * @return list of all Chiho for the current Goban state which match c-rule
+ */
+QList<Chiho *> Goban::fillByRule( qint32 c, bool rule )
+{ QList<Chiho *> hpl;
+  Chiho *hp = nullptr;
+  qint32 x,y;
+  for ( qint32 i = 0; i < nPoints(); i++ ) // Fill from every possible starting point
+    { if ( hp == nullptr )
+        hp = new Chiho( this );
+      indexToXY( i,&x,&y );
+      if ( fill( x, y, c, rule, hp ) )
+        { hpl.append( hp );
+          hp = nullptr;
+        }
+    }
+  if ( hp != nullptr )
+    hp->deleteLater();
+  return hpl;
+}
+
+/**
+ * @brief Goban::fill
+ * @param x - coordinate to check
+ * @param y - coordinate to check
+ * @param c  - color-state of the grid points to fill, NO_PLAYER means no Goishi present
+ * @param rule - should the fill area be == c (true) or != c (false)
+ * @param hp - Chiho that is recording this floodfill result
+ * @return true if x,y matches the c-rule
+ */
+bool Goban::fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
+{ if ( !fillRuleCheck(x,y,c,rule,hp) )
+    return false; // Done with this branch of the search
+  // This gridpoint matches the rules, save it
+  hp->addGobanIndex( xyToIndex(x,y) );
+  // And search the neighbors
+  if ( x > 0 )         fill( x-1,y,c,rule,hp );
+  if ( x < Xsize - 1 ) fill( x+1,y,c,rule,hp );
+  if ( y > 0 )         fill( x,y-1,c,rule,hp );
+  if ( y < Ysize - 1 ) fill( x,y+1,c,rule,hp );
+  return true; // x,y met the c-rule condition
+}
+
+/**
+ * @brief Goban::fillRuleCheck
+ * @param x - coordinate to check
+ * @param y - coordinate to check
+ * @param c  - color-state of the grid points to fill, NO_PLAYER means no Goishi present
+ * @param rule - should the fill area be == c (true) or != c (false)
+ * @param hp - Chiho that is recording this floodfill result
+ * @return true if the c-rule is met at x,y
+ */
+bool Goban::fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
+{ qint32 i = xyToIndex(x,y);
+  if ( hp->contains(i) )
+    return false; // Already been here
+  if ( c == color(i) )
+    return rule;  // Looking for c, and found it
+  return !rule;   // Didn't find c
 }
