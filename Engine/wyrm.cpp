@@ -27,6 +27,8 @@ Wyrm::Wyrm(Wyrm *wp, Shiko *p) : Chiho(p), tp(p)
         }
     }
   libertyList = wp->libertyList;
+  passEyes    = wp->passEyes;
+  lifeOrDeath = wp->lifeOrDeath;
 }
 
 /**

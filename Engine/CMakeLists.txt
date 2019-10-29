@@ -30,11 +30,13 @@ add_executable(GomerEngine main.cpp
                            chiho.cpp
                            chiiki.cpp
                            console.cpp
+                           draco.cpp
                            game.cpp
                            goban.cpp
                            goishi.cpp
                            gosu.cpp
                            gtphandler.cpp
+                           jiyu.cpp
                            player.cpp
                            ryoiki.cpp
                            sakudo.cpp
@@ -46,11 +48,13 @@ set(SOURCES config.h.in
             chiho.h
             chiiki.h
             console.h
+            draco.h
             game.h
             goban.h
             goishi.h
             gosu.h
             gtphandler.h
+            jiyu.h
             player.h
             ryoiki.h
             sakudo.h

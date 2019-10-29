@@ -24,9 +24,11 @@ int main(int argc, char *argv[])
 // p - pointer to parent object
 // bp - Goban pointer  - the board
 // cp - Chiiki pointer
+// dp - Draco pointer
 // gp - Game pointer
 // hp - Chiho pointer  - holds a region definition
 // ip - Goishi pointer
+// jp - Jiyu pointer
 // mp - Sakudo pointer - makes moves
 // pp - Player pointer
 // rp - Ryoiki pointer - regions of free space

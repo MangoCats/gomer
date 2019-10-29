@@ -21,14 +21,20 @@ class Sakudo : public QObject
     Q_OBJECT
 public:
     explicit  Sakudo( Game *p );
+              Sakudo( Sakudo *mp, Game *p );
         bool  allInOwnRyoiki( qint32 c, const QList<qint32>& ml );
 QList<qint32> removeOwnRyoiki( qint32 c, const QList<qint32>& ml );
+QList<qint32> removePassEyes( const QList<qint32>& ml );
      QString  genmove( qint32 c );
+     QString  firstMove( qint32 c );
      QString  genmoveRandy( qint32 c );
      QString  genmoveKilgore( qint32 c );
-     QString  genmoveKilroy( qint32 c );
+     QString  genmoveKilkenny( qint32 c );
      QString  genmoveEasyD( qint32 c );
      QString  genmoveTerry( qint32 c );
+     QString  genmoveMonty( qint32 c );
+        bool  playOneMonty( qint32 c, qint32 i );
+        bool  finishRandomGame();
         bool  canBeAttacked( Wyrm *wp, qint32 c );
 
 signals:

@@ -7,6 +7,7 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
   showBoardAfterPlay = false;
   debugWyrms  = false;
   debugRyoiki = false;
+  debugJiyu   = false;
   connect( this, SIGNAL(quit()), app, SLOT(quit()) );
   Console *cp = new Console(this);
   connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
@@ -50,44 +51,46 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
 #define      COMMAND_INDEX_PLAY                     17
   handledCommands.append( "p" );
 #define      COMMAND_INDEX_P                        18
-  handledCommands.append( "debug_wyrms" );
-#define      COMMAND_INDEX_DEBUG_WYRMS              19
-  handledCommands.append( "debug_ryoiki" );
-#define      COMMAND_INDEX_DEBUG_RYOIKI             20
-  handledCommands.append( "showboard_after_play" );
-#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     21
-  handledCommands.append( "sap" );
-#define      COMMAND_INDEX_SAP                      22
-  handledCommands.append( "noboard_after_play" );
-#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       23
-  handledCommands.append( "nap" );
-#define      COMMAND_INDEX_NAP                      24
-  handledCommands.append( "is_legal" );
-#define      COMMAND_INDEX_IS_LEGAL                 25
-  handledCommands.append( "captures" );
-#define      COMMAND_INDEX_CAPTURES                 26
-  handledCommands.append( "countlib" );
-#define      COMMAND_INDEX_COUNTLIB                 27
-  handledCommands.append( "findlib" );
-#define      COMMAND_INDEX_FINDLIB                  28
-  handledCommands.append( "genmove_black" );
-#define      COMMAND_INDEX_GENMOVE_BLACK            29
-  handledCommands.append( "genmove_white" );
-#define      COMMAND_INDEX_GENMOVE_WHITE            30
-  handledCommands.append( "genmove" );
-#define      COMMAND_INDEX_GENMOVE                  31
-  handledCommands.append( "g" );
-#define      COMMAND_INDEX_G                        32
-  handledCommands.append( "reg_genmove" );
-#define      COMMAND_INDEX_REG_GENMOVE              33
-  handledCommands.append( "gg_genmove" );
-#define      COMMAND_INDEX_GG_GENMOVE               34
-  handledCommands.append( "level" );
-#define      COMMAND_INDEX_LEVEL                    35
   handledCommands.append( "d" );
-#define      COMMAND_INDEX_D                        36
+#define      COMMAND_INDEX_D                        19
   handledCommands.append( "e" );
-#define      COMMAND_INDEX_E                        37
+#define      COMMAND_INDEX_E                        20
+  handledCommands.append( "debug_jiyu" );
+#define      COMMAND_INDEX_DEBUG_JIYU               21
+  handledCommands.append( "debug_ryoiki" );
+#define      COMMAND_INDEX_DEBUG_RYOIKI             22
+  handledCommands.append( "debug_wyrms" );
+#define      COMMAND_INDEX_DEBUG_WYRMS              23
+  handledCommands.append( "showboard_after_play" );
+#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     24
+  handledCommands.append( "sap" );
+#define      COMMAND_INDEX_SAP                      25
+  handledCommands.append( "noboard_after_play" );
+#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       26
+  handledCommands.append( "nap" );
+#define      COMMAND_INDEX_NAP                      27
+  handledCommands.append( "is_legal" );
+#define      COMMAND_INDEX_IS_LEGAL                 28
+  handledCommands.append( "captures" );
+#define      COMMAND_INDEX_CAPTURES                 29
+  handledCommands.append( "countlib" );
+#define      COMMAND_INDEX_COUNTLIB                 30
+  handledCommands.append( "findlib" );
+#define      COMMAND_INDEX_FINDLIB                  31
+  handledCommands.append( "genmove_black" );
+#define      COMMAND_INDEX_GENMOVE_BLACK            32
+  handledCommands.append( "genmove_white" );
+#define      COMMAND_INDEX_GENMOVE_WHITE            33
+  handledCommands.append( "genmove" );
+#define      COMMAND_INDEX_GENMOVE                  34
+  handledCommands.append( "g" );
+#define      COMMAND_INDEX_G                        35
+  handledCommands.append( "reg_genmove" );
+#define      COMMAND_INDEX_REG_GENMOVE              36
+  handledCommands.append( "gg_genmove" );
+#define      COMMAND_INDEX_GG_GENMOVE               37
+  handledCommands.append( "level" );
+#define      COMMAND_INDEX_LEVEL                    38
 }
 
 /**
@@ -271,33 +274,37 @@ void  GtpHandler::receivedMessage( QString m )
             if ( !gp->playGoishi( x, y, c ) )
               { respond( false, id, "problem playing "+args.at(0)+" "+args.at(1) ); break; }
           }
-        msg = showBoardAfterPlay ? gp->showBoard() : "";
-        msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
-        msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
-        respond( true, id, msg );
+        respond( true, id, postMoveMsg() );
         break;
 
       case COMMAND_INDEX_D:
-        debugWyrms = true;
+        debugJiyu   = true;
         debugRyoiki = true;
+        debugWyrms  = true;
         showBoardAfterPlay = true;
         respond( true, id, "All debug ON" );
         break;
 
       case COMMAND_INDEX_E:
-        debugWyrms = false;
+        debugJiyu   = false;
         debugRyoiki = false;
+        debugWyrms  = false;
         respond( true, id, "All debug OFF" );
         break;
 
-      case COMMAND_INDEX_DEBUG_WYRMS:
-        debugWyrms = !debugWyrms;
-        respond( true, id, debugWyrms ? "Wyrm debug ON" : "Wyrm debug OFF" );
+      case COMMAND_INDEX_DEBUG_JIYU:
+        debugJiyu = !debugJiyu;
+        respond( true, id, debugJiyu ? "Jiyu debug ON" : "Jiyu debug OFF" );
         break;
 
       case COMMAND_INDEX_DEBUG_RYOIKI:
         debugRyoiki = !debugRyoiki;
         respond( true, id, debugRyoiki ? "Ryoiki debug ON" : "Ryoiki debug OFF" );
+        break;
+
+      case COMMAND_INDEX_DEBUG_WYRMS:
+        debugWyrms = !debugWyrms;
+        respond( true, id, debugWyrms ? "Wyrm debug ON" : "Wyrm debug OFF" );
         break;
 
       case COMMAND_INDEX_SHOWBOARD_AFTER_PLAY:
@@ -399,10 +406,7 @@ void  GtpHandler::receivedMessage( QString m )
         if ( gp->bp->onBoard( cmd ) || ( cmd == "pass" ) )
           if ( !gp->playGoishi( cmd, c ) )
             { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
-        msg = "\n";
-        msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
-        msg.append( debugWyrms  ? gp->tp->showWyrms() : "" );
-        msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
+        msg = "\n"+postMoveMsg();
         respond( true, id, cmd+msg );
         break;
 
@@ -415,10 +419,7 @@ void  GtpHandler::receivedMessage( QString m )
         if ( gp->bp->onBoard( cmd ) || ( cmd == "pass" ) )
           if ( !gp->playGoishi( cmd, c ) )
             { respond( false, id, "problem playing "+arguments+" "+cmd ); break; }
-        msg = "\n";
-        msg.append( showBoardAfterPlay ? gp->showBoard() : "" );
-        msg.append( debugWyrms ? gp->tp->showWyrms() : "" );
-        msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
+        msg = "\n"+postMoveMsg();
         respond( true, id, cmd+msg );
         break;
 
@@ -449,6 +450,18 @@ void  GtpHandler::receivedMessage( QString m )
         respond( false, id, "unexpected_failure_to_find_command" );
     }
 
+}
+
+/**
+ * @brief GtpHandler::postMoveMsg
+ * @return non-standard GTP, debug info
+ */
+QString GtpHandler::postMoveMsg()
+{ QString msg = showBoardAfterPlay ? gp->showBoard() : "";
+  msg.append( debugJiyu   ? gp->tp->jp->show() : "" );
+  msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
+  msg.append( debugWyrms  ? gp->tp->showWyrms() : "" );
+  return msg;
 }
 
 /**

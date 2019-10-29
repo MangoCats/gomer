@@ -4,11 +4,13 @@
 class Chiiki;
 class Game;
 class Goban;
+class Jiyu;
 class Wyrm;
 #include <QObject>
 #include "chiiki.h"
 #include "game.h"
 #include "goban.h"
+#include "jiyu.h"
 #include "wyrm.h"
 
 /**
@@ -54,9 +56,10 @@ signals:
 public slots:
 
 public:
+        QPointer<Chiiki> cp;
           QPointer<Game> gp;
          QPointer<Goban> bp;
-        QPointer<Chiiki> cp;
+          QPointer<Jiyu> jp;
   QList<QPointer<Wyrm> > wpl;
             QStringList  stateHistory; // Previous board positions
 };

@@ -35,10 +35,11 @@ Game::Game(Game *gp, QObject *p) : QObject(p)
       spl.append( sp );
       ppl.append( new Player( pp->name, sp ) );
     }
-  komi         = gp->komi;
-  np           = gp->np;
-  pt           = gp->pt;
-  tp = new Shiko( gp->tp, this );
+  komi = gp->komi;
+  np   = gp->np;
+  pt   = gp->pt;
+  mp   = new Sakudo( gp->mp, this );
+  tp   = new Shiko( gp->tp, this );
 }
 
 /**
@@ -147,6 +148,15 @@ QString Game::showBoard()
   return bp->showBoard();
 }
 
+bool Game::playGoishiIndex( qint32 i, qint32 c )
+{ if ( bp == nullptr )
+    return false;
+  qint32 x,y;
+  if ( !bp->indexToXY(i,&x,&y) )
+    return false;
+  return playGoishi( x,y,c );
+}
+
 /**
  * @brief Game::playGoishi
  * @param x - coordinate to play at
@@ -184,7 +194,7 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
       return false;
     }
 
-  tp->goishiPlacedOnGoban( ip ); // Updates Wyrms
+  tp->goishiPlacedOnGoban( ip ); // Updates Wyrms, Dracos, Chiiki, Jiyu, etc.
 
   advancePlayer();
 

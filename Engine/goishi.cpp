@@ -13,5 +13,5 @@ Goishi::Goishi(qint32 c, Goban *p) : QObject(p), bp(p), color(c)
  */
 Goishi::Goishi(Goishi *ip, Goban *p) : QObject(p),
                bp(p), color(ip->color), x(ip->x), y(ip->y)
-{ // TODO: wp is recreated where?
+{ // Note: wp is filled during the Wyrm copy process
 }

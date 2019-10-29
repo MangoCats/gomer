@@ -1,8 +1,23 @@
 #include "sakudo.h"
+#include <QTimer>
 
+/**
+ * @brief Sakudo::Sakudo - constructor
+ * @param p - Game, parent object
+ */
 Sakudo::Sakudo(Game *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
-{ level = 0;  // Currently defaulting to Randy
+{ level = 0;  // Currently defaulting to Monty
   rng.seed( 1 );
+}
+
+/**
+ * @brief Sakudo::Sakudo - copy constructor
+ * @param mp - Sakudo to copy
+ * @param p - Parent of the new Sakudo
+ */
+Sakudo::Sakudo(Sakudo *mp, Game *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
+{ level = mp->level;  // Currently defaulting to Randy
+  rng   = mp->rng;    // Copy the state of the parent's rng
 }
 
 /**
@@ -23,10 +38,12 @@ QString Sakudo::genmove( qint32 c )
 
       case 2: return genmoveKilgore(c);
 
-      default:
-      case 3: return genmoveKilroy(c);
+      case 3: return genmoveKilkenny(c);
 
       case 4: return genmoveTerry(c);
+
+  default:
+      case 5: return genmoveMonty(c);
     }
 }
 
@@ -54,6 +71,15 @@ QList<qint32> Sakudo::removeOwnRyoiki( qint32 c, const QList<qint32>& ml )
   foreach ( qint32 i, ml )
     if ( tp->cp->colorAt(i) != c )
       sml.append(i);
+  return removePassEyes( sml );
+}
+
+QList<qint32> Sakudo::removePassEyes( const QList<qint32>& ml )
+{ QList<qint32> sml = ml;
+  foreach ( Wyrm *wp, tp->wpl )
+    foreach ( qint32 i, wp->passEyes )
+      if ( sml.contains(i) )
+        sml.removeAll( i );
   return sml;
 }
 
@@ -81,22 +107,12 @@ QString Sakudo::genmoveRandy( qint32 c )
 QString Sakudo::genmoveKilgore( qint32 c )
 { if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
-  QList<qint32> lml = tp->allLegalMoves(c);
-  if (( lml.size() < 1 ) || allInOwnRyoiki( c, lml ))
+  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
+  if ( lml.size() < 1 )
     return "pass";
-  qint32 x,y;
-  // First move?
+
   if ( tp->stateHistory.size() <= 1 )
-    { qint32 dx = ( bp->Xsize < 13 ) ? 3 : 4;
-      qint32 dy = ( bp->Ysize < 13 ) ? 3 : 4;
-      x = bp->Xsize - dx; if ( x < 0 ) x = 0;
-      y = bp->Ysize - dy; if ( y < 0 ) y = 0;
-      if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
-        { x = dx - 1; if ( x >= bp->Xsize ) x = bp->Xsize - 1;
-          y = dy - 1; if ( y >= bp->Ysize ) y = bp->Ysize - 1;
-        }
-      return bp->xyToVertex(x,y);
-    }
+    return firstMove(c);
 
   // Make a list of opponent Wyrms which can be attacked, and find the minimum liberties on any attackable Wyrm
   QList<Wyrm *>owpl;
@@ -238,30 +254,39 @@ bool Sakudo::canBeAttacked( Wyrm *wp, qint32 c )
 }
 
 /**
- * @brief Sakudo::genmoveKilroy - a little less aggressive than Kilgore, Kilroy at least
- *   doesn't put himself in immediate Atari.
+ * @brief Sakudo::firstMove
+ * @param c - color to move for
+ * @return a "stock" first move
+ */
+QString Sakudo::firstMove( qint32 c )
+{ qint32 x,y;
+  qint32 dx = ( bp->Xsize < 13 ) ? 3 : 4;
+  qint32 dy = ( bp->Ysize < 13 ) ? 3 : 4;
+  x = bp->Xsize - dx; if ( x < 0 ) x = 0;
+  y = bp->Ysize - dy; if ( y < 0 ) y = 0;
+  if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
+    { x = dx - 1; if ( x >= bp->Xsize ) x = bp->Xsize - 1;
+      y = dy - 1; if ( y >= bp->Ysize ) y = bp->Ysize - 1;
+    }
+  if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
+    return genmoveRandy(c);
+  return bp->xyToVertex(x,y);
+}
+
+/**
+ * @brief Sakudo::genmoveKilkenny - a little less aggressive than Kilgore, Kilkenny at least
+ *   doesn't put himself in immediate Atari.  Still, pretty dumb overall.
  * @param c - color to generate a move for
  * @return proposed move as a vertex, or pass or resign
  */
-QString Sakudo::genmoveKilroy( qint32 c )
+QString Sakudo::genmoveKilkenny( qint32 c )
 { if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
-  QList<qint32> lml = tp->allLegalMoves(c);
-  if (( lml.size() < 1 ) || allInOwnRyoiki( c, lml ))
+  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
+  if ( lml.size() < 1 )
     return "pass";
-  qint32 x,y;
-  // First move?
   if ( tp->stateHistory.size() <= 1 )
-    { qint32 dx = ( bp->Xsize < 13 ) ? 3 : 4;
-      qint32 dy = ( bp->Ysize < 13 ) ? 3 : 4;
-      x = bp->Xsize - dx; if ( x < 0 ) x = 0;
-      y = bp->Ysize - dy; if ( y < 0 ) y = 0;
-      if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
-        { x = dx - 1; if ( x >= bp->Xsize ) x = bp->Xsize - 1;
-          y = dy - 1; if ( y >= bp->Ysize ) y = bp->Ysize - 1;
-        }
-      return bp->xyToVertex(x,y);
-    }
+    return firstMove(c);
 
   // Make a list of opponent Wyrms which can be attacked, and find the minimum liberties on any attackable Wyrm
   QList<Wyrm *>owpl;
@@ -269,7 +294,7 @@ QString Sakudo::genmoveKilroy( qint32 c )
   qint32 maxSize = 0;
   foreach ( Wyrm *wp, tp->wpl )
     { if ( wp == nullptr )
-        { qDebug( "WARNING: Sakudo::genmoveKilroy null Wyrm"); }
+        { qDebug( "WARNING: Sakudo::genmoveKilkenny null Wyrm"); }
        else
         { if ( canBeAttacked( wp, c ) )
             { owpl.append(wp);
@@ -286,7 +311,7 @@ QString Sakudo::genmoveKilroy( qint32 c )
     return genmoveEasyD(c);
 
   if ( minLib <= 0 )
-    { qDebug( "UNEXPECTED: Sakudo::genmoveKilroy %d minLib!", minLib );
+    { qDebug( "UNEXPECTED: Sakudo::genmoveKilkenny %d minLib!", minLib );
       return genmoveEasyD(c);
     }
 
@@ -304,7 +329,7 @@ QString Sakudo::genmoveKilroy( qint32 c )
             }
         }
       if ( owpl.size() < 1 )
-        { qDebug( "UNEXPECTED: Sakudo::genmoveKilroy attackable Wyrm not refound" );
+        { qDebug( "UNEXPECTED: Sakudo::genmoveKilkenny attackable Wyrm not refound" );
           return genmoveRandy(c);
         }
       // A brighter player might choose the "best" target to take, Kilroy is so lacking in brightness
@@ -317,7 +342,7 @@ QString Sakudo::genmoveKilroy( qint32 c )
   if ( minLib > 2 ) // Look for opportunities to relieve our own Ataris
     { foreach ( Wyrm *wp, tp->wpl )
         { if ( wp == nullptr )
-            { qDebug( "WARNING: Sakudo::genmoveKilroy null Wyrm"); }
+            { qDebug( "WARNING: Sakudo::genmoveKilkenny null Wyrm"); }
            else
             { if ( wp->color() == c )
                 if ( canBeAttacked( wp, oc ) )
@@ -424,11 +449,103 @@ QString Sakudo::genmoveEasyD( qint32 c )
 
 
 /**
- * @brief Sakudo::genmoveTerry - return a move that adds as much territory as possible
+ * @brief Sakudo::genmoveTerry - return a move, outside of owned Ryoiki
+ *   that adds as many Jiyu points as possible, using the Jiyu influence estimator.
+ *   Overall, Terry is a terrible and slow player.
  * @param c - color to generate a move for
  * @return proposed move as a vertex, or pass or resign
  */
 QString Sakudo::genmoveTerry( qint32 c )
-{ return "pass";
+{ if (( tp == nullptr ) || ( bp == nullptr ))
+    return "pass";
+  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
+  if ( lml.size() < 1 )
+    return "pass";
+  if ( tp->stateHistory.size() <= 1 )
+    return firstMove(c);
+  if ( lml.size() == 1 )
+    return bp->indexToVertex( lml.at(0) );
+
+  qint32 bestI = -1;
+  qreal  bestP = (qreal)(-bp->nPoints());
+  foreach ( qint32 i, lml )
+    { Game *tgp = new Game( gp, this ); // Test game
+      tgp->playGoishiIndex(i,c);
+      qreal sc = tgp->tp->jp->score(c);
+      if ( sc > bestP )
+        { bestP = sc;
+          bestI = i;
+        }
+      tgp->deleteLater();
+    }
+  if (( bestI >= 0 ) && ( bestI < bp->nPoints() ))
+    return bp->indexToVertex( bestI );
+  return genmoveRandy(c);
+}
+
+/**
+ * @brief Sakudo::genmoveMonty - a super simple MonteCarlo move generator (no neural nets, no learning)
+ * @param c - color to generate a move for
+ * @return proposed move as a vertex, or pass or resign
+ */
+QString Sakudo::genmoveMonty( qint32 c )
+{ if (( tp == nullptr ) || ( bp == nullptr ))
+    return "pass";
+  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
+  if ( lml.size() < 1 )
+    return "pass";
+  if ( tp->stateHistory.size() <= 1 )
+    return firstMove(c);
+  if ( lml.size() == 1 )
+    return bp->indexToVertex( lml.at(0) );
+
+  QVector<qint32> wins;
+  wins.reserve(bp->nPoints());
+  while ( wins.size() < bp->nPoints() )
+    wins.append(0);
+
+  QTimer timer;
+  timer.setSingleShot( true );
+  timer.start( 9000 ); // Run a minimum of 9 seconds
+  while ( timer.isActive() )
+    { foreach ( qint32 i, lml )
+        if ( playOneMonty(c,i) )
+          wins[i]++;
+    }
+  qint32 maxWins  = -1;
+  qint32 maxIndex = -1;
+  for ( qint32 i = 0; i < wins.size(); i++ )
+    if ( wins.at(i) > maxWins )
+      { maxWins = wins.at(i);
+        maxIndex = i;
+      }
+  if ( maxIndex >= 0 )
+    return bp->indexToVertex( maxIndex );
+  return genmoveRandy(c);
+}
+
+/**
+ * @brief Sakudo::playOneMonty - play out a game using genmoveRandy
+ *   starting with the current Goban position and color c moving at index i
+ * @param c - color to play out a game starting with
+ * @param i - next move to play
+ * @return true if c won the game
+ */
+bool Sakudo::playOneMonty( qint32 c, qint32 i )
+{ Game *tgp = new Game( gp, this ); // Test game
+  tgp->playGoishiIndex(i,c);
+  bool result = tgp->mp->finishRandomGame();
+  tgp->deleteLater();
+  return result;
+}
+
+/**
+ * @brief Sakudo::finishRandomGame - play it where it lies
+ *   generate moves with Randy until two passes result.
+ * @return true if initial player wins, false if they lose
+ */
+bool Sakudo::finishRandomGame()
+{ qint32 initialPlayer = gp->pt;
+  bool done = false;
 
 }

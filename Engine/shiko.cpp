@@ -5,19 +5,22 @@
  * @param pbp - passed Goban pointer, Goban this Shiko thinks about
  * @param p - parent, Game this Shiko is playing
  */
-Shiko::Shiko(Game *p) : QObject(p), gp(p), bp(p->bp), cp(new Chiiki(this))
-{}
+Shiko::Shiko(Game *p) : QObject(p), gp(p), bp(p->bp)
+{ cp = new Chiiki( this );
+  jp = new Jiyu( bp );
+}
 
 /**
  * @brief Shiko::Shiko - copy constructor
  * @param tp - Shiko to copy
  * @param p - new Game parent
  */
-Shiko::Shiko(Shiko *tp, Game *p) : QObject(p), gp(p), bp(tp->bp), cp(tp->cp)
+Shiko::Shiko(Shiko *tp, Game *p) : QObject(p), gp(p), bp(p->bp)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
   stateHistory = tp->stateHistory;
   cp = new Chiiki( tp->cp, this );
+  jp = new Jiyu( tp->jp, bp );
 }
 
 /**
@@ -260,6 +263,8 @@ void Shiko::goishiPlacedOnGoban( Goishi *ip )
   cp->update(); // Update Chiiki
 
   evaluateLife();
+
+  jp->update();
 }
 
 /**

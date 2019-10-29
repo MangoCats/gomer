@@ -20,6 +20,7 @@ public:
     explicit  GtpHandler( QCoreApplication *app, Game *p );
         void  parseReceivedMessage( QString m, qint32 *id, QString *command_name, QString *arguments );
      QString  trimComments( QString m );
+     QString  postMoveMsg();
         void  respond( bool pf, qint32 id = -1, QString msg = "" );
         bool  checkGpNull( qint32 id );
         bool  checkBpNull( qint32 id );
@@ -38,8 +39,9 @@ public:
     QPointer<Game> gp;
       QStringList  handledCommands;
              bool  showBoardAfterPlay;
-             bool  debugWyrms;
+             bool  debugJiyu;
              bool  debugRyoiki;
+             bool  debugWyrms;
 };
 
 #endif // GTPHANDLER_H

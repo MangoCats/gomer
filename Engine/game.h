@@ -32,6 +32,7 @@ public:
      QString showBoard();
         bool playGoishi( qint32 x, qint32 y, qint32 c );
         bool playGoishi( QString v, qint32 c );
+        bool playGoishiIndex( qint32 i, qint32 c );
         void capture( Wyrm * );
         void pass();
         void advancePlayer();
