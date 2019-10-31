@@ -21,6 +21,7 @@ signals:
 public slots:
         void  readCommand();
         void  sendResponse( QString );
+        void  echo( QString );
 
 private:
     QSocketNotifier *m_notifier;

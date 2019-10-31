@@ -12,6 +12,7 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
   Console *cp = new Console(this);
   connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
   connect( this, SIGNAL(response(QString)), cp,   SLOT(sendResponse(QString))    );
+  connect( gp->mp, SIGNAL(echo(QString))  , cp,   SLOT(echo(QString)) );
   cp->run();
   handledCommands.append( "quit" );
 #define      COMMAND_INDEX_QUIT                      0

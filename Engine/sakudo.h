@@ -30,14 +30,21 @@ QList<qint32> removePassEyes( const QList<qint32>& ml );
      QString  genmoveRandy( qint32 c );
      QString  genmoveKilgore( qint32 c );
      QString  genmoveKilkenny( qint32 c );
+     QString  genmoveKilmer( qint32 c );
      QString  genmoveEasyD( qint32 c );
      QString  genmoveTerry( qint32 c );
      QString  genmoveMonty( qint32 c );
+QList<Wyrm *> surroundingWyrms( qint32 i );
+QList<Wyrm *> surroundingWyrms( Wyrm *wp );
+        Wyrm *largestWyrm( QList<Wyrm *>wpl );
+      qint32  minimumLiberties( QList<Wyrm *>wpl );
+        bool  aNotInB( QList<qint32>a, QList<qint32>b );
         bool  playOneMonty( qint32 c, qint32 i );
         bool  finishRandomGame();
         bool  canBeAttacked( Wyrm *wp, qint32 c );
 
 signals:
+        void  echo( QString );
 
 public slots:
 

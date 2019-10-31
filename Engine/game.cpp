@@ -170,7 +170,9 @@ bool Game::playGoishi( qint32 x, qint32 y, qint32 c )
       return false;
     }
   if ( !tp->legalMove(x,y,c) )
-    return false;
+    { qDebug( "WARNING: Game::playGoishi(%d,%d,%d) not a legal move",x,y,c );
+      return false;
+    }
   if ( c >= spl.size() )
     { qDebug( "WARNING: Game::playGoishi(%d,%d,%d) no Gosu %d available",x,y,c,c );
       return false;

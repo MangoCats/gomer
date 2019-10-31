@@ -20,3 +20,6 @@ void Console::sendResponse( QString msg )
 { msg += "\n";
   std::cout << msg.toUtf8().data() << std::flush;
 }
+
+void Console::echo( QString msg )
+{ qDebug( msg.toUtf8().data() ); }

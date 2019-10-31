@@ -40,10 +40,12 @@ QString Sakudo::genmove( qint32 c )
 
       case 3: return genmoveKilkenny(c);
 
-      case 4: return genmoveTerry(c);
-
   default:
-      case 5: return genmoveMonty(c);
+      case 4: return genmoveKilmer(c);
+
+      case 5: return genmoveTerry(c);
+
+      case 6: return genmoveMonty(c);
     }
 }
 
@@ -401,29 +403,210 @@ QString Sakudo::genmoveKilkenny( qint32 c )
 }
 
 /**
+ * @brief Sakudo::genmoveKilmer - aka Iceman, trying to be a little less agressive
+ *   in the name of self preservation
+ * @param c - color to generate a move for
+ * @return desired move
+ */
+QString Sakudo::genmoveKilmer( qint32 c )
+{ emit echo( QString( "# genmoveKilmer(%1)" ).arg(c) );
+  if (( tp == nullptr ) || ( bp == nullptr )) return "pass";
+  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
+  emit echo( QString( "# %1 legal moves available" ).arg(lml.size()) );
+  if ( lml.size() < 1 )                       return "pass";
+  if ( tp->stateHistory.size() <= 1 )         return firstMove(c);
+
+  QList<qint32>passEyes;
+  foreach ( Wyrm *wp, tp->wpl )
+    foreach ( qint32 i, wp->passEyes )
+      if ( !passEyes.contains(i) )
+        passEyes.append(i);
+
+  // Make a list of opponent Wyrms which can be attacked
+  QList<Wyrm *>owpl;
+  foreach ( Wyrm *wp, tp->wpl )
+    { if ( wp == nullptr )
+        { qDebug( "WARNING: Sakudo::genmoveKilmer null Wyrm"); }
+       else
+        { if (( canBeAttacked( wp, c ) ) && ( aNotInB( wp->libertyList, passEyes ) ))
+            owpl.append(wp);
+        }
+    }
+
+  emit echo( QString( "# owpl.size() == %1" ).arg(owpl.size()) );
+  if ( owpl.size() < 1 ) // Nothing to attack, cut it short for now
+    return genmoveEasyD(c);
+
+  // TODO: learn how not to kill the ones that are dead even if you leave them
+
+  qint32 minLib = minimumLiberties( owpl );
+  emit echo( QString( "# minLib == %1" ).arg(minLib) );
+  if ( minLib < 1 )
+    { qDebug( "UNEXPECTED: Sakudo::genmoveKilmer minLib %d", minLib );
+      return genmoveEasyD(c);
+    }
+
+  if ( minLib == 1 )
+    { QList<Wyrm *>potentialKills;
+      foreach( Wyrm *wp, owpl )
+        if ( wp->libertyList.size() == 1 )
+          potentialKills.append(wp);
+
+      // TODO: compare the value of this kill to the value of any available threats
+      emit echo( QString( "# potentialKills.size() == %1" ).arg(potentialKills.size()) );
+      if ( potentialKills.size() > 0 ) // Only one Wyrm to choose from
+        return bp->indexToVertex( largestWyrm( potentialKills )->libertyList.at(0) );
+    }
+
+  if ( minLib > 4 )
+    return genmoveEasyD(c);
+
+  // Find the most vulnerable opponent Wyrm (relative liberties)
+  QList<Wyrm *> twpl = owpl;
+  Wyrm *twp = nullptr;
+  qint32 libDiff = -2;                // Difference in liberties between opponent Wyrm and its surrounding Wyrms
+  while ( twpl.size() > 0 )
+    { Wyrm *wp = largestWyrm( twpl ); // Work down from the largest to smallest
+      twpl.removeAll( wp );
+      QList<Wyrm *>nwpl = surroundingWyrms( wp );
+      minLib = minimumLiberties( nwpl );
+      if ( minLib < 6 )
+        if ( ( minLib - wp->libertyList.size() ) > libDiff )
+          { libDiff = minLib - wp->libertyList.size();
+            twp = wp;
+          }
+    }
+  emit echo( QString( "# libDiff == %1" ).arg(libDiff) );
+  if ( twp != nullptr )
+    if ( libDiff >= 0 )
+      { // Chosen twp to attack, now choose optimal attack point
+        QList<qint32> ail = twp->libertyList;        // Attack Index List
+        QList<Wyrm *>nwpl = surroundingWyrms( twp );
+        qint32 bestAttackPoint = ail.at(0);
+        qint32 leastLibertyImproved = bp->nPoints();
+        qint32 bestLibertyResult = 0;
+        foreach ( qint32 ap, ail )
+          foreach ( Wyrm *wp, nwpl )
+            { if ( wp != nullptr )
+                if ( wp->libertyList.contains( ap ) )
+                  { qint32 tlc = tp->testLibertyCount( ap, c );
+                    if ( tlc >= (ail.size() - 1) ) // Could this attack succeed?
+                      { if ( leastLibertyImproved == wp->libertyList.size() )
+                          if ( bestLibertyResult < tlc )
+                            { bestLibertyResult = tlc;
+                              bestAttackPoint = ap;
+                            }
+                        if ( leastLibertyImproved > wp->libertyList.size() )
+                          { leastLibertyImproved = wp->libertyList.size();
+                            bestLibertyResult = tlc;
+                            bestAttackPoint = ap;
+                          }
+                      }
+                  }
+            } // foreach ( Wyrm *wp, nwpl )
+        if ( tp->testLibertyCount( bestAttackPoint, c ) > 1 ) // Do not self-Atari
+          return bp->indexToVertex( bestAttackPoint );
+      } // if ( libDiff >= 0 )
+
+  return genmoveEasyD(c);
+}
+
+/**
+ * @brief Sakudo::surroundingWyrms
+ * @param wp - Wyrm to analyze
+ * @return list of all other Wyrms that touch wp
+ */
+QList<Wyrm *> Sakudo::surroundingWyrms( Wyrm *wp )
+{ QList<Wyrm *> wpl,iwpl;
+  foreach ( Goishi *ip, wp->ipl )
+    { iwpl.clear();
+      iwpl = surroundingWyrms( bp->xyToIndex(ip->x,ip->y) );
+      foreach ( Wyrm *iwp, iwpl )
+        if ( iwp != nullptr )
+          if ( !wpl.contains( iwp ) )
+            wpl.append( iwp );
+    }
+  return wpl;
+}
+
+/**
+ * @brief Sakudo::surroundingWyrms
+ * @param i - board index point to analyze
+ * @return list of all Wyrms that touch i
+ */
+QList<Wyrm *> Sakudo::surroundingWyrms( qint32 i )
+{ QList<Wyrm *> wpl;
+  Goishi *ip = bp->goishi(i);
+  if ( ip == nullptr )
+    return wpl;
+  Wyrm *wp = ip->wp; // Wyrm that is being checked for surrounding Wyrms
+  if ( wp == nullptr )
+    return wpl;
+  qint32 x,y;
+  bp->indexToXY(i,&x,&y);
+  if (x > 0)             { ip = bp->goishiAt(x-1,y); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (x < bp->Xsize - 1) { ip = bp->goishiAt(x+1,y); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (y > 0)             { ip = bp->goishiAt(x,y-1); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (y < bp->Ysize - 1) { ip = bp->goishiAt(x,y+1); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  return wpl;
+}
+
+/**
+ * @brief Sakudo::largestWyrm
+ * @param wpl - list of Wyrms to compare
+ * @return largest Wyrm in the list
+ */
+Wyrm *Sakudo::largestWyrm( QList<Wyrm *>wpl )
+{ qint32 maxSz = 0;
+  Wyrm *maxWyrm = nullptr;
+  foreach ( Wyrm *wp, wpl )
+    if ( wp != nullptr )
+      if ( wp->ipl.size() > maxSz )
+        { maxSz = wp->ipl.size();
+          maxWyrm = wp;
+        }
+  return maxWyrm;
+}
+
+/**
+ * @brief Sakudo::minimumLiberties
+ * @param wpl - list of Wyrms to check
+ * @return number of liberties of the "most vulnerable" Wyrm in the list
+ */
+qint32 Sakudo::minimumLiberties( QList<Wyrm *>wpl )
+{ qint32 minLib = bp->nPoints();
+  foreach ( Wyrm *wp, wpl )
+    if ( wp != nullptr )
+      if ( wp->libertyList.size() < minLib )
+        minLib = wp->libertyList.size();
+  return minLib;
+}
+
+/**
+ * @brief Sakudo::aNotInB
+ * @param a - list of numbers to check
+ * @param b - list of numbers to check
+ * @return true if any number in a is not in b
+ */
+bool Sakudo::aNotInB( QList<qint32>a, QList<qint32>b )
+{ foreach ( qint32 i, a )
+    if ( !b.contains(i) )
+      return true;
+  return false;
+}
+
+/**
  * @brief Sakudo::genmoveEasyD - look for easy defense points
  * @param c - color to generate a move for
  * @return desired move
  */
 QString Sakudo::genmoveEasyD( qint32 c )
-{ if (( tp == nullptr ) || ( bp == nullptr ))
-    return "pass";
+{ emit echo( QString( "# genmoveEasyD(%1)" ).arg(c) );
+  if (( tp == nullptr ) || ( bp == nullptr ))           return "pass";
   QList<qint32> lml = tp->allLegalMoves(c);
-  if (( lml.size() < 1 ) || allInOwnRyoiki( c, lml ))
-    return "pass";
-  qint32 x,y;
-  // First move?
-  if ( tp->stateHistory.size() <= 1 )
-    { qint32 dx = ( bp->Xsize < 13 ) ? 3 : 4;
-      qint32 dy = ( bp->Ysize < 13 ) ? 3 : 4;
-      x = bp->Xsize - dx; if ( x < 0 ) x = 0;
-      y = bp->Ysize - dy; if ( y < 0 ) y = 0;
-      if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
-        { x = dx - 1; if ( x >= bp->Xsize ) x = bp->Xsize - 1;
-          y = dy - 1; if ( y >= bp->Ysize ) y = bp->Ysize - 1;
-        }
-      return bp->xyToVertex(x,y);
-    }
+  emit echo( QString( "# %1 legal moves available" ).arg(lml.size()) );
+  if (( lml.size() < 1 ) || allInOwnRyoiki( c, lml ))   return "pass";
+  if ( tp->stateHistory.size() <= 1 )                   return firstMove(c);
 
   QList<Wyrm *>fwpl;  // Friendly Wyrms to try to protect list
   qint32 oc = c+1; if ( oc >= tp->gp->np ) oc = 0; // An opponent color
@@ -434,17 +617,45 @@ QString Sakudo::genmoveEasyD( qint32 c )
         { if ( wp->color() == c )
             if ( canBeAttacked( wp, oc ) )
               if ( wp->libertyList.size() == 1 )
-                if ( tp->testLibertyCount( wp->libertyList.at(0), c ) > 2 ) // TODO: evaluate ladders later...
+                if ( tp->testLibertyCount( wp->libertyList.at(0), c ) > 1 ) // TODO: evaluate ladders later...
                   fwpl.append(wp);
         }
     }
+
+  emit echo( QString( "# Atari fwpl.size() == %1" ).arg(fwpl.size()) );
   if ( fwpl.size() == 1 )
     return bp->indexToVertex( fwpl.at(0)->libertyList.at(0) );
   if ( fwpl.size() > 1 )
-    return bp->indexToVertex( fwpl.at( rng.bounded(0,fwpl.size()) )->libertyList.at(0) );
+    { Wyrm *wp = largestWyrm( fwpl );
+      return bp->indexToVertex( wp->libertyList.at(0) );
+    }
+
+  // Trying to convert friendly Wyrms with 2 liberties to 3 or more
+  fwpl.clear();
+  foreach ( Wyrm *wp, tp->wpl )
+    { if ( wp == nullptr )
+        { qDebug( "WARNING: Sakudo::genmoveEasyD null Wyrm"); }
+       else
+        { if ( wp->color() == c )
+            if ( canBeAttacked( wp, oc ) )
+              if ( wp->libertyList.size() == 2 )
+                if (( tp->testLibertyCount( wp->libertyList.at(0), c ) > 2 ) ||
+                    ( tp->testLibertyCount( wp->libertyList.at(1), c ) > 2 ))
+                  fwpl.append(wp);
+        }
+    }
+  emit echo( QString( "# 2 Lib fwpl.size() == %1" ).arg(fwpl.size()) );
+  if ( fwpl.size() > 0 )
+    { Wyrm *wp = largestWyrm( fwpl );
+      qint32 i = wp->libertyList.at(0);
+      if ( tp->testLibertyCount( wp->libertyList.at(0), c ) <
+           tp->testLibertyCount( wp->libertyList.at(1), c ) )
+        i = wp->libertyList.at(1);
+      return bp->indexToVertex( i );
+    }
 
   // TODO: more defensive ideas
-  return genmoveRandy(c);
+  return genmoveTerry(c);
 }
 
 
@@ -456,15 +667,16 @@ QString Sakudo::genmoveEasyD( qint32 c )
  * @return proposed move as a vertex, or pass or resign
  */
 QString Sakudo::genmoveTerry( qint32 c )
-{ if (( tp == nullptr ) || ( bp == nullptr ))
-    return "pass";
+{ emit echo( QString( "# genmoveTerry(%1)" ).arg(c) );
+  if (( tp == nullptr ) || ( bp == nullptr )) return "pass";
   QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
-  if ( lml.size() < 1 )
-    return "pass";
-  if ( tp->stateHistory.size() <= 1 )
-    return firstMove(c);
-  if ( lml.size() == 1 )
-    return bp->indexToVertex( lml.at(0) );
+  foreach ( qint32 i, lml )
+    if ( tp->testLibertyCount( i, c ) < 2 )
+      lml.removeAll( i );
+  emit echo( QString( "# %1 legal non-Atari moves available" ).arg(lml.size()) );
+  if ( lml.size() < 1 )                       return "pass";
+  if ( tp->stateHistory.size() <= 1 )         return firstMove(c);
+  if ( lml.size() == 1 )                      return bp->indexToVertex( lml.at(0) );
 
   qint32 bestI = -1;
   qreal  bestP = (qreal)(-bp->nPoints());
@@ -512,6 +724,7 @@ QString Sakudo::genmoveMonty( qint32 c )
         if ( playOneMonty(c,i) )
           wins[i]++;
     }
+
   qint32 maxWins  = -1;
   qint32 maxIndex = -1;
   for ( qint32 i = 0; i < wins.size(); i++ )
@@ -547,5 +760,6 @@ bool Sakudo::playOneMonty( qint32 c, qint32 i )
 bool Sakudo::finishRandomGame()
 { qint32 initialPlayer = gp->pt;
   bool done = false;
-
+  // TODO: play out and determine winner
+  return done;
 }
