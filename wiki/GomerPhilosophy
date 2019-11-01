@@ -2,6 +2,8 @@ While developing the GomerEngine, I have explicitly avoided overlapping concept 
 
 There's also a certain amount of Zen, or one might also call it inefficiency, in the Gomer Engine - with conceptual representations not only of the Goban, but also the Gosu, which contain explicit Goishi objects which are moved from the Gosu bowl to the Goban when played, and moved again to a Gosu lid when captured.  While this might be less than optimal in processing speed, it gives more tangible representations, such as a Goishi can tell which Wyrm it belongs to, and a Wyrm which Draco it is a part of.
 
+Rather than explicit study and duplication of existing algorithms and concepts, Gomer is trying to take a fresh? approach, from an at least somewhat naïve perspective.
+
 A quick listing of the (C++ class) concepts developed, to a greater or lesser degree, within the Gomer engine as of this writing:
 
  Chiho &#22320;&#26041; definition of a region on a Goban, the base class for more specific regions like Wyrm and Ryoiki.
@@ -13,9 +15,8 @@ A quick listing of the (C++ class) concepts developed, to a greater or lesser de
  Gosu &#12468;&#12473; holds stones not on the board, either in the bowl or the lid
  Jiyu &#33258;&#30001; maps distance to nearest friendly Goishi, a primitive sort of influence flood-fill algorithm.
  Ryoiki &#38936;&#22495; a region, defined as a group of Goban intersection points - like a Wyrm of free space
- Sakudo &#31574;&#21205; selects moves for computer players
+ [Sakudo | Gomer/Sakudo] &#31574;&#21205; selects moves for computer players
  Shiko &#24605;&#32771; thinking about the board position and game
  Wyrm - A solidly connected group of Goishi aka Worm, Chain, String, Block, Group, Army.
 
 Back to GomerEngine.
-

@@ -1,0 +1,34 @@
+=== Gomer's Sakudo &#31574;&#21205; ===
+
+When asked by GTP to generate a move, Gomer turns to the Sakudo class' genmove function.  Depending on the level of play selected, one of several functions is then called:
+
+genmoveRandy() - an almost completely random move, selected from the subset of legal moves that do not appear in completely enclosed friendly territory, nor any pass eyes of any color (as defined by BensonsAlgorithm), nor any move that would result in the placed Goishi being in immediate Atari.  If there are no moves available that meet the above criteria, Randy passes.
+
+genmoveKilgore() - when playing Black, Kilgore will place his first stone in the upper right 4,4 point (3,3 on boards smaller than 13x13).  After that, things go downhill for Kilgore rather quickly.  Kilgore uses the canBeAttacked() function which at least knows not to attack Wyrms which possess Benson's life, he knows how to count liberties, and selects opponent Wyrms with the smallest number of liberties, then among those he selects the biggest ones, then among those he attacks the liberties at random with no regard to his own Goishi's safety.  If no attacks are available, he hands off to genmoveRandy() for a pass or move decision.  More entertaining to watch than Randy, but ultimately quite hopeless.
+
+genmoveKilkenny() - hat-tip to [South Park | https://southpark.cc.com/].  When Kilkenny can't find a juicy target to attack, he tries some simple defense moves - converting his own Ataris to 2 or more liberties when possible (nope, Kilkenny doesn't know about [Ladders | https://senseis.xmp.net/?Ladder] yet), or if he has any Wyrms with 2 liberties that can be converted to 3 or more he will do that too.  When Kilkenny runs out of ideas, he also turns over control to Randy.  Better than Kilgore, but still not too interesting.
+
+genmoveKilmer() - hat-tip to [Iceman Val | https://www.imdb.com/title/tt0092099/].  Kilmer is more selective than Kilkenny when attacking an opponent, if the opponent's Wyrm has more liberties than any Wyrm of Kilmer's surrounding it, Kilmer will break off the attack and look for other opportunities, or defensive maneuvers.  Through genmoveEasyD, Kilmer ends up using genmoveTerry quite a bit.  Not a deep player, has no understanding of how to form eyes, but can be surprisingly insightful (of the obvious) on occasion.
+
+genmoveTerry() - Terry makes use of Jiyu &#33258;&#30001;, scanning all reasonable legal moves to determine which results in the best overall Jiyu score.  A terrible player alone, through genmoveEasyD() Terry can occasionally contribute some interesting moves into the open spaces for other players whose own set of strategies have come up empty.
+
+genmoveKilroy() - under development at this time, Kilroy has ambitions to use the Draco structures to analytical advantage, and hopefully become the first Gomer engine to understand not only how to identify pass-life, but also to intentionally make eyes.  Kilroy hopes to:
+
+Analyze local area around Wyrms to determine when guaranteed ultimate outcomes are possible for either attack or defend of a Wyrm.  Build a list of the determinate Wyrm attacks and try to judge their values.
+
+Analyze local area around Draco cut points to determine when guaranteed ultimate outcomes are possible for either attack or defend of the Draco's junction.  Build a list of determinate Draco attacks and try to judge their values.
+
+Possibly build a pattern matching library, so after a Wyrm or Draco local determination has been made by exhaustive search, that determination can be saved in the library for future reference.  Idea: identify the relevant pattern sequences in a library entry with a string which uses 2 bits per grid point to indicate: white, black, empty or off-board for each point in the rectangular pattern.  How does this compare to GnuGo [Zobrist hashing | https://www.gnu.org/software/gnugo/gnugo_11.html]?  At first glance, it would seem that my idea lacks sense of Ko, though it could gain Ko insight the same way by "marking" the Ko point, if any.
+
+When not yet pass-alive, either by self-contained eyes or Wyrms with eyes strongly connected via Draco, analyze the number of moves required to make eyes for a Wyrm.  For all Wyrms friendly and opposing (for which the question is not already moot) determine the cost of making the eyes, or defending against the making of eyes.  Try to judge the value of these activities.
+
+Look for opportunities to connect currently independent Draco, friendly and opposing.  Attempt to judge the cost / value of pursuing each connection / disconnection.
+
+Juggle/sort all those moves by estimated value (do we want to pursue an uncertainty dimension in the value?) and choose.
+
+-----
+
+
+The future?  After Kilroy comes together, observe his matches with superior opponents, of which there will no doubt be many, identify weaknesses, tweak Kilroy where possible, and eventually identify new strategies that may result in a genmove beyond Kilroy.
+
+Back to GomerEngine
