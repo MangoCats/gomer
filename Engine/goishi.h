@@ -9,7 +9,7 @@ class Wyrm;
 #include "wyrm.h"
 
 /**
- * @brief The Goishi class - aka Stone, Token
+ * @brief The Goishi 五石 class - aka Stone, Token
  */
 class Goishi : public QObject
 {

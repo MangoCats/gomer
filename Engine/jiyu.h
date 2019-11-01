@@ -9,7 +9,7 @@ class Shiko;
 #include "shiko.h"
 
 /**
- * @brief The Jiyu class - maps liberties of various levels
+ * @brief The Jiyu 自由 class - maps liberties of various levels
  *   Each point more distant from a Wyrm is a liberty of a higher
  *   number-level.  A single player's liberty map always shows
  *   the liberty of the lowest number for a grid point.

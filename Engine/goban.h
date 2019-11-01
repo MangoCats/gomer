@@ -20,7 +20,7 @@ class Goishi;
 #define GOSU_LID  -3
 
 /**
- * @brief The Goban class - a generalized playing board
+ * @brief The Goban 碁盤 class - a generalized playing board
  *
  * grid   is a zero indexed integer pair x,y description of a board intersection point
  * index  is a single integer description of a board intersection point = x + Xsize * y

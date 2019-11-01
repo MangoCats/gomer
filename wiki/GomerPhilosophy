@@ -1,0 +1,21 @@
+While developing the GomerEngine, I have explicitly avoided overlapping concept names with other software like GnuGo - things like GnuGo Worms, Gomer (and every other Go engine in existence) has a very similar concept which Gomer calls Wyrms to stay distinct and emphasize that there are differences, such as: Wyrms know nothing about cut points, or - at this stage at least, multi-stage liberties.
+
+There's also a certain amount of Zen, or one might also call it inefficiency, in the Gomer Engine - with conceptual representations not only of the Goban, but also the Gosu, which contain explicit Goishi objects which are moved from the Gosu bowl to the Goban when played, and moved again to a Gosu lid when captured.  While this might be less than optimal in processing speed, it gives more tangible representations, such as a Goishi can tell which Wyrm it belongs to, and a Wyrm which Draco it is a part of.
+
+A quick listing of the (C++ class) concepts developed, to a greater or lesser degree, within the Gomer engine as of this writing:
+
+ Chiho &#22320;&#26041; definition of a region on a Goban, the base class for more specific regions like Wyrm and Ryoiki.
+ Chiiki &#22320;&#22495; calculating and estimating territory, the collection of Ryoiki for the current Goban position
+ Draco - a loosely connected group of Wyrms of the same color.
+ Game - encapsulates a single game play
+ Goban &#30849;&#30436; a generalized playing board
+ Goishi &#20116;&#30707; a stone or playing token
+ Gosu &#12468;&#12473; holds stones not on the board, either in the bowl or the lid
+ Jiyu &#33258;&#30001; maps distance to nearest friendly Goishi, a primitive sort of influence flood-fill algorithm.
+ Ryoiki &#38936;&#22495; a region, defined as a group of Goban intersection points - like a Wyrm of free space
+ Sakudo &#31574;&#21205; selects moves for computer players
+ Shiko &#24605;&#32771; thinking about the board position and game
+ Wyrm - A solidly connected group of Goishi aka Worm, Chain, String, Block, Group, Army.
+
+Back to GomerEngine.
+

@@ -1,0 +1,11 @@
+In the spirit of YetAnotherNoviceTriesToWriteAGoProgram, Gomer is a naïve Go engine which I am developing as an exercise in learning the ways of Go for myself.  As an old guy just learning Go recently, I have neither the attention span, nor the focus to be able to really apply what I have learned about Go in a game, except perhaps at correspondence speed and life is just too short for me to enjoy a single game that may take six months to play.
+
+Yes, it is late 2019, and interest in Go engine development has fallen off sharply since [superhuman Go engines | https://en.wikipedia.org/wiki/AlphaGo_Zero] arrived.  I only find this discouraging because there are far fewer computer opponents available to challenge online than there were back in 2014.  It would be nice if somewhere there was a forum with the old engines available to challenge and rank against.
+
+[Writing | https://github.com/mangocats/gomer] [Gomer | https://gitlab.com/mangocats/gomer] is a way for me to capture what I have learned about the game in a form that's both repeatable, and more entertaining to watch than my all too frequent human errors.  While I have done superficial reading about the inner workings of GnuGo and other engines, Gomer is more about applying lessons of connectivity, liberties, life, death, influence and ultimately territory in an engine.  I have no ambitions for Gomer to become the best in the world, or even super human, though some day I may bring in elements of self-play learning as demonstrated in [KataGo | https://github.com/lightvector/KataGo].  If Gomer ever reaches 1 Dan, he will have exceeded my expectations.
+
+Consider this a "Home Page" for Gomer, with more focused pages linked below:
+
+GomerFirstCut
+GomerPhilosophy
+

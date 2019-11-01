@@ -1,0 +1,5 @@
+The [first cut | https://github.com/MangoCats/gomer/tree/master/archive/FirstCut] of Gomer was really just testing the waters, seeing if writing a Go program was as easy/hard as it appeared to be.  I had visions of separating the engine from the GUI, but didn't really follow through with them - GomerFirstCut is more or less a monolithic mess and didn't seem worth the effort to salvage when I started implementing a GoTextProtocol handler.
+
+The only slightly interesting things about Gomer's first cut were its ability to illustrate available liberty count on the stones themselves, and a rudimentary display of territory calculation.  Some day, the GUI may return with those features and more, connected by GTP this time, but at present the engine is working well with available GTP interfaces like SabakiSoftware and the [KGS | https://senseis.xmp.net/?KGS] [GTP client | http://files.gokgs.com/javaBin/kgsGtp-3.5.20.tar.gz].
+
+Back to GomerEngine.

@@ -9,7 +9,7 @@ class Goishi;
 #include "goishi.h"
 
 /**
- * @brief The Gosu class - holds stones not on the board, either in the bowl or the lid.
+ * @brief The Gosu ゴス class - holds stones not on the board, either in the bowl or the lid.
  */
 class Gosu : public QObject
 {
