@@ -41,6 +41,7 @@ public:
          bool  placeGoishiAt( Goishi *ip, qint32 x, qint32 y );
          bool  placeGoishiAt( Goishi *ip, QString v );
          bool  vertexToXY( QString v, qint32 *x, qint32 *y );
+         bool  indexNeighbors( qint32 i, qint32 j );
        qint32  vertexToIndex( QString v );
       QString  indexToVertex( qint32 i );
       QString  xyToVertex( qint32 x, qint32 y );

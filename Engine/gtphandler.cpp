@@ -8,6 +8,7 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
   debugWyrms  = false;
   debugRyoiki = false;
   debugJiyu   = false;
+  debugDraco  = false;
   connect( this, SIGNAL(quit()), app, SLOT(quit()) );
   Console *cp = new Console(this);
   connect( cp,   SIGNAL(newline(QString)),  this, SLOT(receivedMessage(QString)) );
@@ -56,42 +57,44 @@ GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
 #define      COMMAND_INDEX_D                        19
   handledCommands.append( "e" );
 #define      COMMAND_INDEX_E                        20
+  handledCommands.append( "debug_draco" );
+#define      COMMAND_INDEX_DEBUG_DRACO              21
   handledCommands.append( "debug_jiyu" );
-#define      COMMAND_INDEX_DEBUG_JIYU               21
+#define      COMMAND_INDEX_DEBUG_JIYU               22
   handledCommands.append( "debug_ryoiki" );
-#define      COMMAND_INDEX_DEBUG_RYOIKI             22
+#define      COMMAND_INDEX_DEBUG_RYOIKI             23
   handledCommands.append( "debug_wyrms" );
-#define      COMMAND_INDEX_DEBUG_WYRMS              23
+#define      COMMAND_INDEX_DEBUG_WYRMS              24
   handledCommands.append( "showboard_after_play" );
-#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     24
+#define      COMMAND_INDEX_SHOWBOARD_AFTER_PLAY     25
   handledCommands.append( "sap" );
-#define      COMMAND_INDEX_SAP                      25
+#define      COMMAND_INDEX_SAP                      26
   handledCommands.append( "noboard_after_play" );
-#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       26
+#define      COMMAND_INDEX_NOBOARD_AFTER_PLAY       27
   handledCommands.append( "nap" );
-#define      COMMAND_INDEX_NAP                      27
+#define      COMMAND_INDEX_NAP                      28
   handledCommands.append( "is_legal" );
-#define      COMMAND_INDEX_IS_LEGAL                 28
+#define      COMMAND_INDEX_IS_LEGAL                 29
   handledCommands.append( "captures" );
-#define      COMMAND_INDEX_CAPTURES                 29
+#define      COMMAND_INDEX_CAPTURES                 30
   handledCommands.append( "countlib" );
-#define      COMMAND_INDEX_COUNTLIB                 30
+#define      COMMAND_INDEX_COUNTLIB                 31
   handledCommands.append( "findlib" );
-#define      COMMAND_INDEX_FINDLIB                  31
+#define      COMMAND_INDEX_FINDLIB                  32
   handledCommands.append( "genmove_black" );
-#define      COMMAND_INDEX_GENMOVE_BLACK            32
+#define      COMMAND_INDEX_GENMOVE_BLACK            33
   handledCommands.append( "genmove_white" );
-#define      COMMAND_INDEX_GENMOVE_WHITE            33
+#define      COMMAND_INDEX_GENMOVE_WHITE            34
   handledCommands.append( "genmove" );
-#define      COMMAND_INDEX_GENMOVE                  34
+#define      COMMAND_INDEX_GENMOVE                  35
   handledCommands.append( "g" );
-#define      COMMAND_INDEX_G                        35
+#define      COMMAND_INDEX_G                        36
   handledCommands.append( "reg_genmove" );
-#define      COMMAND_INDEX_REG_GENMOVE              36
+#define      COMMAND_INDEX_REG_GENMOVE              37
   handledCommands.append( "gg_genmove" );
-#define      COMMAND_INDEX_GG_GENMOVE               37
+#define      COMMAND_INDEX_GG_GENMOVE               38
   handledCommands.append( "level" );
-#define      COMMAND_INDEX_LEVEL                    38
+#define      COMMAND_INDEX_LEVEL                    39
 }
 
 /**
@@ -279,6 +282,7 @@ void  GtpHandler::receivedMessage( QString m )
         break;
 
       case COMMAND_INDEX_D:
+        debugDraco  = true;
         debugJiyu   = true;
         debugRyoiki = true;
         debugWyrms  = true;
@@ -287,10 +291,16 @@ void  GtpHandler::receivedMessage( QString m )
         break;
 
       case COMMAND_INDEX_E:
+        debugDraco  = false;
         debugJiyu   = false;
         debugRyoiki = false;
         debugWyrms  = false;
         respond( true, id, "All debug OFF" );
+        break;
+
+      case COMMAND_INDEX_DEBUG_DRACO:
+        debugJiyu = !debugDraco;
+        respond( true, id, debugDraco ? "Draco debug ON" : "Draco debug OFF" );
         break;
 
       case COMMAND_INDEX_DEBUG_JIYU:
@@ -462,6 +472,7 @@ QString GtpHandler::postMoveMsg()
   msg.append( debugJiyu   ? gp->tp->jp->show() : "" );
   msg.append( debugRyoiki ? gp->tp->cp->showRyoiki() : "" );
   msg.append( debugWyrms  ? gp->tp->showWyrms() : "" );
+  msg.append( debugDraco  ? gp->tp->showDraco() : "" );
   return msg;
 }
 

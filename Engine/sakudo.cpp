@@ -91,12 +91,17 @@ QList<qint32> Sakudo::removePassEyes( const QList<qint32>& ml )
  * @return proposed move as a vertex, or pass or resign
  */
 QString Sakudo::genmoveRandy( qint32 c )
-{ if (( tp == nullptr ) || ( bp == nullptr ))
+{ emit echo( QString( "# genmoveRandy(%1)" ).arg(c) );
+  if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
   QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
-  if ( lml.size() < 1 )
+  QList<qint32> naml;
+  foreach ( qint32 i, lml )
+    if ( tp->testLibertyCount(i,c) >= 2 )
+      naml.append(i);
+  if ( naml.size() < 1 )
     return "pass";
-  return bp->indexToVertex(lml.at( rng.bounded(0,lml.size()) ));
+  return bp->indexToVertex(naml.at( rng.bounded(0,naml.size()) ));
 }
 
 /**
@@ -402,6 +407,15 @@ QString Sakudo::genmoveKilkenny( qint32 c )
   return genmoveRandy(c);
 }
 
+QList<qint32> Sakudo::allPassEyes()
+{ QList<qint32>passEyes;
+  foreach ( Wyrm *wp, tp->wpl )
+    foreach ( qint32 i, wp->passEyes )
+      if ( !passEyes.contains(i) )
+        passEyes.append(i);
+  return passEyes;
+}
+
 /**
  * @brief Sakudo::genmoveKilmer - aka Iceman, trying to be a little less agressive
  *   in the name of self preservation
@@ -416,11 +430,7 @@ QString Sakudo::genmoveKilmer( qint32 c )
   if ( lml.size() < 1 )                       return "pass";
   if ( tp->stateHistory.size() <= 1 )         return firstMove(c);
 
-  QList<qint32>passEyes;
-  foreach ( Wyrm *wp, tp->wpl )
-    foreach ( qint32 i, wp->passEyes )
-      if ( !passEyes.contains(i) )
-        passEyes.append(i);
+  QList<qint32>passEyes = allPassEyes();
 
   // Make a list of opponent Wyrms which can be attacked
   QList<Wyrm *>owpl;
@@ -651,8 +661,19 @@ QString Sakudo::genmoveEasyD( qint32 c )
       if ( tp->testLibertyCount( wp->libertyList.at(0), c ) <
            tp->testLibertyCount( wp->libertyList.at(1), c ) )
         i = wp->libertyList.at(1);
-      return bp->indexToVertex( i );
+      if ( lml.contains( i ) )
+        return bp->indexToVertex( i );
     }
+
+  // Best defense is a good offense, check for opponent Draco with cuttable points
+  foreach ( Draco *dp, tp->dpl )
+    if ( dp != nullptr )
+      if ( dp->color() != c )
+        if ( dp->cutPoints.size() > 0 )
+          foreach ( qint32 i, dp->cutPoints )
+            if ( tp->testLibertyCount(i,c) > 1 ) // Do not move into Atari
+              if ( lml.contains( i ) )
+                return bp->indexToVertex( i ); // TODO: collect a list of cuttable points and choose the "best one"
 
   // TODO: more defensive ideas
   return genmoveTerry(c);
@@ -669,7 +690,7 @@ QString Sakudo::genmoveEasyD( qint32 c )
 QString Sakudo::genmoveTerry( qint32 c )
 { emit echo( QString( "# genmoveTerry(%1)" ).arg(c) );
   if (( tp == nullptr ) || ( bp == nullptr )) return "pass";
-  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
+  QList<qint32> lml = removePassEyes( removeOwnRyoiki( c, tp->allLegalMoves(c) ) );
   foreach ( qint32 i, lml )
     if ( tp->testLibertyCount( i, c ) < 2 )
       lml.removeAll( i );

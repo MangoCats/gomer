@@ -231,6 +231,23 @@ bool  Goban::placeGoishiAt( Goishi *ip, QString v )
 }
 
 /**
+ * @brief Goban::indexNeighbors
+ * @param i - grid index to compare
+ * @param j - grid index to compare
+ * @return true if i is "next to" j on the grid
+ */
+bool  Goban::indexNeighbors( qint32 i, qint32 j )
+{ qint32 xi,yi,xj,yj;
+  indexToXY(i,&xi,&yi);
+  indexToXY(j,&xj,&yj);
+  if ( xi > 0 )         if ( ( (xi-1) == xj ) && ( yi == yj ) ) return true;
+  if ( xi < Xsize - 1 ) if ( ( (xi+1) == xj ) && ( yi == yj ) ) return true;
+  if ( yi > 0 )         if ( ( xi == xj ) && ( (yi-1) == yj ) ) return true;
+  if ( yi < Ysize - 1 ) if ( ( xi == xj ) && ( (yi+1) == yj ) ) return true;
+  return false;
+}
+
+/**
  * @brief Goban::vertexToXY
  * @param v - vertex as string
  * @param x - pointer to x coordinate

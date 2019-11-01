@@ -2,11 +2,13 @@
 #define WYRM_H
 
 class Chiho;
+class Draco;
 class Goishi;
 class Ryoiki;
 class Shiko;
 #include <QObject>
 #include "chiho.h"
+#include "draco.h"
 #include "goishi.h"
 #include "ryoiki.h"
 #include "shiko.h"
@@ -47,7 +49,7 @@ public:
              QList<qint32> passEyes;     // All grid points contained in pass eyes (eyes which will not collapse if player always passes)
                    qint32  lifeOrDeath;  // Current calculated status
            QPointer<Shiko> tp;           // The Shiko which holds this Wyrm
-
+           QPointer<Draco> dp;           // Draco this Wyrm belongs to
 };
 
 #endif // WYRM_H

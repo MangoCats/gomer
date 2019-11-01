@@ -264,7 +264,9 @@ void Shiko::goishiPlacedOnGoban( Goishi *ip )
 
   evaluateLife();
 
-  jp->update();
+  jp->update(); // Update Jiyu
+
+  evaluateDraco();
 }
 
 /**
@@ -326,28 +328,47 @@ void  Shiko::addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c )
  * @return number of liberties the resulting Wyrm would enjoy if this Goishi were so placed...
  */
 qint32 Shiko::testLibertyCount( qint32 i, qint32 c )
-{ qint32 lc = 0;
-  qint32 x,y;
+{ qint32 x,y;
   bp->indexToXY( i, &x, &y );
-  if ( x > 0 )             lc += armLibertyCount( x-1, y, c );
-  if ( x < bp->Xsize - 1 ) lc += armLibertyCount( x+1, y, c );
-  if ( y > 0 )             lc += armLibertyCount( x, y-1, c );
-  if ( y < bp->Ysize - 1 ) lc += armLibertyCount( x, y+1, c );
-  return lc;
+  QList<qint32> lip; // List of all liberties of the new proposed Wyrm
+  if ( x > 0 )             armLibertyCollect( x-1, y, c, lip );
+  if ( x < bp->Xsize - 1 ) armLibertyCollect( x+1, y, c, lip );
+  if ( y > 0 )             armLibertyCollect( x, y-1, c, lip );
+  if ( y < bp->Ysize - 1 ) armLibertyCollect( x, y+1, c, lip );
+  lip.removeAll(i);  // Proposed Goishi going to i, won't get that as a liberty anymore
+  // QString msg = QString( "# testLibertyCount(%1,%2) " ).arg(bp->indexToVertex(i)).arg(c);
+  // foreach ( qint32 j, lip )
+  //   msg.append( bp->indexToVertex(j)+" " );
+  // qDebug( msg.toUtf8().data() );
+  return lip.size();
 }
 
-qint32 Shiko::armLibertyCount( qint32 x, qint32 y, qint32 c )
+/**
+ * @brief Shiko::armLibertyCollect - gather liberties from one "arm"
+ * @param x - coordinate to add liberties from
+ * @param y - coordinate to add liberties from
+ * @param c - color to add liberties for
+ * @param lip - list of liberty index points collected
+ */
+void Shiko::armLibertyCollect( qint32 x, qint32 y, qint32 c, QList<qint32> &lip )
 { Goishi *ip = bp->goishiAt(x,y);
-  if ( ip == nullptr )
-    return 1;
-  if ( ip->color != c )
-    return 0;
-  Wyrm *wp = ip->wp;
+  qint32  i  = bp->xyToIndex(x,y);
+  if ( ip == nullptr )         // Empty grid point?
+    { if ( !lip.contains(i) )  // If we haven't already got this one
+        lip.append(i);         // Score a direct liberty
+      return;
+    }
+  if ( ip->color != c ) // Opposing Goishi?
+    return;             // No new liberties there.
+  Wyrm *wp = ip->wp;    // Friendly Wyrm.
   if ( wp == nullptr )
     { qDebug("UNEXPECTED: Shiko::armLibertyCount() Wyrm null" );
-      return 0;
+      return;
     }
-  return wp->libertyList.size() - 1;
+  // Collect all new liberties from the neighbor Wyrm
+  foreach ( qint32 wli, wp->libertyList )
+    if ( !lip.contains(wli) )
+      lip.append( wli );
 }
 
 /**
@@ -440,6 +461,13 @@ QString Shiko::showWyrms()
 { QString s = "\nWyrms:\n";
   foreach( Wyrm *wp, wpl )
     s.append( wp->show() );
+  return s;
+}
+
+QString Shiko::showDraco()
+{ QString s = "\nDraco:\n";
+  foreach( Draco *dp, dpl )
+    s.append( dp->show() );
   return s;
 }
 
@@ -632,4 +660,30 @@ void Shiko::evaluateLife()
   foreach ( hp, chpl )
     hp->deleteLater();               // Clean up the Chiho list from the last pass
   bbp->deleteLater();
+}
+
+/**
+ * @brief Shiko::evaluateDraco - at each turn, build the Draco list up
+ *   from scratch, too many complexities and fuzzy connections to try
+ *   to fix the existing list, particularly in the end game.
+ */
+void Shiko::evaluateDraco()
+{ foreach ( Draco *dp, dpl )
+    dp->deleteLater();
+  dpl.clear();
+
+  QVector<QList<Wyrm *> > cwpm;  // Sort Wyrms by color
+  cwpm.resize( gp->np );
+  foreach ( Wyrm *wp, wpl )
+    { cwpm[wp->color()].append(wp);
+      wp->dp = nullptr;
+    }
+
+  // Build the Draco for each color
+  for ( qint32 c = 0; c < gp->np; c++ )
+    foreach ( Wyrm *wp, cwpm.at(c) )
+      if ( wp->dp == nullptr )
+        { new Draco( wp, cwpm.at(c), this );
+          dpl.append( wp->dp );
+        }
 }

@@ -2,12 +2,14 @@
 #define SHIKO_H
 
 class Chiiki;
+class Draco;
 class Game;
 class Goban;
 class Jiyu;
 class Wyrm;
 #include <QObject>
 #include "chiiki.h"
+#include "draco.h"
 #include "game.h"
 #include "goban.h"
 #include "jiyu.h"
@@ -33,7 +35,7 @@ public:
           void  koEvalCapture( qint32 x, qint32 y, qint32 c, QString *state );
           void  goishiPlacedOnGoban( Goishi *ip );
         qint32  testLibertyCount( qint32 i, qint32 c );
-        qint32  armLibertyCount( qint32 x, qint32 y, qint32 c );
+          void  armLibertyCollect( qint32 x, qint32 y, qint32 c, QList<qint32> &lip );
           Wyrm *wyrmAt( qint32 x, qint32 y );
         qint32  collectWyrm( QList<Wyrm *> *fwplp, QList<Wyrm *> *owplp, qint32 x, qint32 y, qint32 c );
           void  mergeWyrms( Wyrm *wp, Wyrm *wp2 );
@@ -42,6 +44,7 @@ public:
           void  addCaptureLiberties( Goishi *ip );
           void  addCaptureLiberty( qint32 x, qint32 y, qint32 i, qint32 c );
        QString  showWyrms();
+       QString  showDraco();
  QList<Chiho *> bensonsChiho( Goban *bbp, qint32 c );
           void  onlyWyrmsColored( Goban *bbp, qint32 c );
   QList<Wyrm *> allWyrms( Goban *bbp );
@@ -50,6 +53,7 @@ public:
         qint32  vitalCount( Wyrm *wp, const QList<Chiho *>& crpl );
   QList<qint32> passEyes( Wyrm *wp, const QList<Chiho *>& chpl );
           void  evaluateLife();
+          void  evaluateDraco();
 
 signals:
 
@@ -61,6 +65,7 @@ public:
          QPointer<Goban> bp;
           QPointer<Jiyu> jp;
   QList<QPointer<Wyrm> > wpl;
+ QList<QPointer<Draco> > dpl;
             QStringList  stateHistory; // Previous board positions
 };
 

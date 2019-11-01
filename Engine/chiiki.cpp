@@ -238,7 +238,7 @@ qint32  Chiiki::colorAt( qint32 i )
   qint32 np = tp->gp->np;
   if ( rGrid.size() < np )                 { qDebug( "Chiiki::colorAt() rGrid too small %d %d", rGrid.size(), np );     return NO_PLAYER; }
   Ryoiki *rp = rGrid.at(np).at(i);
-  if ( rp == nullptr )                     { qDebug( "Chiiki::colorAt(%d) not in a Ryoiki, unusual to request it", i ); return NO_PLAYER; }
+  if ( rp == nullptr )                     { /* qDebug( "Chiiki::colorAt(%d) not in a Ryoiki, unusual to request it", i ); */ return NO_PLAYER; }
   return rp->owner;
 }
 

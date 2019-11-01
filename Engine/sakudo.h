@@ -25,6 +25,7 @@ public:
         bool  allInOwnRyoiki( qint32 c, const QList<qint32>& ml );
 QList<qint32> removeOwnRyoiki( qint32 c, const QList<qint32>& ml );
 QList<qint32> removePassEyes( const QList<qint32>& ml );
+QList<qint32> allPassEyes();
      QString  genmove( qint32 c );
      QString  firstMove( qint32 c );
      QString  genmoveRandy( qint32 c );

@@ -39,6 +39,7 @@ public:
     QPointer<Game> gp;
       QStringList  handledCommands;
              bool  showBoardAfterPlay;
+             bool  debugDraco;
              bool  debugJiyu;
              bool  debugRyoiki;
              bool  debugWyrms;
