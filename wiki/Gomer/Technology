@@ -1,0 +1,13 @@
+Gomer is being developed in C++ using [Qt Creator | https://doc.qt.io/qtcreator/index.html], which is available for [free | https://www.qt.io/download-qt-installer] under the [LGPL | https://www.gnu.org/licenses/lgpl-3.0.en.html].  This means that it should build from source and run, with varying degrees of effort, on Linux, Windows, OS-X, Android, and other platforms.
+
+To get the source code, you'll need [git | https://git-scm.com/downloads] or another SCM tool of your choice that works with [Git Hub | https://github.com/mangocats/gomer] or [Git Lab | https://gitlab.com/mangocats/gomer]. 
+
+GomerFirstCut was running from source more or less effortlessly on Windows and Linux.  In Qt Creator select the archive/!FirstCut/Gomer.pro file, configure the project to run on your desktop, and click on Build & Run.
+
+GomerEngine is a console application, which seems to need some configuration to work in Windows, for now I am only using it in Linux, with a similar process in Qt Creator, select the Engine/!CMakeLists.txt file, configure the project to run on your console, and click Build & Run.  A pre-requisite for building the Engine in addition to Qt Creator and all the usual build tools and libraries it requires, is the [CMake | https://cmake.org/] makefile building utility.
+
+The engine starts, in typical GoTextProtocol fashion as a blank screen with no prompt.  Commands are entered one line at a time, a very useful one to start is __help__.  I have added a few protocol extensions which make it not too hard to play a game via the console: __sap__ to show the board after a move, __g__ for the engine to generate a move for the current player, and __p c vx__ to play color c which can be any of: b, black, 0, w, white, 1, at vertex vx in GTP standard vertex notation like H19 or J1.
+
+I frequently copy the build-Release/GomerEngine executable file to /usr/local/bin where I have configured SabakiSoftware to be able to play it against a human, or GnuGo.
+
+Return to GomerEngine.
