@@ -62,6 +62,7 @@ public:
 QList<Chiho *> fillByRule( qint32 c, bool rule );
          bool  fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
          bool  fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
+         bool  chihoListContains( QList<Chiho *> hpl, qint32 i );
 
 signals:
          void  boardChanged( QString );

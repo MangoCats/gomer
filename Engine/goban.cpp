@@ -50,12 +50,13 @@ Goban::Goban(Goban *bp, Game *p) : QObject(p), gp(p), Xsize(bp->Xsize), Ysize(bp
   Ylabels    = bp->Ylabels;
   grid.reserve( nPoints() );
   for ( qint32 i = 0 ; i < nPoints() ; i++ )
+    grid.append( nullptr );
+  for ( qint32 i = 0; i < bp->nPoints(); i++ )
     { Goishi *ip = bp->grid.at(i);
-      if ( ip == nullptr )
-        grid.append( nullptr );
-       else
-        grid.append( new Goishi(ip,this) );
+      if ( ip != nullptr )
+        placeGoishi( new Goishi( ip, this ), i );
     }
+  // Wyrms will be filled during Shiko copy
 }
 
 /**
@@ -189,6 +190,10 @@ bool Goban::placeGoishi( Goishi *ip, qint32 i )
       return false;
     }
   grid.replace( i, ip );
+  qint32 x,y;
+  indexToXY( i,&x,&y );
+  ip->x = x;
+  ip->y = y;
   emit boardChanged( state() );
   return true;
 }
@@ -508,22 +513,41 @@ QString Goban::asciiGoishi( qint32 x, qint32 y )
  * @return list of all Chiho for the current Goban state which match c-rule
  */
 QList<Chiho *> Goban::fillByRule( qint32 c, bool rule )
-{ QList<Chiho *> hpl;
+{ // qDebug( "Goban::fillByRule(%d,%d)",c,rule );
+  QList<Chiho *> hpl;
   Chiho *hp = nullptr;
   qint32 x,y;
   for ( qint32 i = 0; i < nPoints(); i++ ) // Fill from every possible starting point
     { if ( hp == nullptr )
         hp = new Chiho( this );
-      indexToXY( i,&x,&y );
-      if ( fill( x, y, c, rule, hp ) )
-        { hpl.append( hp );
-          hp = nullptr;
+      if ( !chihoListContains( hpl, i ) )
+        { indexToXY( i,&x,&y );
+          if ( fill( x, y, c, rule, hp ) )
+            { hpl.append( hp );
+              hp = nullptr;
+            }
         }
     }
   if ( hp != nullptr )
     hp->deleteLater();
+  // qDebug( "Goban::fillByRule(%d,%d) list size %d",c,rule,hpl.size() );
   return hpl;
 }
+
+/**
+ * @brief Goban::chihoListContains
+ * @param hpl - Chiho list to search
+ * @param i - index to search for
+ * @return true if i appears in any Chiho in hpl
+ */
+bool Goban::chihoListContains( QList<Chiho *> hpl, qint32 i )
+{ foreach ( Chiho *hp, hpl )
+    if ( hp != nullptr )
+      if ( hp->contains(i) )
+        return true;
+  return false;
+}
+
 
 /**
  * @brief Goban::fill

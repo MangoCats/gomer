@@ -299,7 +299,7 @@ void  GtpHandler::receivedMessage( QString m )
         break;
 
       case COMMAND_INDEX_DEBUG_DRACO:
-        debugJiyu = !debugDraco;
+        debugDraco = !debugDraco;
         respond( true, id, debugDraco ? "Draco debug ON" : "Draco debug OFF" );
         break;
 

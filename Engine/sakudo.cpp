@@ -46,6 +46,8 @@ QString Sakudo::genmove( qint32 c )
       case 5: return genmoveTerry(c);
 
       case 6: return genmoveMonty(c);
+
+      case 7: return genmoveKilroy(c);
     }
 }
 
@@ -327,7 +329,7 @@ QString Sakudo::genmoveKilkenny( qint32 c )
       owpl.clear();
       foreach ( Wyrm *wp, tp->wpl )
         { if ( wp == nullptr )
-            { qDebug( "WARNING: Sakudo::genmoveKilroy null Wyrm"); }
+            { qDebug( "WARNING: Sakudo::genmoveKilkenny null Wyrm"); }
            else
             { if ( canBeAttacked( wp, c ) )
                 if ( wp->libertyList.size() == 1 )
@@ -679,6 +681,19 @@ QString Sakudo::genmoveEasyD( qint32 c )
   return genmoveTerry(c);
 }
 
+/**
+ * @brief Sakudo::reasonableMoveList
+ * @param c - color to generate move list for
+ * @return legal moves which are not in own territory, pass eyes, or immediate Atari
+ */
+QList<qint32> Sakudo::reasonableMoveList( qint32 c )
+{ QList<qint32> rml = removePassEyes( removeOwnRyoiki( c, tp->allLegalMoves(c) ) );
+  foreach ( qint32 i, rml )
+    if ( tp->testLibertyCount( i, c ) < 2 )
+      rml.removeAll( i );
+  emit echo( QString( "# %1 legal non-Atari moves available" ).arg(rml.size()) );
+  return rml;
+}
 
 /**
  * @brief Sakudo::genmoveTerry - return a move, outside of owned Ryoiki
@@ -690,18 +705,14 @@ QString Sakudo::genmoveEasyD( qint32 c )
 QString Sakudo::genmoveTerry( qint32 c )
 { emit echo( QString( "# genmoveTerry(%1)" ).arg(c) );
   if (( tp == nullptr ) || ( bp == nullptr )) return "pass";
-  QList<qint32> lml = removePassEyes( removeOwnRyoiki( c, tp->allLegalMoves(c) ) );
-  foreach ( qint32 i, lml )
-    if ( tp->testLibertyCount( i, c ) < 2 )
-      lml.removeAll( i );
-  emit echo( QString( "# %1 legal non-Atari moves available" ).arg(lml.size()) );
-  if ( lml.size() < 1 )                       return "pass";
+  QList<qint32> rml = reasonableMoveList(c);
+  if ( rml.size() < 1 )                       return "pass";
   if ( tp->stateHistory.size() <= 1 )         return firstMove(c);
-  if ( lml.size() == 1 )                      return bp->indexToVertex( lml.at(0) );
+  if ( rml.size() == 1 )                      return bp->indexToVertex( rml.at(0) );
 
   qint32 bestI = -1;
   qreal  bestP = (qreal)(-bp->nPoints());
-  foreach ( qint32 i, lml )
+  foreach ( qint32 i, rml )
     { Game *tgp = new Game( gp, this ); // Test game
       tgp->playGoishiIndex(i,c);
       qreal sc = tgp->tp->jp->score(c);
@@ -783,4 +794,19 @@ bool Sakudo::finishRandomGame()
   bool done = false;
   // TODO: play out and determine winner
   return done;
+}
+
+/**
+ * @brief Sakudo::genmoveKilroy - an attempt to determine viable:
+ *  Wyrm attacks/defends
+ *  Draco cuts/defends
+ *  Eye formation
+ *  Moyo expansion
+ *  play options and determine which one is presently most valuable.
+ * @param c - color to generate a move for
+ * @return proposed move as a vertex, or pass or resign
+ */
+QString Sakudo::genmoveKilroy( qint32 c )
+{
+
 }

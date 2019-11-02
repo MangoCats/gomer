@@ -35,6 +35,8 @@ QList<qint32> allPassEyes();
      QString  genmoveEasyD( qint32 c );
      QString  genmoveTerry( qint32 c );
      QString  genmoveMonty( qint32 c );
+     QString  genmoveKilroy( qint32 c );
+QList<qint32> reasonableMoveList( qint32 c );
 QList<Wyrm *> surroundingWyrms( qint32 i );
 QList<Wyrm *> surroundingWyrms( Wyrm *wp );
         Wyrm *largestWyrm( QList<Wyrm *>wpl );

@@ -40,6 +40,7 @@ Game::Game(Game *gp, QObject *p) : QObject(p)
   pt   = gp->pt;
   mp   = new Sakudo( gp->mp, this );
   tp   = new Shiko( gp->tp, this );
+
 }
 
 /**

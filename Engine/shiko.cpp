@@ -358,8 +358,11 @@ void Shiko::armLibertyCollect( qint32 x, qint32 y, qint32 c, QList<qint32> &lip 
         lip.append(i);         // Score a direct liberty
       return;
     }
-  if ( ip->color != c ) // Opposing Goishi?
-    return;             // No new liberties there.
+  if ( ip->color != c )                     // Opposing Goishi?
+    { if ( ip->wp->libertyList.size() < 2 ) // In Atari?
+        lip.append(i);                      // Capture would make this grid point free (maybe others for friendly Wyrms too, presently neglected)
+      return;                               // if not, no new liberties here.
+    }
   Wyrm *wp = ip->wp;    // Friendly Wyrm.
   if ( wp == nullptr )
     { qDebug("UNEXPECTED: Shiko::armLibertyCount() Wyrm null" );
@@ -506,6 +509,7 @@ QList<Chiho *> Shiko::bensonsChiho( Goban *bbp, qint32 c )
        else
         j++;
     }
+  // qDebug( "Shiko::bensonsChiho bhpl.size() %d", bhpl.size() );
   return bhpl;
 }
 
@@ -585,6 +589,9 @@ qint32 Shiko::vitalCount( Wyrm *wp, const QList<Chiho *>& chpl )
   foreach ( Chiho *hp, chpl )
     if ( isVital( wp, hp ) )
       vc++;
+  // QString ws = wp->show(); ws.chop(1);
+  // QString msg = QString( "Shiko::vitalCount(%1) %2" ).arg(ws).arg(vc);
+  // qDebug( msg.toUtf8().data() );
   return vc;
 }
 
@@ -613,13 +620,15 @@ QList<qint32> Shiko::passEyes( Wyrm *wp, const QList<Chiho *>& chpl )
  *     combination and capture of each other.
  */
 void Shiko::evaluateLife()
-{ if ( gp == nullptr ) { qDebug( "Shiko::evaluateLife() Game null" ); return; }
+{ // qDebug( "Shiko::evaluateLife()" );
+  if ( gp == nullptr ) { qDebug( "Shiko::evaluateLife() Game null" ); return; }
   if ( bp == nullptr ) { qDebug( "Shiko::evaluateLife() Goban null" ); return; }
-  qint32 np = gp->np;
+         qint32  np  = gp->np;
           Chiho *hp  = nullptr;
            Wyrm *wp  = nullptr;
            Wyrm *cwp = nullptr;
-          Goban *bbp = new Goban( bp, gp ); // Benson's Goban
+          Goban *bbp = nullptr;
+           Game *tgp = nullptr;
    QList<Wyrm *> cwpl;
   QList<Chiho *> chpl;
   foreach ( wp, wpl )          // Mark all Wyrms in this Shiko as undetermined
@@ -627,14 +636,17 @@ void Shiko::evaluateLife()
       wp->passEyes.clear();          // Re-count eyes every time
     }
   for ( qint32 c = 0; c < np; c++ )
-    { onlyWyrmsColored( bbp, c );    // Remove Wyrms not matching the current player's color from the bbp
+    { tgp = new Game( gp, this );
+      bbp = tgp->bp;                 // Benson's Goban
+      onlyWyrmsColored( bbp, c );    // Remove Wyrms not matching the current player's color from the bbp
       bool allAlive = false;         // Now, strip out the non-pass-alive Wyrms until only pass-alive Wyrms remain
       while ( !allAlive )
         { foreach ( hp, chpl )
             hp->deleteLater();       // Clean up the Chiho list from the previous pass (if any)
           chpl.clear();
-          chpl = bensonsChiho( bbp, c );
+          chpl = bensonsChiho( bbp, c ); // qDebug( "c %d chpl.size() == %d", c, chpl.size() );
           cwpl = allWyrms( bbp );
+          // qDebug( "Shiko::evaluateLife() c %d n Wyrms %d", c, cwpl.size() );
           allAlive = true;           // assume true until proven false on this pass
           qint32 j = 0;
           while ( j < cwpl.size() )  // Examine every Wyrm colored c
@@ -653,13 +665,15 @@ void Shiko::evaluateLife()
         { wp = bp->grid.at( cwp->bi.at(0) )->wp; // Go to the Shiko's Goban to get the Wyrm
           wp->passEyes    = passEyes( cwp, chpl );
           wp->lifeOrDeath = WYRM_LIVE;
+          // QString msg = QString( "Shiko::vitalCount(%1) set live" ).arg(wp->show());
+          // qDebug( msg.toUtf8().data() );
           cwp->deleteLater();
         }
       cwpl.clear();
+      tgp->deleteLater();
     }
   foreach ( hp, chpl )
     hp->deleteLater();               // Clean up the Chiho list from the last pass
-  bbp->deleteLater();
 }
 
 /**

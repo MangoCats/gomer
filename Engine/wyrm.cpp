@@ -29,6 +29,7 @@ Wyrm::Wyrm(Wyrm *wp, Shiko *p) : Chiho(p), tp(p)
   libertyList = wp->libertyList;
   passEyes    = wp->passEyes;
   lifeOrDeath = wp->lifeOrDeath;
+  bi          = wp->bi;
 }
 
 /**
@@ -174,6 +175,8 @@ QString Wyrm::show()
   w.append( " Libs:" );
   foreach( qint32 i, libertyList )
     w.append( " " + bp->indexToVertex( i ) );
+  if ( lifeOrDeath == WYRM_LIVE )
+    w.append( "-Live!" );
   w.append( "\n" );
   return w;
 }
