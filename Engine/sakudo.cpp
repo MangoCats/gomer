@@ -96,14 +96,10 @@ QString Sakudo::genmoveRandy( qint32 c )
 { emit echo( QString( "# genmoveRandy(%1)" ).arg(c) );
   if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
-  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
-  QList<qint32> naml;
-  foreach ( qint32 i, lml )
-    if ( tp->testLibertyCount(i,c) >= 2 )
-      naml.append(i);
-  if ( naml.size() < 1 )
+  QList<qint32> rml = reasonableMoveList( c );
+  if ( rml.size() < 1 )
     return "pass";
-  return bp->indexToVertex(naml.at( rng.bounded(0,naml.size()) ));
+  return bp->indexToVertex(rml.at( rng.bounded(0,rml.size()) ));
 }
 
 /**
@@ -409,6 +405,10 @@ QString Sakudo::genmoveKilkenny( qint32 c )
   return genmoveRandy(c);
 }
 
+/**
+ * @brief Sakudo::allPassEyes
+ * @return a list of every grid point that is in a pass eye, for any player
+ */
 QList<qint32> Sakudo::allPassEyes()
 { QList<qint32>passEyes;
   foreach ( Wyrm *wp, tp->wpl )
@@ -427,10 +427,10 @@ QList<qint32> Sakudo::allPassEyes()
 QString Sakudo::genmoveKilmer( qint32 c )
 { emit echo( QString( "# genmoveKilmer(%1)" ).arg(c) );
   if (( tp == nullptr ) || ( bp == nullptr )) return "pass";
-  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
-  emit echo( QString( "# %1 legal moves available" ).arg(lml.size()) );
-  if ( lml.size() < 1 )                       return "pass";
-  if ( tp->stateHistory.size() <= 1 )         return firstMove(c);
+  QList<qint32> rml = reasonableMoveList( c );
+  emit echo( QString( "# %1 reasonable moves available" ).arg(rml.size()) );
+  if ( rml.size() < 1 )               return "pass";
+  if ( tp->stateHistory.size() <= 1 ) return firstMove(c);
 
   QList<qint32>passEyes = allPassEyes();
 
@@ -735,9 +735,10 @@ QString Sakudo::genmoveTerry( qint32 c )
 QString Sakudo::genmoveMonty( qint32 c )
 { if (( tp == nullptr ) || ( bp == nullptr ))
     return "pass";
-  QList<qint32> lml = removeOwnRyoiki( c, tp->allLegalMoves(c) );
-  if ( lml.size() < 1 )
+  QList<qint32> rml = reasonableMoveList(c);
+  if ( rml.size() < 1 )
     return "pass";
+  QList<qint32> lml = tp->allLegalMoves(c);
   if ( tp->stateHistory.size() <= 1 )
     return firstMove(c);
   if ( lml.size() == 1 )
@@ -807,6 +808,139 @@ bool Sakudo::finishRandomGame()
  * @return proposed move as a vertex, or pass or resign
  */
 QString Sakudo::genmoveKilroy( qint32 c )
-{
+{ emit echo( QString( "# genmoveKilroy(%1)" ).arg(c) );
+  if (( tp == nullptr ) || ( bp == nullptr )) return "pass";
+  QList<qint32> rml = reasonableMoveList(c);
+  if ( rml.size() < 1 )                       return "pass";
+  if ( tp->stateHistory.size() <= 1 )         return firstMove(c);
+  if ( rml.size() == 1 )                      return bp->indexToVertex( rml.at(0) );
 
+  // Build a list of attackable Wyrms - of all colors
+  QList<Wyrm *>awl;
+  foreach ( Wyrm *wp, tp->wpl )
+    if ( wp != nullptr )
+      if ( wp->lifeOrDeath != WYRM_LIVE )
+        awl.append(wp);
+  // Stages of attackability
+  // In Atari ( 1 move - certain death )
+  // # of moves until certain death (incl: ladder analysis)
+  // relative liberties w/ surrounding Wyrms
+  // minimum # of moves until pass-life
+  // number of routes to pass-life
+  // in pass-life
+
+  return "resign";
 }
+
+
+/* Eyemaker algorithm:
+ *
+ * Starting from an existing Wyrm:
+ *
+ * Try each existing liberty, find the minimum required Goishi
+ * if the cardinal neighbors of the liberty free from opponent Goishi
+ *   can the cardinal neighbors of the liberty be connected to each other?
+ *     how many Goishi are required?
+ * if it is not possible to make an eye at any existing liberty
+ *   add a Goishi at each liberty, in turn, and try again at the new liberties
+ *
+ * Eyefinder algorithm:
+ *
+ * Eyemaker + connection distance to nearest Wyrm with an eye
+ *
+ * Eyefinder can be used to add a dimension of value to potential moves:
+ *   How does the move positively impact the player's "eye building state"
+ *   How does the move negatively impact the opponent's "eye building state"
+ *   If a well connected Draco already has 2 eyes, the value of eyebuilding
+ *     in that Draco becomes zero.
+ */
+
+/* Pattern matching thoughts:
+ * Every grid point in a pattern may be in one of five states:
+ *  1) empty
+ *  2) player's Goishi (player who has the next move)
+ *  3) opponent's Goishi
+ *  4) off-board (typically arrayed as an edge line or corner in the pattern)
+ *  5) alive (member of a live Draco which may extend outside the pattern)
+ *  6) Ko 児 (play at this position in the coming turn would result in Ko)
+ *  7) first Wyrm - is this Goishi a member of the "first" Wyrm for analysis
+ *  8) second Wyrm - is this Goishi a member of the "second" Wyrm for analysis
+ *
+ * For purposes of pattern matching, grid points may be defined as
+ *   "don't care" combinations of any/all of the first 4 states, at
+ *   least one of the first 4 states must be true.  The 5 alive state
+ *   may only be true if one or both of the 2 or 3 states is true.
+ *   The 6 Ko state may only be true if the 1 empty state is true, and
+ *   it may only be true for a single point in a pattern at any time.
+ *
+ *   At least one point must be labeled with one of the 7 or 8 labels.
+ *   Only points labeled with 2 or 3 may also carry 7 or 8 labels.
+ *   In a given pattern, all points labeled with 7 or 8 must be labeled
+ *   with all 2, or all 3, never both (don't care).
+ *   When any point is labeled with 7 and/or 8, all other connected points
+ *   (in the same Wyrm) must also be labeled with the same 7 or 8.
+ *   If one point is labeled with 8, at least one other disconnected point
+ *   must also be labeled with 8.
+ *
+ *   Normally, a pattern would only store 7, or 8 information not both, but
+ *   there is nothing in the data structure preventing both from being present.
+ *
+ * A pattern is stored as a string of bytes, first byte being the number
+ *   of columns in the pattern, second byte being the number of rows,
+ *   N bytes one per grid point in the pattern's rectangle, followed by
+ *   2 bytes telling about connectability of any state 8 Wyrms and
+ *   2 more bytes telling about capturability of any state 7 Wyrms
+ *
+ * The minimum moves bytes encode either: 0 meaning no information or
+ *   an integer 1-255 (usually less than 8) which indicates the minimum
+ *   number data for the info point.
+ *
+ * Although AlphaZero may have recently made it fashionable to eschew
+ *   the 8 pattern rotations and reflections, I consider this a development
+ *   in the opposite direction which can gain increased benefit from a
+ *   single pattern.  If a pattern matches in any of the 8 rotations /
+ *   reflections, then it's pre-learned wisdom applies:
+ *
+ * Patterns may be used to establish:
+ *  - connectability of two Wyrms
+ *   - minimum number of turns required to connect two Wyrms when
+ *     faced with optimally played active opposition to connection
+ *   - minimum number of turns required to prevent connection of two Wyrms when
+ *     faced with optimally played active attempt at connection
+ *   - indeterminate state, insufficient information (or knowledge) in the
+ *     pattern to say whether the Wyrms can be certainly connected or cut.
+ *
+ *  - capturability of a single Wyrm
+ *   - minimum number of turns required to capture a Wyrm when
+ *     faced with optimally played active opposition to capture
+ *   - minimum number of turns required to render a Wyrm "safe" when
+ *     faced with optimally played active attempt to capture.
+ *   - indeterminate state, insufficient information (or knowledge) in the
+ *     pattern to say whether the Wyrm can be certainly captured or
+ *     rendered safe.
+ *
+ * When is a Wyrm "safe"?
+ *  - when it is pass-alive
+ *  - when it has secure connection in its Draco to a Wyrm
+ *       that is pass-alive
+ *
+ * When is a connection secure?
+ *   - when there is a known minimum number of turns required to connect
+ *     when faced with optimally played active opposition to connection
+ *
+ * Ladder (Hashigo 梯子) analysis:
+ *   When a Goishi may be placed in Atari, but that Atari can be escaped
+ *   to 2 Liberties, and the resulting 2 Liberties may be reduced to an
+ *   Atari, which again may be escaped to 2 Liberties, this is a ladder
+ *   situation.  Ladders may end with the threatened Wyrm being ultimately
+ *   captured, or ultimately escaping to 3 or more Liberties.  Once 3 Liberties
+ *   are achieved, the threatening Wyrms may (or may not) have vulnerabilities
+ *   (such as single liberties which, when taken, result in multiple Ataris)
+ *   which may be used to effectively release the threatened Wyrm.
+ *
+ * Ladders defy local pattern analysis and must "run the board" until they
+ *   have resulted in either capture or release of the threatened Wyrm.
+ *
+ * The interesting question answered by ladder analysis is: what does the
+ *   board look like after the ladder has run to completion?
+ */
