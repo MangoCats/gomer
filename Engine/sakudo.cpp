@@ -855,7 +855,7 @@ QString Sakudo::genmoveKilroy( qint32 c )
  *     in that Draco becomes zero.
  */
 
-/* Pattern matching thoughts:
+/* Pattern matching thoughts: (Ruikei 類型)
  * Every grid point in a pattern may be in one of five states:
  *  1) empty
  *  2) player's Goishi (player who has the next move)
@@ -920,9 +920,10 @@ QString Sakudo::genmoveKilroy( qint32 c )
  *     rendered safe.
  *
  * When is a Wyrm "safe"?
- *  - when it is pass-alive
+ *  - when it is pass-alive or
  *  - when it has secure connection in its Draco to a Wyrm
  *       that is pass-alive
+ *  - when it has a single eye that is securely convertable to two eyes
  *
  * When is a connection secure?
  *   - when there is a known minimum number of turns required to connect
