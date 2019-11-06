@@ -1,9 +1,9 @@
 #include "ruikei.h"
 
 Ruikei::Ruikei(QObject *parent) : QObject(parent)
-{
-  if ( testTransforms() )
-    qDebug( "transform test passed." );
+{// if ( testTransforms() )
+ //   qDebug( "transform test passed." );
+
 }
 
 /**
@@ -27,6 +27,7 @@ bool Ruikei::matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp )
 { return false;
 }
 
+// Rotate 90 degrees CCW 3x, then mirror the original and do 3 more rotations
 // Orientation 0: index starts at X(0)  ,Y(0)   and scans X+ first, then Y+
 // Orientation 1: index starts at X(MAX),Y(0)   and scans Y+ first, then X-
 // Orientation 2: index starts at X(MAX),Y(MAX) and scans X- first, then Y-

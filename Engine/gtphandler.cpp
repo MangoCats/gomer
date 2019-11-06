@@ -2,7 +2,7 @@
 #include "console.h"
 #include "config.h"
 
-GtpHandler::GtpHandler(QCoreApplication *app, Game *p) : QObject(p), gp(p)
+GtpHandler::GtpHandler(QCoreApplication *app, Shiai *p) : QObject(p), gp(p)
 { // qDebug( "GtpHandler constructor" );
   showBoardAfterPlay = false;
   debugWyrms  = false;

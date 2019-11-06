@@ -1,11 +1,11 @@
 #ifndef GTPHANDLER_H
 #define GTPHANDLER_H
 
-class Game;
+class Shiai;
 #include <QCoreApplication>
 #include <QObject>
 #include <QPointer>
-#include "game.h"
+#include "shiai.h"
 
 /**
  * @brief The GtpHandler class - Engine interface for Go Text Protocol
@@ -17,7 +17,7 @@ class GtpHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit  GtpHandler( QCoreApplication *app, Game *p );
+    explicit  GtpHandler( QCoreApplication *app, Shiai *p );
         void  parseReceivedMessage( QString m, qint32 *id, QString *command_name, QString *arguments );
      QString  trimComments( QString m );
      QString  postMoveMsg();
@@ -36,7 +36,7 @@ public slots:
         void  receivedMessage( QString );
 
 public:
-    QPointer<Game> gp;
+   QPointer<Shiai> gp;
       QStringList  handledCommands;
              bool  showBoardAfterPlay;
              bool  debugDraco;

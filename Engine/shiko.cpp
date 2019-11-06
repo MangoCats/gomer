@@ -5,7 +5,7 @@
  * @param pbp - passed Goban pointer, Goban this Shiko thinks about
  * @param p - parent, Game this Shiko is playing
  */
-Shiko::Shiko(Game *p) : QObject(p), gp(p), bp(p->bp)
+Shiko::Shiko(Shiai *p) : QObject(p), gp(p), bp(p->bp)
 { cp = new Chiiki( this );
   jp = new Jiyu( bp );
 }
@@ -15,7 +15,7 @@ Shiko::Shiko(Game *p) : QObject(p), gp(p), bp(p->bp)
  * @param tp - Shiko to copy
  * @param p - new Game parent
  */
-Shiko::Shiko(Shiko *tp, Game *p) : QObject(p), gp(p), bp(p->bp)
+Shiko::Shiko(Shiko *tp, Shiai *p) : QObject(p), gp(p), bp(p->bp)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
   stateHistory = tp->stateHistory;
@@ -628,7 +628,7 @@ void Shiko::evaluateLife()
            Wyrm *wp  = nullptr;
            Wyrm *cwp = nullptr;
           Goban *bbp = nullptr;
-           Game *tgp = nullptr;
+           Shiai *tgp = nullptr;
    QList<Wyrm *> cwpl;
   QList<Chiho *> chpl;
   foreach ( wp, wpl )          // Mark all Wyrms in this Shiko as undetermined
@@ -636,7 +636,7 @@ void Shiko::evaluateLife()
       wp->passEyes.clear();          // Re-count eyes every time
     }
   for ( qint32 c = 0; c < np; c++ )
-    { tgp = new Game( gp, this );
+    { tgp = new Shiai( gp, this );
       bbp = tgp->bp;                 // Benson's Goban
       onlyWyrmsColored( bbp, c );    // Remove Wyrms not matching the current player's color from the bbp
       bool allAlive = false;         // Now, strip out the non-pass-alive Wyrms until only pass-alive Wyrms remain

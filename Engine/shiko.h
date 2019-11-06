@@ -3,16 +3,16 @@
 
 class Chiiki;
 class Draco;
-class Game;
 class Goban;
 class Jiyu;
+class Shiai;
 class Wyrm;
 #include <QObject>
 #include "chiiki.h"
 #include "draco.h"
-#include "game.h"
 #include "goban.h"
 #include "jiyu.h"
+#include "shiai.h"
 #include "wyrm.h"
 
 /**
@@ -22,8 +22,8 @@ class Shiko : public QObject
 {
     Q_OBJECT
 public:
-      explicit  Shiko( Game *p );
-                Shiko( Shiko *tp, Game *p );
+      explicit  Shiko( Shiai *p );
+                Shiko( Shiko *tp, Shiai *p );
           void  clearGoban();
           void  resizeGoban();
   QList<qint32> allLegalMoves( qint32 c );
@@ -61,7 +61,7 @@ public slots:
 
 public:
         QPointer<Chiiki> cp;
-          QPointer<Game> gp;
+          QPointer<Shiai> gp;
          QPointer<Goban> bp;
           QPointer<Jiyu> jp;
   QList<QPointer<Wyrm> > wpl;

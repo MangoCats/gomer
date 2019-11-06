@@ -2,15 +2,15 @@
 #define SAKUDO_H
 
 class Chiiki;
-class Game;
 class Goban;
+class Shiai;
 class Shiko;
 #include <QObject>
 #include <QPointer>
 #include <QRandomGenerator>
 #include "chiiki.h"
-#include "game.h"
 #include "goban.h"
+#include "shiai.h"
 #include "shiko.h"
 
 /**
@@ -20,8 +20,8 @@ class Sakudo : public QObject
 {
     Q_OBJECT
 public:
-    explicit  Sakudo( Game *p );
-              Sakudo( Sakudo *mp, Game *p );
+    explicit  Sakudo( Shiai *p );
+              Sakudo( Sakudo *mp, Shiai *p );
         bool  allInOwnRyoiki( qint32 c, const QList<qint32>& ml );
 QList<qint32> removeOwnRyoiki( qint32 c, const QList<qint32>& ml );
 QList<qint32> removePassEyes( const QList<qint32>& ml );
@@ -53,7 +53,7 @@ public slots:
 
 public:
   QRandomGenerator  rng;
-     QPointer<Game> gp;
+     QPointer<Shiai> gp;
     QPointer<Goban> bp;
     QPointer<Shiko> tp;
             qint32  level; // Also, strategy

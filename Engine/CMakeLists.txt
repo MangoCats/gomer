@@ -31,7 +31,6 @@ add_executable(GomerEngine main.cpp
                            chiiki.cpp
                            console.cpp
                            draco.cpp
-                           game.cpp
                            goban.cpp
                            goishi.cpp
                            gosu.cpp
@@ -41,6 +40,7 @@ add_executable(GomerEngine main.cpp
                            ruikei.cpp
                            ryoiki.cpp
                            sakudo.cpp
+                           shiai.cpp
                            shiko.cpp
                            wyrm.cpp
               )
@@ -50,7 +50,6 @@ set(SOURCES config.h.in
             chiiki.h
             console.h
             draco.h
-            game.h
             goban.h
             goishi.h
             gosu.h
@@ -60,6 +59,7 @@ set(SOURCES config.h.in
             ruikei.h
             ryoiki.h
             sakudo.h
+            shiai.h
             shiko.h
             wyrm.h
    )

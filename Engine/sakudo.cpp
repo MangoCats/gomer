@@ -5,7 +5,7 @@
  * @brief Sakudo::Sakudo - constructor
  * @param p - Game, parent object
  */
-Sakudo::Sakudo(Game *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
+Sakudo::Sakudo(Shiai *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
 { level = 0;  // Currently defaulting to Monty
   rng.seed( 1 );
 }
@@ -15,7 +15,7 @@ Sakudo::Sakudo(Game *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
  * @param mp - Sakudo to copy
  * @param p - Parent of the new Sakudo
  */
-Sakudo::Sakudo(Sakudo *mp, Game *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
+Sakudo::Sakudo(Sakudo *mp, Shiai *p) : QObject(p), gp(p), bp(p->bp), tp(p->tp)
 { level = mp->level;  // Currently defaulting to Randy
   rng   = mp->rng;    // Copy the state of the parent's rng
 }
@@ -713,7 +713,7 @@ QString Sakudo::genmoveTerry( qint32 c )
   qint32 bestI = -1;
   qreal  bestP = (qreal)(-bp->nPoints());
   foreach ( qint32 i, rml )
-    { Game *tgp = new Game( gp, this ); // Test game
+    { Shiai *tgp = new Shiai( gp, this ); // Test game
       tgp->playGoishiIndex(i,c);
       qreal sc = tgp->tp->jp->score(c);
       if ( sc > bestP )
@@ -778,7 +778,7 @@ QString Sakudo::genmoveMonty( qint32 c )
  * @return true if c won the game
  */
 bool Sakudo::playOneMonty( qint32 c, qint32 i )
-{ Game *tgp = new Game( gp, this ); // Test game
+{ Shiai *tgp = new Shiai( gp, this ); // Test game
   tgp->playGoishiIndex(i,c);
   bool result = tgp->mp->finishRandomGame();
   tgp->deleteLater();

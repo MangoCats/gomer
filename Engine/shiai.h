@@ -1,5 +1,5 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef SHIAI_H
+#define SHIAI_H
 
 class Goban;
 class Goishi;
@@ -17,14 +17,14 @@ class Shiko;
 #include "shiko.h"
 
 /**
- * @brief The Game class - encapsulates a single game play
+ * @brief The Shiai 試合 class - encapsulates a single game play
  */
-class Game : public QObject
+class Shiai : public QObject
 {
     Q_OBJECT
 public:
-    explicit Game( QStringList playerNames, qint32 xs = 19, qint32 ys = 19, QObject *p = nullptr );
-             Game( Game *gp, QObject *p = nullptr );
+    explicit Shiai( QStringList playerNames, qint32 xs = 19, qint32 ys = 19, QObject *p = nullptr );
+             Shiai( Shiai *gp, QObject *p = nullptr );
         void fillGosu();
         void clearGoban();
         void clearGoishi( Goishi * );

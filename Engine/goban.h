@@ -2,14 +2,14 @@
 #define GOBAN_H
 
 class Chiho;
-class Game;
 class Goishi;
+class Shiai;
 #include <QObject>
 #include <QPointer>
 #include <QVector>
 #include "chiho.h"
-#include "game.h"
 #include "goishi.h"
+#include "shiai.h"
 
 // Notional no player and undetermined player indices (like colors, but not colors)
 #define NO_PLAYER -1
@@ -30,8 +30,8 @@ class Goban : public QObject
 {
     Q_OBJECT
 public:
-     explicit  Goban( Game *p, qint32 xs=19, qint32 ys=19 );
-               Goban( Goban *bp, Game *p );
+     explicit  Goban( Shiai *p, qint32 xs=19, qint32 ys=19 );
+               Goban( Goban *bp, Shiai *p );
          bool  resize( qint32 xs, qint32 ys );
        qint32  nPoints() { return Xsize * Ysize; }
       QString  state();
@@ -70,7 +70,7 @@ signals:
 public slots:
 
 public:
-              QPointer<Game> gp;
+              QPointer<Shiai> gp;
                      qint32  Xsize,Ysize;
   QVector<QPointer<Goishi> > grid;
                QList<qint32> Xdots,Ydots;

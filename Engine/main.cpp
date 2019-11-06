@@ -1,8 +1,6 @@
 #include <QCoreApplication>
-#include "game.h"
+#include "shiai.h"
 #include "gtphandler.h"
-
-#include "ruikei.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,10 +8,7 @@ int main(int argc, char *argv[])
     QStringList pn;
     pn.append( "Player1" );
     pn.append( "Player2" );
-
-    new Ruikei();
-
-    Game *gp = new Game(pn);
+    Shiai *gp = new Shiai(pn);
     new GtpHandler(&a,gp);
     return a.exec();
 }
@@ -30,7 +25,7 @@ int main(int argc, char *argv[])
 // bp - Goban pointer  - the board
 // cp - Chiiki pointer
 // dp - Draco pointer
-// gp - Game pointer
+// gp - Shiai pointer
 // hp - Chiho pointer  - holds a region definition
 // ip - Goishi pointer
 // jp - Jiyu pointer

@@ -1,6 +1,6 @@
 #include "goban.h"
 
-Goban::Goban(Game *p,qint32 xs,qint32 ys) : QObject(p), gp(p), Xsize(xs), Ysize(ys)
+Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : QObject(p), gp(p), Xsize(xs), Ysize(ys)
 { // qDebug( "Goban constructor %d x %d", Xsize, Ysize );
   goishiChar = ".,XO3456789";
   Xlabels.append("A");  Ylabels.append("1");
@@ -42,7 +42,7 @@ Goban::Goban(Game *p,qint32 xs,qint32 ys) : QObject(p), gp(p), Xsize(xs), Ysize(
  * @param bp - Goban to copy
  * @param p - parent of the new Goban
  */
-Goban::Goban(Goban *bp, Game *p) : QObject(p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
+Goban::Goban(Goban *bp, Shiai *p) : QObject(p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
 { Xdots      = bp->Xdots;
   Ydots      = bp->Ydots;
   goishiChar = bp->goishiChar;
