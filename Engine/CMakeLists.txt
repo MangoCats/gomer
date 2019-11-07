@@ -36,6 +36,7 @@ add_executable(GomerEngine main.cpp
                            gosu.cpp
                            gtphandler.cpp
                            jiyu.cpp
+                           menseki.cpp
                            player.cpp
                            ruikei.cpp
                            ryoiki.cpp
@@ -55,6 +56,7 @@ set(SOURCES config.h.in
             gosu.h
             gtphandler.h
             jiyu.h
+            menseki.h
             player.h
             ruikei.h
             ryoiki.h

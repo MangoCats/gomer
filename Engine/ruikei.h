@@ -2,16 +2,18 @@
 #define RUIKEI_H
 
 class Goban;
+class Menseki;
 class Wyrm;
 #include <QObject>
 #include "goban.h"
+#include "menseki.h"
 #include "wyrm.h"
 
 /**
  * @brief The Ruikei 類型 class - a pattern for matching with pre-calculated
  *   analysis of the situation depicted.
  */
-class Ruikei : public QObject
+class Ruikei : public Menseki
 {
     Q_OBJECT
 public:

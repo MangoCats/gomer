@@ -3,12 +3,14 @@
 
 class Chiho;
 class Goishi;
+class Menseki;
 class Shiai;
 #include <QObject>
 #include <QPointer>
 #include <QVector>
 #include "chiho.h"
 #include "goishi.h"
+#include "menseki.h"
 #include "shiai.h"
 
 // Notional no player and undetermined player indices (like colors, but not colors)
@@ -26,7 +28,7 @@ class Shiai;
  * index  is a single integer description of a board intersection point = x + Xsize * y
  * vertex is a string-label description of a board intersection point
  */
-class Goban : public QObject
+class Goban : public Menseki
 {
     Q_OBJECT
 public:
@@ -47,7 +49,6 @@ public:
       QString  xyToVertex( qint32 x, qint32 y );
          bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
        qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
-        QChar  colorToChar( qint32 c );
        Goishi *goishiAt( qint32 x, qint32 y );
        Goishi *goishiAt( QString v );
        Goishi *goishi( qint32 i );
@@ -74,8 +75,6 @@ public:
                      qint32  Xsize,Ysize;
   QVector<QPointer<Goishi> > grid;
                QList<qint32> Xdots,Ydots;
-                    QString  goishiChar;
-                QStringList  Xlabels,Ylabels;
 };
 
 #endif // GOBAN_H

@@ -1,6 +1,6 @@
 #include "ruikei.h"
 
-Ruikei::Ruikei(QObject *parent) : QObject(parent)
+Ruikei::Ruikei(QObject *parent) : Menseki(parent)
 {// if ( testTransforms() )
  //   qDebug( "transform test passed." );
 

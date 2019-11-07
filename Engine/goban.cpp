@@ -1,39 +1,7 @@
 #include "goban.h"
 
-Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : QObject(p), gp(p), Xsize(xs), Ysize(ys)
+Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(p), gp(p), Xsize(xs), Ysize(ys)
 { // qDebug( "Goban constructor %d x %d", Xsize, Ysize );
-  goishiChar = ".,XO3456789";
-  Xlabels.append("A");  Ylabels.append("1");
-  Xlabels.append("B");  Ylabels.append("2");
-  Xlabels.append("C");  Ylabels.append("3");
-  Xlabels.append("D");  Ylabels.append("4");
-  Xlabels.append("E");  Ylabels.append("5");
-  Xlabels.append("F");  Ylabels.append("6");
-  Xlabels.append("G");  Ylabels.append("7");
-  Xlabels.append("H");  Ylabels.append("8");
-  Xlabels.append("J");  Ylabels.append("9");
-  Xlabels.append("K");  Ylabels.append("10");
-  Xlabels.append("L");  Ylabels.append("11");
-  Xlabels.append("M");  Ylabels.append("12");
-  Xlabels.append("N");  Ylabels.append("13");
-  Xlabels.append("O");  Ylabels.append("14");
-  Xlabels.append("P");  Ylabels.append("15");
-  Xlabels.append("Q");  Ylabels.append("16");
-  Xlabels.append("R");  Ylabels.append("17");
-  Xlabels.append("S");  Ylabels.append("18");
-  Xlabels.append("T");  Ylabels.append("19");
-  Xlabels.append("U");  Ylabels.append("20");
-  Xlabels.append("V");  Ylabels.append("21");
-  Xlabels.append("W");  Ylabels.append("22");
-  Xlabels.append("X");  Ylabels.append("23");
-  Xlabels.append("Y");  Ylabels.append("24");
-  Xlabels.append("Z");  Ylabels.append("25");
-  Xlabels.append("AA"); Ylabels.append("26");  // Incompatible with GTP, but Gomer can handle them.
-  Xlabels.append("AB"); Ylabels.append("27");
-  Xlabels.append("AC"); Ylabels.append("28");
-  Xlabels.append("AD"); Ylabels.append("29");
-  Xlabels.append("AE"); Ylabels.append("30");
-  Xlabels.append("AF"); Ylabels.append("31");
   resize( xs, ys );
 }
 
@@ -42,12 +10,9 @@ Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : QObject(p), gp(p), Xsize(xs), Ysize
  * @param bp - Goban to copy
  * @param p - parent of the new Goban
  */
-Goban::Goban(Goban *bp, Shiai *p) : QObject(p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
+Goban::Goban(Goban *bp, Shiai *p) : Menseki(p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
 { Xdots      = bp->Xdots;
   Ydots      = bp->Ydots;
-  goishiChar = bp->goishiChar;
-  Xlabels    = bp->Xlabels;
-  Ylabels    = bp->Ylabels;
   grid.reserve( nPoints() );
   for ( qint32 i = 0 ; i < nPoints() ; i++ )
     grid.append( nullptr );
@@ -112,16 +77,6 @@ QString Goban::state()
   return s;
 }
 
-/**
- * @brief Goban::colorToChar
- * @param c - color index
- * @return Character corresponding to the color index
- */
-QChar Goban::colorToChar( qint32 c )
-{ if (( c > (goishiChar.size() - 3) ) || ( c < 0 ))
-    return QChar( '!' );
-  return goishiChar.at(c+2);
-}
 
 /**
  * @brief Goban::takeGoishi - remove the Goishi (if any) at linear index i
