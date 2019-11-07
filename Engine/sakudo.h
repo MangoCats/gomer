@@ -53,7 +53,7 @@ public slots:
 
 public:
   QRandomGenerator  rng;
-     QPointer<Shiai> gp;
+    QPointer<Shiai> gp;
     QPointer<Goban> bp;
     QPointer<Shiko> tp;
             qint32  level; // Also, strategy

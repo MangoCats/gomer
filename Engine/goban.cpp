@@ -1,6 +1,6 @@
 #include "goban.h"
 
-Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(p), gp(p), Xsize(xs), Ysize(ys)
+Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,p), gp(p), Xsize(xs), Ysize(ys)
 { // qDebug( "Goban constructor %d x %d", Xsize, Ysize );
   resize( xs, ys );
 }
@@ -10,9 +10,9 @@ Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(p), gp(p), Xsize(xs), Ysize
  * @param bp - Goban to copy
  * @param p - parent of the new Goban
  */
-Goban::Goban(Goban *bp, Shiai *p) : Menseki(p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
-{ Xdots      = bp->Xdots;
-  Ydots      = bp->Ydots;
+Goban::Goban(Goban *bp, Shiai *p) : Menseki(bp->rows,bp->columns,p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
+{ Xdots = bp->Xdots;
+  Ydots = bp->Ydots;
   grid.reserve( nPoints() );
   for ( qint32 i = 0 ; i < nPoints() ; i++ )
     grid.append( nullptr );
@@ -40,8 +40,8 @@ bool Goban::resize( qint32 xs, qint32 ys )
       { qDebug( "ERROR: attempt to resize when board is not cleared." );
         return false;
       }
-  Xsize = xs;
-  Ysize = ys;
+  rows    = xs;
+  columns = ys;
   grid.reserve( nPoints() );
   if ( grid.size() > nPoints() )
     grid.clear();
@@ -76,7 +76,6 @@ QString Goban::state()
     }
   return s;
 }
-
 
 /**
  * @brief Goban::takeGoishi - remove the Goishi (if any) at linear index i
@@ -188,119 +187,6 @@ bool  Goban::placeGoishiAt( Goishi *ip, QString v )
   if ( !vertexToXY(v,&x,&y) )
     return false;
   return placeGoishiAt( ip, x, y );
-}
-
-/**
- * @brief Goban::indexNeighbors
- * @param i - grid index to compare
- * @param j - grid index to compare
- * @return true if i is "next to" j on the grid
- */
-bool  Goban::indexNeighbors( qint32 i, qint32 j )
-{ qint32 xi,yi,xj,yj;
-  indexToXY(i,&xi,&yi);
-  indexToXY(j,&xj,&yj);
-  if ( xi > 0 )         if ( ( (xi-1) == xj ) && ( yi == yj ) ) return true;
-  if ( xi < Xsize - 1 ) if ( ( (xi+1) == xj ) && ( yi == yj ) ) return true;
-  if ( yi > 0 )         if ( ( xi == xj ) && ( (yi-1) == yj ) ) return true;
-  if ( yi < Ysize - 1 ) if ( ( xi == xj ) && ( (yi+1) == yj ) ) return true;
-  return false;
-}
-
-/**
- * @brief Goban::vertexToXY
- * @param v - vertex as string
- * @param x - pointer to x coordinate
- * @param y - pointer to x coordinate
- * @return true if vertex conversion to xy was successful
- */
-bool  Goban::vertexToXY( QString v, qint32 *x, qint32 *y )
-{ v = v.toUpper();
-  *x = Xsize;
-  if ( *x > Xlabels.size() )
-    { qDebug( "WARNING: Xsize larger than available labels." );
-      return false;
-    }
-  bool done = false;
-  while ( !done )
-    { if ( *x <= 0 )
-        { qDebug( "Goban::vertexToXY(%s) no match found in Xlabels", qPrintable( v ) );
-          return false;
-        }
-      if ( v.startsWith( Xlabels.at(--*x) ) )
-        done = true;
-    }
-  *y = Ysize;
-  if ( *y > Ylabels.size() )
-    { qDebug( "WARNING: Ysize larger than available labels." );
-      return false;
-    }
-  done = false;
-  while ( !done )
-    { if ( *y <= 0 )
-        { qDebug( "Goban::vertexToXY(%s) no match found in Ylabels", qPrintable( v ) );
-          return false;
-        }
-      if ( v.endsWith( Ylabels.at(--*y) ) )
-        done = true;
-    }
-  return true;
-}
-
-/**
- * @brief Goban::vertexToIndex
- * @param v - vertex string to translate
- * @return index, or -1 if vertex is invalid
- */
-qint32  Goban::vertexToIndex( QString v )
-{ qint32 x,y;
-  if ( !vertexToXY( v, &x, &y ) )
-    return -1;
-  return xyToIndex( x, y );
-}
-
-/**
- * @brief Goban::indexToXY
- * @param i - index to convert
- * @param x - pointer to X coordinate variable
- * @param y - pointer to Y coordinate variable
- * @return true if successful
- */
-bool  Goban::indexToXY( qint32 i, qint32 *x, qint32 *y )
-{ if (( i < 0 ) || ( i >= nPoints() ))
-    return false;
-  *x = i % Xsize;
-  *y = i / Xsize;
-  return true;
-}
-
-/**
- * @brief indexToVertex
- * @param i - index to convert
- * @return vertex string, or empty if there is a problem
- */
-QString  Goban::indexToVertex( qint32 i )
-{ qint32 x,y;
-  if ( !indexToXY( i, &x, &y ) )
-    return "";
-  return xyToVertex( x, y );
-}
-
-/**
- * @brief Goban::xyToVertex
- * @param x - coordinate to convert
- * @param y - coordinate to convert
- * @return vertex string, or empty if there is a problem
- */
-QString  Goban::xyToVertex( qint32 x, qint32 y )
-{ if (( x < 0 ) ||
-      ( y < 0 ) ||
-      ( x >= Xsize ) ||
-      ( y >= Ysize ) ||
-      ( x >= Xlabels.size() ) ||
-      ( y >= Ylabels.size() ))
-    return "";
-  return Xlabels.at(x)+Ylabels.at(y);
 }
 
 /**

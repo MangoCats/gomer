@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 // hp - Chiho pointer  - holds a region definition
 // ip - Goishi pointer
 // jp - Jiyu pointer
+// kp - Kigo pointer
 // mp - Sakudo pointer - makes moves
 // pp - Player pointer
 // rp - Ryoiki pointer - regions of free space

@@ -35,20 +35,12 @@ public:
      explicit  Goban( Shiai *p, qint32 xs=19, qint32 ys=19 );
                Goban( Goban *bp, Shiai *p );
          bool  resize( qint32 xs, qint32 ys );
-       qint32  nPoints() { return Xsize * Ysize; }
       QString  state();
        Goishi *takeGoishi( qint32 i );
          void  removeGoishi( Goishi *ip );
          bool  placeGoishi( Goishi *ip, qint32 i );
          bool  placeGoishiAt( Goishi *ip, qint32 x, qint32 y );
          bool  placeGoishiAt( Goishi *ip, QString v );
-         bool  vertexToXY( QString v, qint32 *x, qint32 *y );
-         bool  indexNeighbors( qint32 i, qint32 j );
-       qint32  vertexToIndex( QString v );
-      QString  indexToVertex( qint32 i );
-      QString  xyToVertex( qint32 x, qint32 y );
-         bool  indexToXY( qint32 i, qint32 *x, qint32 *y );
-       qint32  xyToIndex( qint32 x, qint32 y ) { return x + (Xsize * y); }
        Goishi *goishiAt( qint32 x, qint32 y );
        Goishi *goishiAt( QString v );
        Goishi *goishi( qint32 i );
