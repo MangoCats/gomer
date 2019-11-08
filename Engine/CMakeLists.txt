@@ -37,6 +37,7 @@ add_executable(GomerEngine main.cpp
                            gtphandler.cpp
                            jiyu.cpp
                            kigo.cpp
+                           kogai.cpp
                            menseki.cpp
                            player.cpp
                            ruikei.cpp
@@ -44,6 +45,7 @@ add_executable(GomerEngine main.cpp
                            sakudo.cpp
                            shiai.cpp
                            shiko.cpp
+                           soshi.cpp
                            wyrm.cpp
               )
 
@@ -58,6 +60,7 @@ set(SOURCES config.h.in
             gtphandler.h
             jiyu.h
             kigo.h
+            kogai.h
             menseki.h
             player.h
             ruikei.h
@@ -65,6 +68,7 @@ set(SOURCES config.h.in
             sakudo.h
             shiai.h
             shiko.h
+            soshi.h
             wyrm.h
    )
 

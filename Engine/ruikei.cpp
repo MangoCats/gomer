@@ -1,9 +1,26 @@
 #include "ruikei.h"
 
-Ruikei::Ruikei( qint32 xs, qint32 ys, QObject *parent ) : Menseki(xs,ys,parent)
-{// if ( testTransforms() )
+Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
+{ op = new Kogai(this);
+ // if ( testTransforms() )
  //   qDebug( "transform test passed." );
+}
 
+Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p)
+{ ds >> rows;
+  ds >> columns;
+  kl.resize( nPoints() );
+  bool ok = true;
+  for ( qint32 i = 0; i < nPoints(); i++ )
+    { quint8 b;
+      ds >> b;
+        { ok &= kl[i].fromByte( b );
+          i++;
+        }
+    }
+  if ( !ok )
+    qDebug( "Ruikei::Ruikei() problem reading Kigo list" );
+  op = new Kogai( ds, this );
 }
 
 /**
@@ -33,18 +50,19 @@ bool Ruikei::fromByteArray( QByteArray ba )
   ys = ba.at(1);
   if (( xs < 3 ) || ( ys < 3 ))
     return false;
-  if ( ba.size() != (xs*ys + 2) )
+  if ( ba.size() < (xs*ys + 2) )
     return false;
   rows = xs;
   columns = ys;
   orientation = 0; // Always stored in 0 orientation
-  kl.resize( xs*ys - 2 );
+  kl.resize( xs*ys );
   bool ok = true;
   qint32 i = 2;
   while ( i < ba.size() )
     { ok &= kl[i-2].fromByte( ba.at(i) );
       i++;
     }
+  op->fromByteArray( ba.mid(xs*ys+2) );
   return ok;
 }
 

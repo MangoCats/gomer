@@ -3,11 +3,16 @@
 
 class Goban;
 class Kigo;
+class Kogai;
+class Shiko;
 class Menseki;
 class Wyrm;
 #include <QObject>
+#include <QPointer>
 #include "goban.h"
 #include "kigo.h"
+#include "kogai.h"
+#include "shiko.h"
 #include "menseki.h"
 #include "wyrm.h"
 
@@ -19,14 +24,16 @@ class Ruikei : public Menseki
 {
     Q_OBJECT
 public:
-    explicit  Ruikei( qint32 xs, qint32 ys, QObject *parent = nullptr);
+    explicit  Ruikei( qint32 xs, qint32 ys, Shiko *p = nullptr );
+              Ruikei( QDataStream &ds, Shiko *p = nullptr );
         bool  matchOne( Wyrm *wp, Goban *bp );
         bool  matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp );
   QByteArray  kigoList();
         bool  fromByteArray( QByteArray );
 
 public:
-  QVector<Kigo> kl;
+   QVector<Kigo> kl;
+ QPointer<Kogai> op; // Synopsis/outline of what is known about this situation
 };
 
 #endif // RUIKEI_H

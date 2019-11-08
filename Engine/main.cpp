@@ -22,15 +22,18 @@ int main(int argc, char *argv[])
 // c - color (0 = black, 1 = white, -1 = neither, -2 = not yet determined, 2+ for weird games)
 // pl - player number, used when inner loops are concerned with color
 // p - pointer to parent object
+// ap - Ruikei pointer - analysis of a piece of the Goban state
 // bp - Goban pointer  - the board
 // cp - Chiiki pointer
 // dp - Draco pointer
-// gp - Shiai pointer
+// ep - Soshi pointer - data element of a Kogai
+// gp - Shiai pointer - holds a game state
 // hp - Chiho pointer  - holds a region definition
 // ip - Goishi pointer
 // jp - Jiyu pointer
 // kp - Kigo pointer
 // mp - Sakudo pointer - makes moves
+// op - Kogai pointer - outline / summary of position
 // pp - Player pointer
 // rp - Ryoiki pointer - regions of free space
 // sp - Gosu pointer

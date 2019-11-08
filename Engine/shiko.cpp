@@ -1,4 +1,5 @@
 #include "shiko.h"
+#include <QFile>
 
 /**
  * @brief Shiko::Shiko - normal constructor, called at game start with an empty Goban
@@ -8,6 +9,7 @@
 Shiko::Shiko(Shiai *p) : QObject(p), gp(p), bp(p->bp)
 { cp = new Chiiki( this );
   jp = new Jiyu( bp );
+  readRuikei();
 }
 
 /**
@@ -21,6 +23,20 @@ Shiko::Shiko(Shiko *tp, Shiai *p) : QObject(p), gp(p), bp(p->bp)
   stateHistory = tp->stateHistory;
   cp = new Chiiki( tp->cp, this );
   jp = new Jiyu( tp->jp, bp );
+  apl = tp->apl; // Direct copy of the Ruikei pointers - no reason to duplicate the objects
+}
+
+/**
+ * @brief Shiko::readRuikei - de-serialize the Ruikei file into a list of objects in memory
+ */
+void Shiko::readRuikei()
+{ QFile rf( "/home/mike/Ruikei.dat" );
+  if ( !rf.exists() )
+    return;
+
+  QDataStream ds( &rf );
+  while ( !ds.atEnd() )
+    apl.append( new Ruikei(ds,this) );
 }
 
 /**

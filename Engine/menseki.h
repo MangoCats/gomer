@@ -12,7 +12,9 @@ class Menseki : public QObject
 {
     Q_OBJECT
 public:
-     explicit  Menseki( qint32 xs, qint32 ys, QObject *parent = nullptr);
+     explicit  Menseki( qint32 xs, qint32 ys, QObject *parent = nullptr );
+               Menseki( QObject *parent = nullptr );
+         void  init();
         QChar  colorToChar( qint32 c );
          bool  indexNeighbors( qint32 i, qint32 j );
       QString  indexToVertex( qint32 i );

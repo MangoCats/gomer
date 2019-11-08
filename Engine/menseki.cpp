@@ -3,7 +3,16 @@
 Menseki::Menseki( qint32 xs, qint32 ys, QObject *parent) : QObject(parent)
 { rows = xs;
   columns = ys;
-  orientation = 0;
+  init();
+}
+
+Menseki::Menseki( QObject *parent) : QObject(parent)
+{ rows = columns = -1;
+  init();
+}
+
+void Menseki::init()
+{ orientation = 0;
   goishiChar = ".,XO3456789";
   Xlabels.append("A");  Ylabels.append("1");
   Xlabels.append("B");  Ylabels.append("2");

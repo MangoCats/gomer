@@ -5,6 +5,7 @@ class Chiiki;
 class Draco;
 class Goban;
 class Jiyu;
+class Ruikei;
 class Shiai;
 class Wyrm;
 #include <QObject>
@@ -12,6 +13,7 @@ class Wyrm;
 #include "draco.h"
 #include "goban.h"
 #include "jiyu.h"
+#include "ruikei.h"
 #include "shiai.h"
 #include "wyrm.h"
 
@@ -24,6 +26,7 @@ class Shiko : public QObject
 public:
       explicit  Shiko( Shiai *p );
                 Shiko( Shiko *tp, Shiai *p );
+          void  readRuikei();
           void  clearGoban();
           void  resizeGoban();
   QList<qint32> allLegalMoves( qint32 c );
@@ -61,11 +64,12 @@ public slots:
 
 public:
         QPointer<Chiiki> cp;
-          QPointer<Shiai> gp;
+         QPointer<Shiai> gp;
          QPointer<Goban> bp;
           QPointer<Jiyu> jp;
   QList<QPointer<Wyrm> > wpl;
  QList<QPointer<Draco> > dpl;
+QList<QPointer<Ruikei> > apl;
             QStringList  stateHistory; // Previous board positions
 };
 
