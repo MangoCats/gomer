@@ -117,8 +117,8 @@ void Chiiki::update()
         }
       if ( rp != nullptr )
         rp->player = pl;
-      for ( qint32 x = 0; x < bp->Xsize; x++ )
-        for ( qint32 y = 0; y < bp->Ysize; y++ )
+      for ( qint32 x = 0; x < bp->Xsize(); x++ )
+        for ( qint32 y = 0; y < bp->Ysize(); y++ )
           { qint32 i = bp->xyToIndex( x, y );
             if ( rGrid[pl].at(i) == nullptr )
               { if ( rp == nullptr )            // Need a new Ryoiki?
@@ -149,11 +149,11 @@ void Chiiki::update()
             { qint32 i = rp->bi.at(j);
               qint32 x,y;
               bp->indexToXY( i, &x, &y );
-              if ( x > 0 )               done |= ryoikiOwner( x-1, y, &ro );
-              if ( x < (bp->Xsize - 1) ) done |= ryoikiOwner( x+1, y, &ro );
-              if ( y > 0 )               done |= ryoikiOwner( x, y-1, &ro );
-              if ( y < (bp->Ysize - 1) ) done |= ryoikiOwner( x, y+1, &ro );
-              if ( ++j >= rp->bi.size() ) done = true;
+              if ( x > 0 )                 done |= ryoikiOwner( x-1, y, &ro );
+              if ( x < (bp->Xsize() - 1) ) done |= ryoikiOwner( x+1, y, &ro );
+              if ( y > 0 )                 done |= ryoikiOwner( x, y-1, &ro );
+              if ( y < (bp->Ysize() - 1) ) done |= ryoikiOwner( x, y+1, &ro );
+              if ( ++j >= rp->bi.size() )  done = true;
             }
           rp->owner = ro;
         }
@@ -166,10 +166,10 @@ void Chiiki::update()
         foreach ( qint32 i, rp->bi )
           { qint32 x,y;
             bp->indexToXY( i, &x, &y );
-            if ( x > 0 )              collectWyrms( x-1, y, rp );
-            if ( x < (bp->Xsize -1) ) collectWyrms( x+1, y, rp );
-            if ( y > 0 )              collectWyrms( x, y-1, rp );
-            if ( y < (bp->Ysize -1) ) collectWyrms( x, y+1, rp );
+            if ( x > 0 )                collectWyrms( x-1, y, rp );
+            if ( x < (bp->Xsize() -1) ) collectWyrms( x+1, y, rp );
+            if ( y > 0 )                collectWyrms( x, y-1, rp );
+            if ( y < (bp->Ysize() -1) ) collectWyrms( x, y+1, rp );
           }
       }
 }

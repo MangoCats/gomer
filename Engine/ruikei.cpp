@@ -164,8 +164,25 @@ bool  Ruikei::ySizeEdge() const
  * @return true if a match is
  */
 bool Ruikei::matchOne( Wyrm *wp, Goban *bp )
-{ return false;
+{ for ( qint32 i = 0; i < 7; i++ )
+    { orientation = i;
+      if ( matchOneInCurrentOrientation( wp, bp ) )
+        return true;
+    }
+  return false;
 }
+
+bool Ruikei::matchOneInCurrentOrientation( Wyrm *wp, Goban *bp )
+{ qint32 ne = nEdges();
+  if ( ne == 4 )
+    { if (( bp->Xsize() != Xsize() ) ||
+          ( bp->Ysize() != Ysize() ))
+        return false;
+    }
+
+  return false;
+}
+
 
 /**
  * @brief matchBoth

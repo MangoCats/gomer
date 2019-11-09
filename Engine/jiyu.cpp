@@ -64,10 +64,10 @@ void Jiyu::update()
   while ( npr > 0 )
     { for ( qint32 i = 0; i < npts; i++ )
         { bp->indexToXY(i,&x,&y);
-          if ( x > 0 )             if ( check( i,x-1,y,level ) ) npr--;
-          if ( x < bp->Xsize - 1 ) if ( check( i,x+1,y,level ) ) npr--;
-          if ( y > 0 )             if ( check( i,x,y-1,level ) ) npr--;
-          if ( y < bp->Ysize - 1 ) if ( check( i,x,y+1,level ) ) npr--;
+          if ( x > 0 )               if ( check( i,x-1,y,level ) ) npr--;
+          if ( x < bp->Xsize() - 1 ) if ( check( i,x+1,y,level ) ) npr--;
+          if ( y > 0 )               if ( check( i,x,y-1,level ) ) npr--;
+          if ( y < bp->Ysize() - 1 ) if ( check( i,x,y+1,level ) ) npr--;
         }
       level++;
     }
@@ -159,8 +159,8 @@ QString Jiyu::show()
 { QString level = "0123456789ABCDEFGHJKLMNOPQRSTUVWXYZ";
   if ( bp == nullptr ) return "Goban null, Jiyu will not show()";
   QString msg = "\n";
-  for ( qint32 y = bp->Ysize - 1; y >= 0; y-- )
-    { for ( qint32 x = 0; x < bp->Xsize; x++ )
+  for ( qint32 y = bp->Ysize() - 1; y >= 0; y-- )
+    { for ( qint32 x = 0; x < bp->Xsize(); x++ )
         { qint32 i = bp->xyToIndex(x,y);
           QChar cc = QChar('.');
           if ( grid.at(i).first != NO_PLAYER )

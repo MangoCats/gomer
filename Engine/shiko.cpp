@@ -189,10 +189,10 @@ bool Shiko::isSelfCapture( qint32 x, qint32 y, qint32 c )
       return true;
     }
   // Check for open neighbors
-  if ( x > 0 )           if ( selfCaptureRelief( x-1,y,c ) ) return false;
-  if ( x < bp->Xsize-1 ) if ( selfCaptureRelief( x+1,y,c ) ) return false;
-  if ( y > 0 )           if ( selfCaptureRelief( x,y-1,c ) ) return false;
-  if ( y < bp->Ysize-1 ) if ( selfCaptureRelief( x,y+1,c ) ) return false;
+  if ( x > 0 )             if ( selfCaptureRelief( x-1,y,c ) ) return false;
+  if ( x < bp->Xsize()-1 ) if ( selfCaptureRelief( x+1,y,c ) ) return false;
+  if ( y > 0 )             if ( selfCaptureRelief( x,y-1,c ) ) return false;
+  if ( y < bp->Ysize()-1 ) if ( selfCaptureRelief( x,y+1,c ) ) return false;
   return true;
 }
 
@@ -230,10 +230,10 @@ bool Shiko::isKo( qint32 x, qint32 y, qint32 c )
 { QString state = bp->state();
   // Evaluate the proposed move into state
   state.replace( bp->xyToIndex(x,y),1,bp->colorToChar(c) );
-  if ( x > 0 )           koEvalCapture( x-1,y,c,&state );
-  if ( x < bp->Xsize-1 ) koEvalCapture( x+1,y,c,&state );
-  if ( y > 0 )           koEvalCapture( x,y-1,c,&state );
-  if ( y < bp->Ysize-1 ) koEvalCapture( x,y+1,c,&state );
+  if ( x > 0 )             koEvalCapture( x-1,y,c,&state );
+  if ( x < bp->Xsize()-1 ) koEvalCapture( x+1,y,c,&state );
+  if ( y > 0 )             koEvalCapture( x,y-1,c,&state );
+  if ( y < bp->Ysize()-1 ) koEvalCapture( x,y+1,c,&state );
   return stateHistory.contains(state);
 }
 
@@ -280,10 +280,10 @@ void Shiko::goishiPlacedOnGoban( Goishi *ip )
     }
   QList<Wyrm *> fwpl; // Make a list of "friendly neighbors' Wyrms"
   QList<Wyrm *> owpl; // Make a list of "opponent neighbors' Wyrms"
-  if ( ip->x > 0 )               collectWyrm( &fwpl, &owpl, ip->x-1, ip->y, ip->color );
-  if ( ip->x < (bp->Xsize - 1) ) collectWyrm( &fwpl, &owpl, ip->x+1, ip->y, ip->color );
-  if ( ip->y > 0 )               collectWyrm( &fwpl, &owpl, ip->x, ip->y-1, ip->color );
-  if ( ip->y < (bp->Ysize - 1) ) collectWyrm( &fwpl, &owpl, ip->x, ip->y+1, ip->color );
+  if ( ip->x > 0 )                 collectWyrm( &fwpl, &owpl, ip->x-1, ip->y, ip->color );
+  if ( ip->x < (bp->Xsize() - 1) ) collectWyrm( &fwpl, &owpl, ip->x+1, ip->y, ip->color );
+  if ( ip->y > 0 )                 collectWyrm( &fwpl, &owpl, ip->x, ip->y-1, ip->color );
+  if ( ip->y < (bp->Ysize() - 1) ) collectWyrm( &fwpl, &owpl, ip->x, ip->y+1, ip->color );
 
   foreach( Wyrm *owp, owpl )
     { if ( owp->inAtari() )
@@ -356,10 +356,10 @@ void  Shiko::addCaptureLiberties( Goishi *ip )
   qint32 y = ip->y;
   qint32 c = ip->color;
   qint32 i = bp->xyToIndex(x,y);
-  if ( x > 0 )           addCaptureLiberty( x-1,y,i,c );
-  if ( x < bp->Xsize-1 ) addCaptureLiberty( x+1,y,i,c );
-  if ( y > 0 )           addCaptureLiberty( x,y-1,i,c );
-  if ( y < bp->Ysize-1 ) addCaptureLiberty( x,y+1,i,c );
+  if ( x > 0 )             addCaptureLiberty( x-1,y,i,c );
+  if ( x < bp->Xsize()-1 ) addCaptureLiberty( x+1,y,i,c );
+  if ( y > 0 )             addCaptureLiberty( x,y-1,i,c );
+  if ( y < bp->Ysize()-1 ) addCaptureLiberty( x,y+1,i,c );
 }
 
 /**
@@ -388,10 +388,10 @@ qint32 Shiko::testLibertyCount( qint32 i, qint32 c )
 { qint32 x,y;
   bp->indexToXY( i, &x, &y );
   QList<qint32> lip; // List of all liberties of the new proposed Wyrm
-  if ( x > 0 )             armLibertyCollect( x-1, y, c, lip );
-  if ( x < bp->Xsize - 1 ) armLibertyCollect( x+1, y, c, lip );
-  if ( y > 0 )             armLibertyCollect( x, y-1, c, lip );
-  if ( y < bp->Ysize - 1 ) armLibertyCollect( x, y+1, c, lip );
+  if ( x > 0 )               armLibertyCollect( x-1, y, c, lip );
+  if ( x < bp->Xsize() - 1 ) armLibertyCollect( x+1, y, c, lip );
+  if ( y > 0 )               armLibertyCollect( x, y-1, c, lip );
+  if ( y < bp->Ysize() - 1 ) armLibertyCollect( x, y+1, c, lip );
   lip.removeAll(i);  // Proposed Goishi going to i, won't get that as a liberty anymore
   // QString msg = QString( "# testLibertyCount(%1,%2) " ).arg(bp->indexToVertex(i)).arg(c);
   // foreach ( qint32 j, lip )

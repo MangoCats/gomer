@@ -101,13 +101,13 @@ QList<qint32> Wyrm::getLibertyList( Goishi *ip )
   if ( x > 0 )
     if ( bp->goishiAt( x-1, y ) == nullptr )
       ll.append( bp->xyToIndex(x-1, y) );
-  if ( x < bp->Xsize - 1 )
+  if ( x < bp->Xsize() - 1 )
     if ( bp->goishiAt( x+1, y ) == nullptr )
       ll.append( bp->xyToIndex(x+1, y) );
   if ( y > 0 )
     if ( bp->goishiAt( x, y-1 ) == nullptr )
       ll.append( bp->xyToIndex(x, y-1) );
-  if ( y < bp->Ysize - 1 )
+  if ( y < bp->Ysize() - 1 )
     if ( bp->goishiAt( x, y+1 ) == nullptr )
       ll.append( bp->xyToIndex(x, y+1) );
   return ll;
@@ -207,10 +207,10 @@ QList<Ryoiki *> Wyrm::adjacentRyoiki()
        else
         { qint32 x = ip->x;
           qint32 y = ip->y;
-          if ( x > 0 )            addRyoiki( cp, x-1, y, arpl );
-          if ( x < bp->Xsize -1 ) addRyoiki( cp, x+1, y, arpl );
-          if ( y > 0 )            addRyoiki( cp, x, y-1, arpl );
-          if ( y < bp->Ysize -1 ) addRyoiki( cp, x, y+1, arpl );
+          if ( x > 0 )              addRyoiki( cp, x-1, y, arpl );
+          if ( x < bp->Xsize() -1 ) addRyoiki( cp, x+1, y, arpl );
+          if ( y > 0 )              addRyoiki( cp, x, y-1, arpl );
+          if ( y < bp->Ysize() -1 ) addRyoiki( cp, x, y+1, arpl );
         }
     }
   return arpl;

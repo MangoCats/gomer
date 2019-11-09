@@ -265,13 +265,13 @@ bool Sakudo::canBeAttacked( Wyrm *wp, qint32 c )
  */
 QString Sakudo::firstMove( qint32 c )
 { qint32 x,y;
-  qint32 dx = ( bp->Xsize < 13 ) ? 3 : 4;
-  qint32 dy = ( bp->Ysize < 13 ) ? 3 : 4;
-  x = bp->Xsize - dx; if ( x < 0 ) x = 0;
-  y = bp->Ysize - dy; if ( y < 0 ) y = 0;
+  qint32 dx = ( bp->Xsize() < 13 ) ? 3 : 4;
+  qint32 dy = ( bp->Ysize() < 13 ) ? 3 : 4;
+  x = bp->Xsize() - dx; if ( x < 0 ) x = 0;
+  y = bp->Ysize() - dy; if ( y < 0 ) y = 0;
   if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
-    { x = dx - 1; if ( x >= bp->Xsize ) x = bp->Xsize - 1;
-      y = dy - 1; if ( y >= bp->Ysize ) y = bp->Ysize - 1;
+    { x = dx - 1; if ( x >= bp->Xsize() ) x = bp->Xsize() - 1;
+      y = dy - 1; if ( y >= bp->Ysize() ) y = bp->Ysize() - 1;
     }
   if ( bp->color(bp->xyToIndex(x,y)) != NO_PLAYER )
     return genmoveRandy(c);
@@ -556,10 +556,10 @@ QList<Wyrm *> Sakudo::surroundingWyrms( qint32 i )
     return wpl;
   qint32 x,y;
   bp->indexToXY(i,&x,&y);
-  if (x > 0)             { ip = bp->goishiAt(x-1,y); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
-  if (x < bp->Xsize - 1) { ip = bp->goishiAt(x+1,y); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
-  if (y > 0)             { ip = bp->goishiAt(x,y-1); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
-  if (y < bp->Ysize - 1) { ip = bp->goishiAt(x,y+1); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (x > 0)               { ip = bp->goishiAt(x-1,y); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (x < bp->Xsize() - 1) { ip = bp->goishiAt(x+1,y); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (y > 0)               { ip = bp->goishiAt(x,y-1); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
+  if (y < bp->Ysize() - 1) { ip = bp->goishiAt(x,y+1); if (ip != nullptr) if (ip->wp != nullptr) if (!wpl.contains(ip->wp)) wpl.append(ip->wp); }
   return wpl;
 }
 

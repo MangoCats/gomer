@@ -177,9 +177,9 @@ void  GtpHandler::receivedMessage( QString m )
       case COMMAND_INDEX_QUERY_BOARDSIZE:
         if ( !checkGpNull( id ) ) break;
         if ( !checkBpNull( id ) ) break;
-        if ( gp->bp->Xsize == gp->bp->Ysize )
-          { respond( true, id, QString::number( gp->bp->Xsize ) ); break; }
-        respond( true, id, QString::number( gp->bp->Xsize )+","+QString::number( gp->bp->Ysize ) );
+        if ( gp->bp->Xsize() == gp->bp->Ysize() )
+          { respond( true, id, QString::number( gp->bp->Xsize() ) ); break; }
+        respond( true, id, QString::number( gp->bp->Xsize() )+","+QString::number( gp->bp->Ysize() ) );
         break;
 
       case COMMAND_INDEX_CLEAR_BOARD:

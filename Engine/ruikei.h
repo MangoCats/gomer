@@ -29,6 +29,7 @@ public:
         void  toDataStream( QDataStream &ds ) const;
         bool  isValid();
         bool  matchOne( Wyrm *wp, Goban *bp );
+        bool  matchOneInCurrentOrientation( Wyrm *wp, Goban *bp );
         bool  matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp );
       qint32  nEdges() const;
         bool  x0Edge() const;

@@ -1,6 +1,6 @@
 #include "goban.h"
 
-Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,p), gp(p), Xsize(xs), Ysize(ys)
+Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,p), gp(p)
 { // qDebug( "Goban constructor %d x %d", Xsize, Ysize );
   resize( xs, ys );
 }
@@ -10,7 +10,7 @@ Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,p), gp(p), Xsize(xs),
  * @param bp - Goban to copy
  * @param p - parent of the new Goban
  */
-Goban::Goban(Goban *bp, Shiai *p) : Menseki(bp->rows,bp->columns,p), gp(p), Xsize(bp->Xsize), Ysize(bp->Ysize)
+Goban::Goban(Goban *bp, Shiai *p) : Menseki(bp->rows,bp->columns,p), gp(p)
 { Xdots = bp->Xdots;
   Ydots = bp->Ydots;
   grid.reserve( nPoints() );
@@ -51,14 +51,14 @@ bool Goban::resize( qint32 xs, qint32 ys )
   // For the ASCII board:
   Xdots.clear();
   Ydots.clear();
-  Xdots.append( (Xsize < 13) ? 2 : 3 );
-  Ydots.append( (Ysize < 13) ? 2 : 3 );
-  Xdots.append( Xsize - ((Xsize < 13) ? 3 : 4) );
-  Ydots.append( Ysize - ((Ysize < 13) ? 3 : 4) );
-  if ( ( Xsize % 2 ) == 1 )
-    Xdots.append( Xsize/2 );
-  if ( ( Ysize % 2 ) == 1 )
-    Ydots.append( Ysize/2 );
+  Xdots.append( (Xsize() < 13) ? 2 : 3 );
+  Ydots.append( (Ysize() < 13) ? 2 : 3 );
+  Xdots.append( Xsize() - ((Xsize() < 13) ? 3 : 4) );
+  Ydots.append( Ysize() - ((Ysize() < 13) ? 3 : 4) );
+  if ( ( Xsize() % 2 ) == 1 )
+    Xdots.append( Xsize()/2 );
+  if ( ( Ysize() % 2 ) == 1 )
+    Ydots.append( Ysize()/2 );
   return true;
 }
 
@@ -200,7 +200,7 @@ Goishi *Goban::goishiAt( qint32 x, qint32 y )
     { qDebug( "WARNING: Goban::goishiAt(%d,%d) not on board",x,y );
       return nullptr;
     }
-  return grid.at( x + Xsize * y );
+  return grid.at( x + Xsize() * y );
 }
 
 Goishi *Goban::goishiAt( QString v )
@@ -235,8 +235,8 @@ qint32 Goban::color( qint32 i )
 bool  Goban::onBoard( qint32 x, qint32 y )
 { if ( x < 0 ) return false;
   if ( y < 0 ) return false;
-  if ( x >= Xsize ) return false;
-  if ( y >= Ysize ) return false;
+  if ( x >= Xsize() ) return false;
+  if ( y >= Ysize() ) return false;
   return true;
 }
 
@@ -258,10 +258,10 @@ bool  Goban::onBoard( QString v )
 QString Goban::showBoard()
 { QString bs,bl;
   bs.append( "\n"+xAxisLabels()+"\n" );
-  qint32 y = Ysize - 1;
+  qint32 y = Ysize() - 1;
   while ( y >= 0 )
     { bl = centerString( Ylabels.at(y), -2 ) + " ";
-      for ( qint32 x = 0 ; x < Xsize ; x++ )
+      for ( qint32 x = 0 ; x < Xsize() ; x++ )
         bl.append( asciiGoishi( x, y ) );
       bl.append( centerString( Ylabels.at(y), 2 ) );
       if ( y < gp->np )
@@ -292,7 +292,7 @@ QString Goban::showChiho( Chiho *hp )
 QString Goban::xAxisLabels()
 { QString bl = "   "; // space for Y labels
   qint32 i = 0;
-  while ( i < Xsize )
+  while ( i < Xsize() )
     bl.append( centerString( Xlabels.at(i++), 2 ) );
   return bl;
 }
@@ -405,10 +405,10 @@ bool Goban::fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
   // This gridpoint matches the rules, save it
   hp->addGobanIndex( xyToIndex(x,y) );
   // And search the neighbors
-  if ( x > 0 )         fill( x-1,y,c,rule,hp );
-  if ( x < Xsize - 1 ) fill( x+1,y,c,rule,hp );
-  if ( y > 0 )         fill( x,y-1,c,rule,hp );
-  if ( y < Ysize - 1 ) fill( x,y+1,c,rule,hp );
+  if ( x > 0 )           fill( x-1,y,c,rule,hp );
+  if ( x < Xsize() - 1 ) fill( x+1,y,c,rule,hp );
+  if ( y > 0 )           fill( x,y-1,c,rule,hp );
+  if ( y < Ysize() - 1 ) fill( x,y+1,c,rule,hp );
   return true; // x,y met the c-rule condition
 }
 

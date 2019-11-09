@@ -63,8 +63,7 @@ signals:
 public slots:
 
 public:
-              QPointer<Shiai> gp;
-                     qint32  Xsize,Ysize;
+             QPointer<Shiai> gp;
   QVector<QPointer<Goishi> > grid;
                QList<qint32> Xdots,Ydots;
 };
