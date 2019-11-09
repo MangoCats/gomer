@@ -27,8 +27,10 @@ public:
     explicit  Ruikei( qint32 xs, qint32 ys, Shiko *p = nullptr );
               Ruikei( QDataStream &ds, Shiko *p = nullptr );
         void  toDataStream( QDataStream &ds ) const;
+        bool  isValid();
         bool  matchOne( Wyrm *wp, Goban *bp );
         bool  matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp );
+      qint32  nEdges() const;
         bool  x0Edge() const;
         bool  y0Edge() const;
         bool  xSizeEdge() const;

@@ -123,6 +123,9 @@ void  GtpHandler::receivedMessage( QString m )
   switch ( handledCommands.indexOf(command_name) )
     { case COMMAND_INDEX_QUIT:
         respond( true, id );
+        if ( gp != nullptr )
+          if ( gp->tp != nullptr )
+            gp->tp->writeRuikei();
         emit quit();
         break;
 

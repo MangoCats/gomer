@@ -1,10 +1,18 @@
 #include <QCoreApplication>
+#include <QSettings>
 #include "shiai.h"
 #include "gtphandler.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+
+    // Set names for QSettings use
+    QCoreApplication::setOrganizationName("MangoCats");
+    QCoreApplication::setOrganizationDomain("mangocats.com");
+    QCoreApplication::setApplicationName("GomerEngine");
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+
     QStringList pn;
     pn.append( "Player1" );
     pn.append( "Player2" );

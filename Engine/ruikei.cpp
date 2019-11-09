@@ -1,5 +1,11 @@
 #include "ruikei.h"
 
+/**
+ * @brief Ruikei::Ruikei - default constructor
+ * @param xs - number of rows in this Ruikei
+ * @param ys - number of columns in this Ruikei
+ * @param p - parent Shiko
+ */
 Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
 { op = new Kogai(this);
   nGobanEdge =
@@ -10,6 +16,11 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
  //   qDebug( "transform test passed." );
 }
 
+/**
+ * @brief Ruikei::Ruikei - constructs the Ruikei from a data stream
+ * @param ds - data stream to read the Ruikei in from
+ * @param p - parent Shiko
+ */
 Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p)
 { ds >> rows;
   ds >> columns;
@@ -20,16 +31,17 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p)
   kl.resize( nPoints() );
   bool ok = true;
   for ( qint32 i = 0; i < nPoints(); ++i )
-    { quint8 b;
-      ds >> b;
-      ok &= kl[i].fromByte( b );
-    }
+    ok &= kl[i].fromDataStream( ds );
   if ( !ok )
     qDebug( "Ruikei::Ruikei() problem reading Kigo list" );
    else
     op = new Kogai( ds, this );
 }
 
+/**
+ * @brief Ruikei::toDataStream
+ * @param ds - DataStream to serialize this Ruikei to
+ */
 void Ruikei::toDataStream( QDataStream &ds ) const
 { ds << rows;
   ds << columns;
@@ -41,6 +53,35 @@ void Ruikei::toDataStream( QDataStream &ds ) const
     kl.at(i).toDataStream( ds );
   if ( op != nullptr )
     op->toDataStream( ds );
+}
+
+/**
+ * @brief Ruikei::isValid
+ * @return true if the data elements in this Ruikei are all valid
+ */
+bool  Ruikei::isValid()
+{ if ( rows < 3 ) return false;
+  if ( columns < 3 ) return false;
+  if ( orientation < 0 ) return false;
+  if ( orientation > 7 ) return false;
+  if ( kl.size() < nPoints() ) return false;
+  for ( qint32 i = 0; i < nPoints(); ++i )
+    if ( !kl.at(i).isValid() ) return false;
+  if ( op == nullptr ) return false;
+  return op->isValid();
+}
+
+/**
+ * @brief Ruikei::nEdges
+ * @return the number of Goban edges this Ruikei touches 0-4
+ */
+qint32 Ruikei::nEdges() const
+{ qint32 n = 0;
+  if ( nGobanEdge ) ++n;
+  if ( eGobanEdge ) ++n;
+  if ( wGobanEdge ) ++n;
+  if ( sGobanEdge ) ++n;
+  return n;
 }
 
 /**

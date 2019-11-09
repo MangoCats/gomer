@@ -1,5 +1,7 @@
 #include "shiko.h"
+#include <QDir>
 #include <QFile>
+#include <QSettings>
 
 /**
  * @brief Shiko::Shiko - normal constructor, called at game start with an empty Goban
@@ -9,6 +11,8 @@
 Shiko::Shiko(Shiai *p) : QObject(p), gp(p), bp(p->bp)
 { cp = new Chiiki( this );
   jp = new Jiyu( bp );
+  QSettings settings;
+  ruikeiFilename = settings.value( "ruikeiFilename", QDir::homePath() + "/Ruikei.dat" ).toString();
   readRuikei();
 }
 
@@ -30,13 +34,50 @@ Shiko::Shiko(Shiko *tp, Shiai *p) : QObject(p), gp(p), bp(p->bp)
  * @brief Shiko::readRuikei - de-serialize the Ruikei file into a list of objects in memory
  */
 void Shiko::readRuikei()
-{ QFile rf( "/home/mike/Ruikei.dat" );
+{ QFile rf( ruikeiFilename );
   if ( !rf.exists() )
-    return;
-
+    { qDebug( "Shiko::readRuikei() %s does not exist",qPrintable( ruikeiFilename ) );
+      return;
+    }
+  if ( !rf.open( QIODevice::ReadOnly ) )
+    { qDebug( "Shiko::readRuikei() %s could not open for reading",qPrintable( ruikeiFilename ) );
+      return;
+    }
   QDataStream ds( &rf );
   while ( !ds.atEnd() )
-    apl.append( new Ruikei(ds,this) );
+    { Ruikei *ap = new Ruikei(ds,this);
+      if ( ap->isValid() )
+        apl.append( ap );
+       else
+        { ap->deleteLater();
+          qDebug( "Shiko::readRuikei() %s problem with file format",qPrintable( ruikeiFilename ) );
+          return; // Abort the loop.
+        }
+    }
+}
+
+/**
+ * @brief Shiko::writeRuikei - serialize the Ruikei objects from memoryinto a file
+ */
+void Shiko::writeRuikei() const
+{ QFile rf( ruikeiFilename );
+  if ( !rf.open( QIODevice::WriteOnly ) )
+    { qDebug( "Shiko::readRuikei() %s could not open for writing",qPrintable( ruikeiFilename ) );
+      return;
+    }
+  QDataStream ds( &rf );
+  foreach ( Ruikei *ap, apl )
+    { if ( ap != nullptr )
+        { if ( ap->isValid() )
+            ap->toDataStream( ds );
+           else
+            qDebug( "Shiko::writeRuikei() invalid Ruikei encountered" );
+        }
+       else
+        qDebug( "Shiko::writeRuikei() null Ruikei pointer" );
+    }
+  QSettings settings;
+  settings.setValue( "ruikeiFilename", ruikeiFilename );
 }
 
 /**

@@ -18,7 +18,7 @@ public:
         quint8 toByte() const;
           bool fromDataStream( QDataStream &ds );
           bool fromByte( quint8 );
-          bool isValid();
+          bool isValid() const;
 
           bool offGoban;       // this grid point is not on the Goban, may not hold Goishi
           bool emptyGrid;      // this gridpoint may be empty (can be combined with Goishi for don't care matching)

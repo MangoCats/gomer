@@ -54,7 +54,7 @@ bool Kigo::fromByte( quint8 b )
   return isValid();
 }
 
-bool Kigo::isValid()
+bool Kigo::isValid() const
 { if ( offGoban ) // No other conditions allowed when offGoban is true
     { if ( emptyGrid      ||
            friendlyGoishi ||

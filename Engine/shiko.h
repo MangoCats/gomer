@@ -27,6 +27,7 @@ public:
       explicit  Shiko( Shiai *p );
                 Shiko( Shiko *tp, Shiai *p );
           void  readRuikei();
+          void  writeRuikei() const;
           void  clearGoban();
           void  resizeGoban();
   QList<qint32> allLegalMoves( qint32 c );
@@ -71,6 +72,7 @@ public:
  QList<QPointer<Draco> > dpl;
 QList<QPointer<Ruikei> > apl;
             QStringList  stateHistory; // Previous board positions
+                QString  ruikeiFilename;
 };
 
 #endif // SHIKO_H
