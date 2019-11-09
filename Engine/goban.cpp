@@ -248,6 +248,68 @@ bool  Goban::onBoard( QString v )
   return onBoard( x, y );
 }
 
+/**
+ * @brief Goban::onEdge
+ * @param i - indexed board position to check
+ * @return true if the indexed position is on an edge of this Goban
+ */
+bool  Goban::onEdge( qint32 i ) const
+{ qint32 x,y;
+  indexToXY( i, &x, &y );
+  if ( x == 0 ) return true;
+  if ( y == 0 ) return true;
+  if ( x == Xsize() - 1 ) return true;
+  if ( y == Ysize() - 1 ) return true;
+  return false;
+}
+
+/**
+ * @brief Goban::chihoOnEdge
+ * @param hp - Chiho to check
+ * @return true if any element of this Chiho is on an edge of this Goban
+ */
+bool  Goban::chihoOnEdge( Chiho *hp ) const
+{ foreach ( qint32 i, hp->bi )
+    if ( onEdge(i) )
+      return true;
+  return false;
+}
+
+/**
+ * @brief Goban::chihoXYsize
+ * @param hp - Chiho to scan
+ * @param xs - x size of Chiho on this Goban
+ * @param ys - y size of Chiho on this Goban
+ */
+void  Goban::chihoXYsize( Chiho *hp, qint32 &xs, qint32 &ys ) const
+{ qint32 minX,maxX,minY,maxY;
+  chihoXYlimits( hp, minX, minY, maxX, maxY );
+  xs = maxX - minX + 1; if ( xs < 0 ) xs = 0; if ( xs > Xsize() ) xs = Xsize();
+  ys = maxY - minY + 1; if ( ys < 0 ) ys = 0; if ( ys > Ysize() ) ys = Ysize();
+}
+
+/**
+ * @brief Goban::chihoXYlimits
+ * @param hp - Chiho to scan
+ * @param minX - limit of Chiho on this Goban
+ * @param minY - limit of Chiho on this Goban
+ * @param maxX - limit of Chiho on this Goban
+ * @param maxY - limit of Chiho on this Goban
+ */
+void  Goban::chihoXYlimits( Chiho *hp, qint32 &minX, qint32 &minY, qint32 &maxX, qint32 &maxY ) const
+{ minX = Xsize();
+  maxX = 0;
+  minY = Ysize();
+  maxY = 0;
+  qint32 x,y;
+  foreach ( qint32 i, hp->bi )
+    { indexToXY( i, &x, &y );
+      if ( x < minX ) minX = x;
+      if ( x > maxX ) maxX = x;
+      if ( y < minY ) minY = y;
+      if ( y > maxY ) maxY = y;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

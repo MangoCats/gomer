@@ -47,6 +47,7 @@ public:
        qint32  color( qint32 i );
          bool  onBoard( qint32 x, qint32 y );
          bool  onBoard( QString v );
+         bool  onEdge( qint32 i ) const;
       QString  showBoard();
       QString  showChiho( Chiho *hp );
       QString  xAxisLabels();
@@ -56,6 +57,9 @@ QList<Chiho *> fillByRule( qint32 c, bool rule );
          bool  fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
          bool  fillRuleCheck( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp );
          bool  chihoListContains( QList<Chiho *> hpl, qint32 i );
+         bool  chihoOnEdge( Chiho *hp ) const;
+         void  chihoXYsize( Chiho *hp, qint32 &x, qint32 &y ) const;
+         void  chihoXYlimits( Chiho *hp, qint32 &minX, qint32 &minY, qint32 &maxX, qint32 &maxY ) const;
 
 signals:
          void  boardChanged( QString );
