@@ -2,6 +2,7 @@
 #define KIGO_H
 
 #include <QObject>
+#include <QDataStream>
 
 /**
  * @brief The Kigo class - Indicates what may be present at a
@@ -13,7 +14,9 @@ class Kigo : public QObject
 public:
       explicit Kigo(QObject *parent = nullptr);
                Kigo(const Kigo&);
+          void toDataStream( QDataStream &ds ) const;
         quint8 toByte() const;
+          bool fromDataStream( QDataStream &ds );
           bool fromByte( quint8 );
           bool isValid();
 

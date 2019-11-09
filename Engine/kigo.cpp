@@ -22,6 +22,9 @@ Kigo::Kigo(const Kigo&p) : QObject(p.parent())
            wyrm2 = p.wyrm2;
 }
 
+void Kigo::toDataStream( QDataStream &ds ) const
+{ ds << toByte(); }
+
 quint8 Kigo::toByte() const
 { return (  offGoban ? 0x01 : 0x0) |
     (      emptyGrid ? 0x02 : 0x0) |
@@ -31,6 +34,12 @@ quint8 Kigo::toByte() const
     (          alive ? 0x20 : 0x0) |
     (          wyrm1 ? 0x40 : 0x0) |
     (          wyrm2 ? 0x40 : 0x0);
+}
+
+bool Kigo::fromDataStream( QDataStream &ds )
+{ quint8 b;
+  ds >> b;
+  return fromByte( b );
 }
 
 bool Kigo::fromByte( quint8 b )

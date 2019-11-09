@@ -1,12 +1,17 @@
 #include "soshi.h"
 
-Soshi::Soshi(Kogai *p) : QObject(p)
+Soshi::Soshi( Kogai *p ) : QObject(p)
 { ntp = npm = -1; // Initalized as invalid.
 }
 
-Soshi::Soshi(QDataStream &ds, Kogai *p) : QObject(p)
+Soshi::Soshi( QDataStream &ds, Kogai *p ) : QObject(p)
 { ds >> ntp;
   ds >> npm;
+}
+
+void  Soshi::toDataStream( QDataStream &ds ) const
+{ ds << ntp;
+  ds << npm;
 }
 
 /**

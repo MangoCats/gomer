@@ -52,7 +52,7 @@ void Menseki::init()
  * @param c - color index
  * @return Character corresponding to the color index
  */
-QChar Menseki::colorToChar( qint32 c )
+QChar Menseki::colorToChar( qint32 c ) const
 { if (( c > (goishiChar.size() - 3) ) || ( c < 0 ))
     return QChar( '!' );
   return goishiChar.at(c+2);
@@ -75,7 +75,7 @@ QChar Menseki::colorToChar( qint32 c )
  * @param y - rotated/mirrored y position corresponding with i
  * @return true if successful
  */
-bool Menseki::indexToXY( qint32 i, qint32 *x, qint32 *y )
+bool Menseki::indexToXY( qint32 i, qint32 *x, qint32 *y ) const
 { if ( (rows <= 0) || (columns <= 0) )
     { qDebug( "Menseki::indexToXY() rows %d columns %d nonsensical.", rows, columns );
       return false;
@@ -104,7 +104,7 @@ bool Menseki::indexToXY( qint32 i, qint32 *x, qint32 *y )
  * @param y - coordinate on this Menseki to translate
  * @return -1 if off Menseki, index for x,y otherwise
  */
-qint32 Menseki::xyToIndex( qint32 x, qint32 y )
+qint32 Menseki::xyToIndex( qint32 x, qint32 y ) const
 { if ( (rows <= 0) || (columns <= 0) )
     { qDebug( "Menseki::xyToIndex() rows %d columns %d nonsensical.", rows, columns );
       return -1;
@@ -134,7 +134,7 @@ qint32 Menseki::xyToIndex( qint32 x, qint32 y )
  * @param j - grid index to compare
  * @return true if i is "next to" j on the grid
  */
-bool  Menseki::indexNeighbors( qint32 i, qint32 j )
+bool  Menseki::indexNeighbors( qint32 i, qint32 j ) const
 { qint32 xi,yi,xj,yj;
   indexToXY(i,&xi,&yi);
   indexToXY(j,&xj,&yj);
@@ -152,7 +152,7 @@ bool  Menseki::indexNeighbors( qint32 i, qint32 j )
  * @param y - pointer to x coordinate
  * @return true if vertex conversion to xy was successful
  */
-bool  Menseki::vertexToXY( QString v, qint32 *x, qint32 *y )
+bool  Menseki::vertexToXY( QString v, qint32 *x, qint32 *y ) const
 { v = v.toUpper();
   *x = Xsize();
   if ( *x > Xlabels.size() )
@@ -190,7 +190,7 @@ bool  Menseki::vertexToXY( QString v, qint32 *x, qint32 *y )
  * @param v - vertex string to translate
  * @return index, or -1 if vertex is invalid
  */
-qint32  Menseki::vertexToIndex( QString v )
+qint32  Menseki::vertexToIndex( QString v ) const
 { qint32 x,y;
   if ( !vertexToXY( v, &x, &y ) )
     return -1;
@@ -202,7 +202,7 @@ qint32  Menseki::vertexToIndex( QString v )
  * @param i - index to convert
  * @return vertex string, or empty if there is a problem
  */
-QString  Menseki::indexToVertex( qint32 i )
+QString  Menseki::indexToVertex( qint32 i ) const
 { qint32 x,y;
   if ( !indexToXY( i, &x, &y ) )
     return "";
@@ -215,7 +215,7 @@ QString  Menseki::indexToVertex( qint32 i )
  * @param y - coordinate to convert
  * @return vertex string, or empty if there is a problem
  */
-QString  Menseki::xyToVertex( qint32 x, qint32 y )
+QString  Menseki::xyToVertex( qint32 x, qint32 y ) const
 { if (( x < 0 ) ||
       ( y < 0 ) ||
       ( x >= Xsize() ) ||
@@ -231,7 +231,7 @@ QString  Menseki::xyToVertex( qint32 x, qint32 y )
  * @brief Menseki::Xsize
  * @return number of columns in the rotated Menseki
  */
-qint32 Menseki::Xsize()
+qint32 Menseki::Xsize() const
 { switch ( orientation )
     { case 0:
       case 2:
@@ -250,7 +250,7 @@ qint32 Menseki::Xsize()
  * @brief Menseki::Ysize
  * @return number of rows in the rotated Menseki
  */
-qint32 Menseki::Ysize()
+qint32 Menseki::Ysize() const
 { switch ( orientation )
     { case 0:
       case 2:

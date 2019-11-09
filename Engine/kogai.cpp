@@ -15,14 +15,16 @@ Kogai::Kogai(QDataStream &ds, Ruikei *p) : QObject(p)
     otl.append( new Soshi( ds, this ) );
 }
 
-bool Kogai::isValid()
-{ foreach ( Soshi *ep, ftl )
-    if ( !ep->isValid() )
-      return false;
+void Kogai::toDataStream( QDataStream &ds ) const
+{ qint32 ftlsz = ftl.size();
+  ds << ftlsz;
+  foreach ( Soshi *ep, ftl )
+    ep->toDataStream( ds );
+
+  qint32 otlsz = otl.size();
+  ds << otlsz;
   foreach ( Soshi *ep, otl )
-    if ( !ep->isValid() )
-      return false;
-  return true;
+    ep->toDataStream( ds );
 }
 
 QByteArray Kogai::toByteArray()
@@ -40,6 +42,16 @@ QByteArray Kogai::toByteArray()
     ba.append( ep->toByteArray() );
 
   return ba;
+}
+
+bool Kogai::isValid()
+{ foreach ( Soshi *ep, ftl )
+    if ( !ep->isValid() )
+      return false;
+  foreach ( Soshi *ep, otl )
+    if ( !ep->isValid() )
+      return false;
+  return true;
 }
 
 bool Kogai::fromByteArray( QByteArray ba )

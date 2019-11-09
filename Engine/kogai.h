@@ -19,6 +19,7 @@ class Kogai : public QObject
 public:
     explicit Kogai(Ruikei *p = nullptr);
              Kogai(QDataStream &ds, Ruikei *p = nullptr);
+        void toDataStream( QDataStream &ds ) const;
   QByteArray toByteArray();
         bool fromByteArray( QByteArray );
         bool isValid();

@@ -2,6 +2,10 @@
 
 Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
 { op = new Kogai(this);
+  nGobanEdge =
+  eGobanEdge =
+  wGobanEdge =
+  sGobanEdge = 0;
  // if ( testTransforms() )
  //   qDebug( "transform test passed." );
 }
@@ -9,61 +13,107 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
 Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p)
 { ds >> rows;
   ds >> columns;
+  ds >> nGobanEdge;
+  ds >> eGobanEdge;
+  ds >> wGobanEdge;
+  ds >> sGobanEdge;
   kl.resize( nPoints() );
   bool ok = true;
-  for ( qint32 i = 0; i < nPoints(); i++ )
+  for ( qint32 i = 0; i < nPoints(); ++i )
     { quint8 b;
       ds >> b;
-        { ok &= kl[i].fromByte( b );
-          i++;
-        }
+      ok &= kl[i].fromByte( b );
     }
   if ( !ok )
     qDebug( "Ruikei::Ruikei() problem reading Kigo list" );
-  op = new Kogai( ds, this );
+   else
+    op = new Kogai( ds, this );
+}
+
+void Ruikei::toDataStream( QDataStream &ds ) const
+{ ds << rows;
+  ds << columns;
+  ds << nGobanEdge;
+  ds << eGobanEdge;
+  ds << wGobanEdge;
+  ds << sGobanEdge;
+  for ( qint32 i = 0; i < nPoints(); ++i )
+    kl.at(i).toDataStream( ds );
+  if ( op != nullptr )
+    op->toDataStream( ds );
 }
 
 /**
- * @brief Ruikei::kigoList
- * @return the current Kigo list, serialized as a Byte array
+ * @brief Ruikei::x0Edge
+ * @return true if there is a Goban edge below x0 in the present orientation
  */
-QByteArray  Ruikei::kigoList()
-{ QByteArray ba;
-  ba.append( (quint8)rows    );
-  ba.append( (quint8)columns );
-  qint32 i = 0;
-  while ( i < kl.size() )
-    ba.append( kl.at(i).toByte() );
-  return ba;
-}
-
-/**
- * @brief fromByteArray - read in a kigoList that has been stored as a byte array
- * @param ba - byte array to de-serialize
- * @return true if successful
- */
-bool Ruikei::fromByteArray( QByteArray ba )
-{ qint32 xs,ys;
-  if ( ba.size() < 11 )
-    return false; // Minimum dimensions of 3
-  xs = ba.at(0);
-  ys = ba.at(1);
-  if (( xs < 3 ) || ( ys < 3 ))
-    return false;
-  if ( ba.size() < (xs*ys + 2) )
-    return false;
-  rows = xs;
-  columns = ys;
-  orientation = 0; // Always stored in 0 orientation
-  kl.resize( xs*ys );
-  bool ok = true;
-  qint32 i = 2;
-  while ( i < ba.size() )
-    { ok &= kl[i-2].fromByte( ba.at(i) );
-      i++;
+bool  Ruikei::x0Edge() const
+{ switch ( orientation )
+    { case 0:
+      case 6: return wGobanEdge;
+      case 1:
+      case 5: return nGobanEdge;
+      case 2:
+      case 4: return eGobanEdge;
+      case 3:
+      case 7: return sGobanEdge;
     }
-  op->fromByteArray( ba.mid(xs*ys+2) );
-  return ok;
+  return false;
+}
+
+
+/**
+ * @brief Ruikei::y0Edge
+ * @return true if there is a Goban edge below y0 in the present orientation
+ */
+bool  Ruikei::y0Edge() const
+{ switch ( orientation )
+    { case 0:
+      case 4: return sGobanEdge;
+      case 1:
+      case 7: return wGobanEdge;
+      case 2:
+      case 6: return nGobanEdge;
+      case 3:
+      case 5: return eGobanEdge;
+    }
+  return false;
+}
+
+/**
+ * @brief Ruikei::xSizeEdge
+ * @return true if there is a Goban edge at xSize in the present orientation
+ */
+bool  Ruikei::xSizeEdge() const
+{ switch ( orientation )
+    { case 0:
+      case 6: return eGobanEdge;
+      case 1:
+      case 5: return sGobanEdge;
+      case 2:
+      case 4: return wGobanEdge;
+      case 3:
+      case 7: return nGobanEdge;
+    }
+  return false;
+}
+
+/**
+ * @brief Ruikei::ySizeEdge
+ * @return true if there is a Goban edge at ySize in the present orientation
+ */
+bool  Ruikei::ySizeEdge() const
+{ switch ( orientation )
+    { case 0:
+      case 4: return nGobanEdge;
+      case 1:
+      case 7: return eGobanEdge;
+      case 2:
+      case 6: return sGobanEdge;
+      case 3:
+      case 5: return wGobanEdge;
+    }
+  return false;
 }
 
 /**
