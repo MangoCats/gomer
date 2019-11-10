@@ -18,7 +18,7 @@ void  Soshi::toDataStream( QDataStream &ds ) const
  * @brief Soshi::isValid
  * @return true if the member values are consistent with a valid Soshi
  */
-bool Soshi::isValid()
+bool Soshi::isValid() const
 { if ( ntp < 0 )
     return false;
   if ( npm < 0 )
@@ -26,10 +26,3 @@ bool Soshi::isValid()
   return true;
 }
 
-QByteArray Soshi::toByteArray()
-{ QByteArray ba;
-  QDataStream ds( &ba, QIODevice::WriteOnly );
-  ds << ntp;
-  ds << npm;
-  return ba;
-}

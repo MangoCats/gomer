@@ -6,12 +6,12 @@
  * @param ys - number of columns in this Ruikei
  * @param p - parent Shiko
  */
-Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
+Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p), tp(p)
 { op = new Kogai(this);
-  nGobanEdge =
-  eGobanEdge =
-  wGobanEdge =
-  sGobanEdge = 0;
+  nEdge =
+  eEdge =
+  wEdge =
+  sEdge = 0;
   friendlyColor = NO_PLAYER;
   kl.resize( nPoints() );
 }
@@ -21,13 +21,13 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p)
  * @param ds - data stream to read the Ruikei in from
  * @param p - parent Shiko
  */
-Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p)
+Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p)
 { ds >> rows;
   ds >> columns;
-  ds >> nGobanEdge;
-  ds >> eGobanEdge;
-  ds >> wGobanEdge;
-  ds >> sGobanEdge;
+  ds >> nEdge;
+  ds >> eEdge;
+  ds >> wEdge;
+  ds >> sEdge;
   kl.resize( nPoints() );
   bool ok = true;
   for ( qint32 i = 0; i < nPoints(); ++i )
@@ -47,10 +47,10 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p)
 void Ruikei::toDataStream( QDataStream &ds ) const
 { ds << rows;
   ds << columns;
-  ds << nGobanEdge;
-  ds << eGobanEdge;
-  ds << wGobanEdge;
-  ds << sGobanEdge;
+  ds << nEdge;
+  ds << eEdge;
+  ds << wEdge;
+  ds << sEdge;
   for ( qint32 i = 0; i < nPoints(); ++i )
     kl.at(i).toDataStream( ds );
   if ( op != nullptr )
@@ -79,10 +79,10 @@ bool  Ruikei::isValid() const
  */
 qint32 Ruikei::nEdges() const
 { qint32 n = 0;
-  if ( nGobanEdge ) ++n;
-  if ( eGobanEdge ) ++n;
-  if ( wGobanEdge ) ++n;
-  if ( sGobanEdge ) ++n;
+  if ( nEdge ) ++n;
+  if ( eEdge ) ++n;
+  if ( wEdge ) ++n;
+  if ( sEdge ) ++n;
   return n;
 }
 
@@ -115,13 +115,13 @@ bool  Ruikei::cornerEdges() const
 bool  Ruikei::x0Edge() const
 { switch ( orientation )
     { case 0:
-      case 6: return wGobanEdge;
+      case 6: return wEdge;
       case 1:
-      case 5: return nGobanEdge;
+      case 5: return nEdge;
       case 2:
-      case 4: return eGobanEdge;
+      case 4: return eEdge;
       case 3:
-      case 7: return sGobanEdge;
+      case 7: return sEdge;
     }
   return false;
 }
@@ -134,13 +134,13 @@ bool  Ruikei::x0Edge() const
 bool  Ruikei::y0Edge() const
 { switch ( orientation )
     { case 0:
-      case 4: return sGobanEdge;
+      case 4: return sEdge;
       case 1:
-      case 7: return wGobanEdge;
+      case 7: return wEdge;
       case 2:
-      case 6: return nGobanEdge;
+      case 6: return nEdge;
       case 3:
-      case 5: return eGobanEdge;
+      case 5: return eEdge;
     }
   return false;
 }
@@ -152,13 +152,13 @@ bool  Ruikei::y0Edge() const
 bool  Ruikei::xSizeEdge() const
 { switch ( orientation )
     { case 0:
-      case 6: return eGobanEdge;
+      case 6: return eEdge;
       case 1:
-      case 5: return sGobanEdge;
+      case 5: return sEdge;
       case 2:
-      case 4: return wGobanEdge;
+      case 4: return wEdge;
       case 3:
-      case 7: return nGobanEdge;
+      case 7: return nEdge;
     }
   return false;
 }
@@ -170,13 +170,13 @@ bool  Ruikei::xSizeEdge() const
 bool  Ruikei::ySizeEdge() const
 { switch ( orientation )
     { case 0:
-      case 4: return nGobanEdge;
+      case 4: return nEdge;
       case 1:
-      case 7: return eGobanEdge;
+      case 7: return eEdge;
       case 2:
-      case 6: return sGobanEdge;
+      case 6: return sEdge;
       case 3:
-      case 5: return wGobanEdge;
+      case 5: return wEdge;
     }
   return false;
 }

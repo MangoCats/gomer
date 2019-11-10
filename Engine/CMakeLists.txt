@@ -26,7 +26,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5Core)
 
-add_executable(GomerEngine main.cpp
+add_executable(GomerEngine bunkai.cpp
                            chiho.cpp
                            chiiki.cpp
                            console.cpp
@@ -38,6 +38,7 @@ add_executable(GomerEngine main.cpp
                            jiyu.cpp
                            kigo.cpp
                            kogai.cpp
+                           main.cpp
                            menseki.cpp
                            player.cpp
                            ruikei.cpp
@@ -49,7 +50,8 @@ add_executable(GomerEngine main.cpp
                            wyrm.cpp
               )
 
-set(SOURCES config.h.in
+set(SOURCES bunkai.h
+            config.h.in
             chiho.h
             chiiki.h
             console.h

@@ -6,6 +6,9 @@ class Kogai;
 #include <QDataStream>
 #include "kogai.h"
 
+/**
+ * @brief The Soshi 素子 class - data elements of a Kogai
+ */
 class Soshi : public QObject
 {
     Q_OBJECT
@@ -13,8 +16,7 @@ public:
     explicit  Soshi( Kogai *p = nullptr );
               Soshi( QDataStream &ds, Kogai *p = nullptr );
         void  toDataStream( QDataStream &ds ) const;
-  QByteArray  toByteArray();
-        bool  isValid();
+        bool  isValid() const;
 
       qint32  ntp;  // Number of Territory Points
       qint32  npm;  // Maximum number of Pass Moves associated with achieving ntp

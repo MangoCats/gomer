@@ -20,9 +20,8 @@ public:
     explicit Kogai(Ruikei *p = nullptr);
              Kogai(QDataStream &ds, Ruikei *p = nullptr);
         void toDataStream( QDataStream &ds ) const;
-  QByteArray toByteArray();
-        bool fromByteArray( QByteArray );
-        bool isValid();
+        bool isValid() const;
+        bool isEmpty() const;
 
     QList<QPointer<Soshi> > ftl;  /// Friendly Territory List
     QList<QPointer<Soshi> > otl;  /// Opponent Territory List
