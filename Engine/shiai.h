@@ -1,6 +1,7 @@
 #ifndef SHIAI_H
 #define SHIAI_H
 
+class Dotei;
 class Goban;
 class Goishi;
 class Gosu;
@@ -9,6 +10,7 @@ class Sakudo;
 class Shiko;
 #include <QObject>
 #include <QPointer>
+#include "dotei.h"
 #include "goban.h"
 #include "goishi.h"
 #include "gosu.h"
@@ -47,6 +49,7 @@ public:
   QList<QPointer<Player> > ppl;
           QPointer<Sakudo> mp;
            QPointer<Shiko> tp;
+                    Dotei  v;            // Vertex labels
                     qreal  komi;
                    qint32  np;           // Number of players
                    qint32  pt;           // Which player's turn is is?

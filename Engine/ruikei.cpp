@@ -6,14 +6,18 @@
  * @param ys - number of columns in this Ruikei
  * @param p - parent Shiko
  */
-Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p), tp(p), pap(nullptr)
+Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,&(p->gp->v)), tp(p), ap(nullptr)
 { op = new Kogai(this);
   nEdge =
   eEdge =
   wEdge =
   sEdge = 0;
-  friendlyColor = NO_PLAYER;
   kl.resize( nPoints() );
+
+  friendlyColor = NO_PLAYER;
+  xo    =
+  yo    =
+  depth = 0;
 }
 
 /**
@@ -21,7 +25,7 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p), tp(p), pap(
  * @param ds - data stream to read the Ruikei in from
  * @param p - parent Shiko
  */
-Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p), pap(nullptr)
+Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(&(p->gp->v)), tp(p), ap(nullptr)
 { ds >> rows;
   ds >> columns;
   ds >> nEdge;
@@ -36,8 +40,11 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p), pap(nullptr)
     qDebug( "Ruikei::Ruikei() problem reading Kigo list" );
    else
     op = new Kogai( ds, this );
+
   friendlyColor = NO_PLAYER;
-  xo = yo = 0;
+  xo    =
+  yo    =
+  depth = 0;
 }
 
 /**
@@ -47,24 +54,27 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p), pap(nullptr)
  * @param pap - previous Ruikei to play on
  * @param i - gridpoint to play a friendly Goishi at
  */
-Ruikei::Ruikei( Ruikei *pap, qint32 i )
+Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp), ap(pap)
 { if ( !legalFriendlyMove( i ) )
-    { rows = columns = 0; // Ensure Ruikei is invalid, indicating move did not happen
-      op = nullptr;
-      return;
+    { op = nullptr;
+      return; // Ruikei is invalid (rows, columns == -1), indicating move did not happen
     }
-  rows        = pap->rows;
-  columns     = pap->columns;
-  nEdge       = pap->nEdge;
-  eEdge       = pap->eEdge;
-  wEdge       = pap->wEdge;
-  sEdge       = pap->sEdge;
-  kl          = pap->kl;
-  xo          = pap->xo;
-  yo          = pap->yo;
-  orientation = pap->orientation;
+  rows        = ap->rows;
+  columns     = ap->columns;
+  nEdge       = ap->nEdge;
+  eEdge       = ap->eEdge;
+  wEdge       = ap->wEdge;
+  sEdge       = ap->sEdge;
+  kl          = ap->kl;
+
+  xo          = ap->xo;
+  yo          = ap->yo;
+  depth       = ap->depth + 1;
+  orientation = ap->orientation;
   op          = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
-  // TODO: make the play at i, invert colors and set friendlyColor as appropriate
+  // TODO: make the play at i,
+  //       invert colors and
+  //       set friendlyColor as appropriate
 }
 
 /**
@@ -77,32 +87,19 @@ bool  Ruikei::legalFriendlyMove( qint32 i )
     { qDebug( "Ruikei::legalFriendlyMove( (%d,%d), %d ) out of bounds", Xsize(),Ysize(),i );
       return false;
     }
-  if (( !kl.at(i).emptyGrid )      ||
+  if (( !kl.at(i).emptyGrid      ) ||
       (  kl.at(i).friendlyGoishi ) ||
       (  kl.at(i).opponentGoishi ) ||
-      (  kl.at(i).ko ) )  // grid already occupied, or ko?
+      (  kl.at(i).ko             ) )  // grid already occupied, or ko?
     return false;
+  qint32 x,y;
+  indexToXY( i, &x, &y );
+  if (( x == 0           ) && !x0Edge()   ) return false; // Not legal to play on edge of Ruikei, unless it is also edge of Goban
+  if (( x == (Xsize()-1) ) && !xSizeEdge()) return false; // Not legal to play on edge of Ruikei, unless it is also edge of Goban
+  if (( y == 0           ) && !y0Edge()   ) return false; // Not legal to play on edge of Ruikei, unless it is also edge of Goban
+  if (( y == (Ysize()-1) ) && !ySizeEdge()) return false; // Not legal to play on edge of Ruikei, unless it is also edge of Goban
   // Check for self-capture
   return true;
-}
-
-
-
-/**
- * @brief Ruikei::toDataStream
- * @param ds - DataStream to serialize this Ruikei to
- */
-void Ruikei::toDataStream( QDataStream &ds ) const
-{ ds << rows;
-  ds << columns;
-  ds << nEdge;
-  ds << eEdge;
-  ds << wEdge;
-  ds << sEdge;
-  for ( qint32 i = 0; i < nPoints(); ++i )
-    kl.at(i).toDataStream( ds );
-  if ( op != nullptr )
-    op->toDataStream( ds );
 }
 
 /**
@@ -119,6 +116,23 @@ bool  Ruikei::isValid() const
     if ( !kl.at(i).isValid() ) return false;
   if ( op == nullptr ) return false;
   return op->isValid();
+}
+
+/**
+ * @brief Ruikei::toDataStream
+ * @param ds - DataStream to serialize this Ruikei to
+ */
+void Ruikei::toDataStream( QDataStream &ds ) const
+{ ds << rows;
+  ds << columns;
+  ds << nEdge;
+  ds << eEdge;
+  ds << wEdge;
+  ds << sEdge;
+  for ( qint32 i = 0; i < nPoints(); ++i )
+    kl.at(i).toDataStream( ds );
+  if ( op != nullptr )
+    op->toDataStream( ds );
 }
 
 /**

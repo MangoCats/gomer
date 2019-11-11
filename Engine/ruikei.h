@@ -49,13 +49,14 @@ public:
    QVector<Kigo> kl;
  QPointer<Shiko> tp;            // Shiko this Ruikei will be evauated by
  QPointer<Kogai> op;            // Synopsis/outline of what is known about this situation
-QPointer<Ruikei> pap;           // Previous position (for deep analysis trees)
+QPointer<Ruikei> ap;           // Previous position (for deep analysis trees)
            bool  nEdge;         // North border is Ysize in orientation 0
            bool  eEdge;         // East  border is Xsize in orientation 0
            bool  wEdge;         // West  border is X -1  in orientation 0
            bool  sEdge;         // South border is Y -1  in orientation 0
          qint32  xo,yo;         // Offset into the Goban where this Ruikei is matched (at "orientation")
          qint32  friendlyColor; // Color of Goishi to consider "friendly"
+         qint32  depth;         // How many plays have been made since the "top"?
 };
 
 #endif // RUIKEI_H

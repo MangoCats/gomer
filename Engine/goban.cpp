@@ -1,6 +1,6 @@
 #include "goban.h"
 
-Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,p), gp(p)
+Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,&(p->v)), gp(p)
 { // qDebug( "Goban constructor %d x %d", Xsize, Ysize );
   resize( xs, ys );
 }
@@ -10,7 +10,7 @@ Goban::Goban(Shiai *p,qint32 xs,qint32 ys) : Menseki(xs,ys,p), gp(p)
  * @param bp - Goban to copy
  * @param p - parent of the new Goban
  */
-Goban::Goban(Goban *bp, Shiai *p) : Menseki(bp->rows,bp->columns,p), gp(p)
+Goban::Goban(Goban *bp, Shiai *p) : Menseki(bp->rows,bp->columns,&(p->v)), gp(p)
 { Xdots = bp->Xdots;
   Ydots = bp->Ydots;
   grid.reserve( nPoints() );
@@ -31,9 +31,9 @@ Goban::Goban(Goban *bp, Shiai *p) : Menseki(bp->rows,bp->columns,p), gp(p)
  * @return true if successful
  */
 bool Goban::resize( qint32 xs, qint32 ys )
-{ if ( xs > Xlabels.size() )
+{ if ( xs > vp->Xlabels.size() )
     return false;
-  if ( ys > Ylabels.size() )
+  if ( ys > vp->Ylabels.size() )
     return false;
   foreach ( Goishi *ip, grid )
     if ( ip != nullptr )
@@ -70,7 +70,7 @@ QString Goban::state()
 { QString s;
   for ( int i = 0 ; i < nPoints() ; i++ )
     { if ( grid.at(i) == nullptr )
-        s.append( goishiChar.at(0) );
+        s.append( vp->goishiChar.at(0) );
        else
         s.append( colorToChar( grid.at(i)->color ) );
     }
@@ -322,13 +322,13 @@ QString Goban::showBoard()
   bs.append( "\n"+xAxisLabels()+"\n" );
   qint32 y = Ysize() - 1;
   while ( y >= 0 )
-    { bl = centerString( Ylabels.at(y), -2 ) + " ";
+    { bl = centerString( vp->Ylabels.at(y), -2 ) + " ";
       for ( qint32 x = 0 ; x < Xsize() ; x++ )
         bl.append( asciiGoishi( x, y ) );
-      bl.append( centerString( Ylabels.at(y), 2 ) );
+      bl.append( centerString( vp->Ylabels.at(y), 2 ) );
       if ( y < gp->np )
         { bl.append( ( y == gp->pt ) ? " *" : "  " );
-          bl.append( goishiChar.mid( y+2, 1 )+" "+QString::number( gp->spl.at(y)->lid.size() ) );
+          bl.append( vp->goishiChar.mid( y+2, 1 )+" "+QString::number( gp->spl.at(y)->lid.size() ) );
         }
       bs.append( bl  + "\n" );
       y--;
@@ -355,7 +355,7 @@ QString Goban::xAxisLabels()
 { QString bl = "   "; // space for Y labels
   qint32 i = 0;
   while ( i < Xsize() )
-    bl.append( centerString( Xlabels.at(i++), 2 ) );
+    bl.append( centerString( vp->Xlabels.at(i++), 2 ) );
   return bl;
 }
 
@@ -396,15 +396,15 @@ QString Goban::asciiGoishi( qint32 x, qint32 y )
 { Goishi *ip = goishiAt( x, y );
   if ( ip == nullptr )
     { if ( Xdots.contains(x) && Ydots.contains(y) )
-        return centerString( goishiChar.at(1), 2 );
-      return centerString( goishiChar.at(0), 2 );
+        return centerString( vp->goishiChar.at(1), 2 );
+      return centerString( vp->goishiChar.at(0), 2 );
     }
   qint32 c = ip->color;
-  if (( c >= goishiChar.size() - 2 ) || ( c < 0 ))
+  if (( c >= vp->goishiChar.size() - 2 ) || ( c < 0 ))
     { qDebug( "WARNING: color out of range in asciiGoishi" );
       return "*";
     }
-  return centerString( goishiChar.at( c+2 ), 2 );
+  return centerString( vp->goishiChar.at( c+2 ), 2 );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,8 +1,10 @@
 #ifndef MENSEKI_H
 #define MENSEKI_H
 
+class Dotei;
 #include <QObject>
-
+#include <QPointer>
+#include "dotei.h"
 
 /**
  * @brief The Menseki 面積 class - base class
@@ -12,8 +14,8 @@ class Menseki : public QObject
 {
     Q_OBJECT
 public:
-     explicit  Menseki( qint32 xs, qint32 ys, QObject *parent = nullptr );
-               Menseki( QObject *parent = nullptr );
+     explicit  Menseki( qint32 xs, qint32 ys, Dotei *p = nullptr );
+               Menseki( Dotei *p = nullptr );
          void  init();
         QChar  colorToChar( qint32 c ) const;
          bool  indexNeighbors( qint32 i, qint32 j ) const;
@@ -28,14 +30,8 @@ public:
        qint32  Ysize() const;
          bool  testTransforms();
 
-signals:
-
-public slots:
-
-public:
-      QString  goishiChar;
-  QStringList  Xlabels,Ylabels;
-       qint32  rows,columns,orientation;
+  QPointer<Dotei> vp;
+          qint32  rows,columns,orientation;
 };
 
 #endif // MENSEKI_H

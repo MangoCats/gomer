@@ -1,50 +1,18 @@
 #include "menseki.h"
 
-Menseki::Menseki( qint32 xs, qint32 ys, QObject *parent) : QObject(parent)
+Menseki::Menseki( qint32 xs, qint32 ys, Dotei *p ) : QObject(p), vp(p)
 { rows = xs;
   columns = ys;
   init();
 }
 
-Menseki::Menseki( QObject *parent) : QObject(parent)
+Menseki::Menseki( Dotei *p ) : QObject(p), vp(p)
 { rows = columns = -1;
   init();
 }
 
 void Menseki::init()
 { orientation = 0;
-  goishiChar = ".,XO3456789";
-  Xlabels.append("A");  Ylabels.append("1");
-  Xlabels.append("B");  Ylabels.append("2");
-  Xlabels.append("C");  Ylabels.append("3");
-  Xlabels.append("D");  Ylabels.append("4");
-  Xlabels.append("E");  Ylabels.append("5");
-  Xlabels.append("F");  Ylabels.append("6");
-  Xlabels.append("G");  Ylabels.append("7");
-  Xlabels.append("H");  Ylabels.append("8");
-  Xlabels.append("J");  Ylabels.append("9");
-  Xlabels.append("K");  Ylabels.append("10");
-  Xlabels.append("L");  Ylabels.append("11");
-  Xlabels.append("M");  Ylabels.append("12");
-  Xlabels.append("N");  Ylabels.append("13");
-  Xlabels.append("O");  Ylabels.append("14");
-  Xlabels.append("P");  Ylabels.append("15");
-  Xlabels.append("Q");  Ylabels.append("16");
-  Xlabels.append("R");  Ylabels.append("17");
-  Xlabels.append("S");  Ylabels.append("18");
-  Xlabels.append("T");  Ylabels.append("19");
-  Xlabels.append("U");  Ylabels.append("20");
-  Xlabels.append("V");  Ylabels.append("21");
-  Xlabels.append("W");  Ylabels.append("22");
-  Xlabels.append("X");  Ylabels.append("23");
-  Xlabels.append("Y");  Ylabels.append("24");
-  Xlabels.append("Z");  Ylabels.append("25");
-  Xlabels.append("AA"); Ylabels.append("26");  // Incompatible with GTP, but Gomer can handle them.
-  Xlabels.append("AB"); Ylabels.append("27");
-  Xlabels.append("AC"); Ylabels.append("28");
-  Xlabels.append("AD"); Ylabels.append("29");
-  Xlabels.append("AE"); Ylabels.append("30");
-  Xlabels.append("AF"); Ylabels.append("31");
 }
 
 /**
@@ -53,9 +21,9 @@ void Menseki::init()
  * @return Character corresponding to the color index
  */
 QChar Menseki::colorToChar( qint32 c ) const
-{ if (( c > (goishiChar.size() - 3) ) || ( c < 0 ))
+{ if (( c > ( vp->goishiChar.size() - 3) ) || ( c < 0 ))
     return QChar( '!' );
-  return goishiChar.at(c+2);
+  return vp->goishiChar.at(c+2);
 }
 
 // Rotate 90 degrees CCW 3x, then mirror the original and do 3 more rotations
@@ -155,7 +123,7 @@ bool  Menseki::indexNeighbors( qint32 i, qint32 j ) const
 bool  Menseki::vertexToXY( QString v, qint32 *x, qint32 *y ) const
 { v = v.toUpper();
   *x = Xsize();
-  if ( *x > Xlabels.size() )
+  if ( *x > vp->Xlabels.size() )
     { qDebug( "WARNING: Xsize larger than available labels." );
       return false;
     }
@@ -165,11 +133,11 @@ bool  Menseki::vertexToXY( QString v, qint32 *x, qint32 *y ) const
         { qDebug( "Menseki::vertexToXY(%s) no match found in Xlabels", qPrintable( v ) );
           return false;
         }
-      if ( v.startsWith( Xlabels.at(--*x) ) )
+      if ( v.startsWith( vp->Xlabels.at(--*x) ) )
         done = true;
     }
   *y = Ysize();
-  if ( *y > Ylabels.size() )
+  if ( *y > vp->Ylabels.size() )
     { qDebug( "WARNING: Ysize larger than available labels." );
       return false;
     }
@@ -179,7 +147,7 @@ bool  Menseki::vertexToXY( QString v, qint32 *x, qint32 *y ) const
         { qDebug( "Menseki::vertexToXY(%s) no match found in Ylabels", qPrintable( v ) );
           return false;
         }
-      if ( v.endsWith( Ylabels.at(--*y) ) )
+      if ( v.endsWith( vp->Ylabels.at(--*y) ) )
         done = true;
     }
   return true;
@@ -220,10 +188,10 @@ QString  Menseki::xyToVertex( qint32 x, qint32 y ) const
       ( y < 0 ) ||
       ( x >= Xsize() ) ||
       ( y >= Ysize() ) ||
-      ( x >= Xlabels.size() ) ||
-      ( y >= Ylabels.size() ))
+      ( x >= vp->Xlabels.size() ) ||
+      ( y >= vp->Ylabels.size() ))
     return "";
-  return Xlabels.at(x)+Ylabels.at(y);
+  return vp->Xlabels.at(x)+vp->Ylabels.at(y);
 }
 
 

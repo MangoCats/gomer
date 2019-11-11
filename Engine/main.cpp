@@ -46,4 +46,5 @@ int main(int argc, char *argv[])
 // rp - Ryoiki pointer - regions of free space
 // sp - Gosu pointer
 // tp - Shiko pointer  - thinks about the Goban
+// vp - Dotei pointer  - vertex labels
 // wp - Wyrm pointer   - regions of connected Goishi

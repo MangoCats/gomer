@@ -47,6 +47,7 @@ bool  Bunkai::playout( Ruikei *ap, qint32 i )
     { nap->deleteLater();
       return false;
     }
+  // playout all possible children
   for ( qint32 i = 0; i < nap->nPoints(); i++ )
     playout( nap, i );
   return true;

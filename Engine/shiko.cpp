@@ -261,7 +261,7 @@ void Shiko::koEvalCapture( qint32 x, qint32 y, qint32 c, QString *state )
     { if ( ip == nullptr )
         qDebug( "WARNING: Shiko::koEvalCapture %d %d null Goishi in Wyrm",x,y );
        else
-        state->replace( bp->xyToIndex(ip->x,ip->y),1,bp->goishiChar.at(0) );
+        state->replace( bp->xyToIndex(ip->x,ip->y),1,bp->vp->goishiChar.at(0) );
     }
 }
 

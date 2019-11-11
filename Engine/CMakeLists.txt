@@ -30,6 +30,7 @@ add_executable(GomerEngine bunkai.cpp
                            chiho.cpp
                            chiiki.cpp
                            console.cpp
+                           dotei.cpp
                            draco.cpp
                            goban.cpp
                            goishi.cpp
@@ -55,6 +56,7 @@ set(SOURCES bunkai.h
             chiho.h
             chiiki.h
             console.h
+            dotei.h
             draco.h
             goban.h
             goishi.h
