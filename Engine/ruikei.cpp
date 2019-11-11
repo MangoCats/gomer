@@ -6,7 +6,7 @@
  * @param ys - number of columns in this Ruikei
  * @param p - parent Shiko
  */
-Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p), tp(p)
+Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p), tp(p), pap(nullptr)
 { op = new Kogai(this);
   nEdge =
   eEdge =
@@ -21,7 +21,7 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,p), tp(p)
  * @param ds - data stream to read the Ruikei in from
  * @param p - parent Shiko
  */
-Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p)
+Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p), pap(nullptr)
 { ds >> rows;
   ds >> columns;
   ds >> nEdge;
@@ -39,6 +39,54 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(p), tp(p)
   friendlyColor = NO_PLAYER;
   xo = yo = 0;
 }
+
+/**
+ * @brief Ruikei::Ruikei - play a move constructor,
+ *   If legal, add a friendly Goishi at i, then invert
+ *   the friendly/opponent indications for the next move.
+ * @param pap - previous Ruikei to play on
+ * @param i - gridpoint to play a friendly Goishi at
+ */
+Ruikei::Ruikei( Ruikei *pap, qint32 i )
+{ if ( !legalFriendlyMove( i ) )
+    { rows = columns = 0; // Ensure Ruikei is invalid, indicating move did not happen
+      op = nullptr;
+      return;
+    }
+  rows        = pap->rows;
+  columns     = pap->columns;
+  nEdge       = pap->nEdge;
+  eEdge       = pap->eEdge;
+  wEdge       = pap->wEdge;
+  sEdge       = pap->sEdge;
+  kl          = pap->kl;
+  xo          = pap->xo;
+  yo          = pap->yo;
+  orientation = pap->orientation;
+  op          = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
+  // TODO: make the play at i, invert colors and set friendlyColor as appropriate
+}
+
+/**
+ * @brief Ruikei::legalFriendlyMove
+ * @param i - index where friendly Goishi is to be placed
+ * @return true if this would be a legal move
+ */
+bool  Ruikei::legalFriendlyMove( qint32 i )
+{ if (( i < 0 ) || ( i >= kl.size() ))
+    { qDebug( "Ruikei::legalFriendlyMove( (%d,%d), %d ) out of bounds", Xsize(),Ysize(),i );
+      return false;
+    }
+  if (( !kl.at(i).emptyGrid )      ||
+      (  kl.at(i).friendlyGoishi ) ||
+      (  kl.at(i).opponentGoishi ) ||
+      (  kl.at(i).ko ) )  // grid already occupied, or ko?
+    return false;
+  // Check for self-capture
+  return true;
+}
+
+
 
 /**
  * @brief Ruikei::toDataStream

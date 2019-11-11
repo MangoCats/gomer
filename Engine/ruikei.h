@@ -26,8 +26,10 @@ class Ruikei : public Menseki
 public:
     explicit  Ruikei( qint32 xs, qint32 ys, Shiko *p = nullptr );
               Ruikei( QDataStream &ds, Shiko *p = nullptr );
+              Ruikei( Ruikei *pap, qint32 i );
         void  toDataStream( QDataStream &ds ) const;
         bool  isValid() const;
+        bool  legalFriendlyMove( qint32 i );
         bool  matchWyrm( Wyrm *wp, Goban *bp, qint32 color );
         bool  matchChihoInCurrentOrientation( Chiho *hp, Goban *bp );
         bool  matchInPosition( Goban *bp );
@@ -47,6 +49,7 @@ public:
    QVector<Kigo> kl;
  QPointer<Shiko> tp;            // Shiko this Ruikei will be evauated by
  QPointer<Kogai> op;            // Synopsis/outline of what is known about this situation
+QPointer<Ruikei> pap;           // Previous position (for deep analysis trees)
            bool  nEdge;         // North border is Ysize in orientation 0
            bool  eEdge;         // East  border is Xsize in orientation 0
            bool  wEdge;         // West  border is X -1  in orientation 0

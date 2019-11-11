@@ -14,6 +14,7 @@ class Bunkai : public QObject
 public:
     explicit  Bunkai( QObject *p = nullptr );
         void  predictTerritory( Ruikei *ap );
+        bool  playout( Ruikei *ap, qint32 i );
 
 signals:
 
