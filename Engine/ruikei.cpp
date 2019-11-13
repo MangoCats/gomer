@@ -15,9 +15,11 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,&(p->gp->v)), t
   kl.resize( nPoints() );
 
   friendlyColor = NO_PLAYER;
-  xo    =
-  yo    =
-  depth = 0;
+  xo            =
+  yo            =
+  depth         =
+  justCaptured  = 0;
+  previousMove  = MOVE_UNDEFINED_INDEX;
 }
 
 /**
@@ -42,9 +44,11 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(&(p->gp->v)), tp(p), ap(nu
     op = new Kogai( ds, this );
 
   friendlyColor = NO_PLAYER;
-  xo    =
-  yo    =
-  depth = 0;
+  xo            =
+  yo            =
+  depth         =
+  justCaptured  = 0;
+  previousMove  = MOVE_UNDEFINED_INDEX;
 }
 
 /**
@@ -59,22 +63,25 @@ Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp
     { op = nullptr;
       return; // Ruikei is invalid (rows, columns == -1), indicating move did not happen
     }
-  rows        = ap->rows;
-  columns     = ap->columns;
-  nEdge       = ap->nEdge;
-  eEdge       = ap->eEdge;
-  wEdge       = ap->wEdge;
-  sEdge       = ap->sEdge;
-  kl          = ap->kl;
+  rows         = ap->rows;
+  columns      = ap->columns;
+  nEdge        = ap->nEdge;
+  eEdge        = ap->eEdge;
+  wEdge        = ap->wEdge;
+  sEdge        = ap->sEdge;
+  kl           = ap->kl;
 
-  xo          = ap->xo;
-  yo          = ap->yo;
-  depth       = ap->depth + 1;
-  orientation = ap->orientation;
-  op          = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
+  xo           = ap->xo;
+  yo           = ap->yo;
+  depth        = ap->depth + 1;
+  orientation  = ap->orientation;
+  op           = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
+  previousMove = i;
+
   // TODO: make the play at i,
   //       invert colors and
   //       set friendlyColor as appropriate
+  justCaptured = 0; // populate justCaptured as appropriate
 }
 
 /**
@@ -83,7 +90,9 @@ Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp
  * @return true if this would be a legal move
  */
 bool  Ruikei::legalFriendlyMove( qint32 i )
-{ if (( i < 0 ) || ( i >= kl.size() ))
+{ if ( i == MOVE_PASS_INDEX )
+    return true;  // Nothing to evaluate about a pass
+  if (( i < 0 ) || ( i >= kl.size() ))
     { qDebug( "Ruikei::legalFriendlyMove( (%d,%d), %d ) out of bounds", Xsize(),Ysize(),i );
       return false;
     }
@@ -99,6 +108,7 @@ bool  Ruikei::legalFriendlyMove( qint32 i )
   if (( y == 0           ) && !y0Edge()   ) return false; // Not legal to play on edge of Ruikei, unless it is also edge of Goban
   if (( y == (Ysize()-1) ) && !ySizeEdge()) return false; // Not legal to play on edge of Ruikei, unless it is also edge of Goban
   // Check for self-capture
+  // Try move then check for ko up the ap chain...
   return true;
 }
 
@@ -134,6 +144,18 @@ void Ruikei::toDataStream( QDataStream &ds ) const
   if ( op != nullptr )
     op->toDataStream( ds );
 }
+
+/**
+ * @brief Ruikei::nPreviousPass
+ * @return the number of pass moves that have been played previous to this Ruikei
+ */
+qint32  Ruikei::nPreviousPass()
+{ qint32 npp = (previousMove == MOVE_PASS_INDEX) ? 1 : 0;
+  if ( ap != nullptr )
+    npp += ap->nPreviousPass();
+  return npp;
+}
+
 
 /**
  * @brief Ruikei::nEdges
@@ -399,3 +421,60 @@ bool Ruikei::matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp )
 { return false;
 }
 
+/**
+ * @brief Ruikei::nGoishi
+ * @param friendly - if true, count friendly Goishi, if false count opponent's
+ * @return number of Goishi in the entire Ruikei
+ */
+qint32  Ruikei::nGoishi( bool friendly )
+{ qint32 n = 0;
+  foreach ( Kigo k, kl )
+    { if ( friendly )
+        { if ( k.friendlyGoishi && !k.opponentGoishi && !k.emptyGrid ) // Do not count "don't care" grids
+            n++;
+        }
+       else
+        { if ( !k.friendlyGoishi && k.opponentGoishi && !k.emptyGrid ) // Do not count "don't care" grids
+            n++;
+        }
+    }
+  return n;
+}
+
+/**
+ * @brief Ruikei::nCaptured
+ * @param friendly - if true, count friendly captures, if false count opponent's
+ * @return number of captures, either by friendly or opponent moves in the current Ruikei branch
+ */
+qint32  Ruikei::nCaptured( bool friendly )
+{ qint32 fc = friendlyColor;
+  qint32 n = friendly ? 0 : justCaptured; // last move was (always) by opponent
+  Ruikei *pap = ap;
+  while ( pap != nullptr )
+    { if (( !friendly ) && ( fc == pap->friendlyColor )) // Is the pap Ruikei the result of an opponent's move?
+        n += pap->justCaptured;
+      if ((  friendly ) && ( fc != pap->friendlyColor ))
+        n += pap->justCaptured;
+      pap = pap->ap; // Work back through the branch
+    }
+  return n;
+}
+
+/**
+ * @brief Ruikei::nTerritory
+ * @param friendly - if true, count friendly territory, if false count opponent's
+ * @return number of empty grid points completely surrounded by friendly or opponent Goishi
+ */
+qint32  Ruikei::nTerritory( bool friendly )
+{ // TODO: efficient territory calculation
+  return 0;
+}
+
+/**
+ * @brief Ruikei::score
+ * @return metric of the relative value of the Ruikei position
+ */
+qint32 Ruikei::score()
+{ return nTerritory( true ) - nTerritory( false ) +
+         nCaptured( true )  - nCaptured( false );
+}

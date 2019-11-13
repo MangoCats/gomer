@@ -34,3 +34,4 @@ Dotei::Dotei(QObject *parent) : QObject(parent)
   Xlabels.append("AE"); Ylabels.append("30");
   Xlabels.append("AF"); Ylabels.append("31");
 }
+

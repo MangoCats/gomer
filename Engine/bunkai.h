@@ -5,6 +5,9 @@ class Ruikei;
 #include <QObject>
 #include "ruikei.h"
 
+#define MAX_PASS_IN_BRANCH 6
+#define SCORE_INVALID_MOVE -999
+
 /**
  * @brief The Bunkai 分解 class - performs analysis of Ruikei, fills in their Kogai
  */
@@ -14,7 +17,7 @@ class Bunkai : public QObject
 public:
     explicit  Bunkai( QObject *p = nullptr );
         void  predictTerritory( Ruikei *ap );
-        bool  playout( Ruikei *ap, qint32 i );
+      qint32  playout( Ruikei *ap, qint32 i );
 
 signals:
 

@@ -16,6 +16,9 @@ class Wyrm;
 #include "menseki.h"
 #include "wyrm.h"
 
+#define MOVE_PASS_INDEX      -1
+#define MOVE_UNDEFINED_INDEX -2
+
 /**
  * @brief The Ruikei 類型 class - a pattern for matching with pre-calculated
  *   analysis of the situation depicted.
@@ -35,6 +38,7 @@ public:
         bool  matchInPosition( Goban *bp );
         bool  matchOneGoishi( Goishi *ip, const Kigo &k );
         bool  matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp );
+      qint32  nPreviousPass();
       qint32  nEdges() const;
       qint32  nXedges() const;
       qint32  nYedges() const;
@@ -44,19 +48,27 @@ public:
         bool  xSizeEdge() const;
         bool  ySizeEdge() const;
         Kigo  kigoAt( qint32 x, qint32 y );
+      qint32  nGoishi( bool friendly );
+      qint32  nCaptured( bool friendly );
+      qint32  nTerritory( bool friendly ); // TODO: Benson's life
+      qint32  score();                     // score value evaluated at final position
 
 public:
-   QVector<Kigo> kl;
- QPointer<Shiko> tp;            // Shiko this Ruikei will be evauated by
- QPointer<Kogai> op;            // Synopsis/outline of what is known about this situation
-QPointer<Ruikei> ap;           // Previous position (for deep analysis trees)
+   QVector<Kigo> kl;            // What's on each grid point?
            bool  nEdge;         // North border is Ysize in orientation 0
            bool  eEdge;         // East  border is Xsize in orientation 0
            bool  wEdge;         // West  border is X -1  in orientation 0
            bool  sEdge;         // South border is Y -1  in orientation 0
+
+// Data for analysis of the Ruikei, instead of definition of it
+ QPointer<Shiko> tp;            // Shiko this Ruikei will be evauated by
+ QPointer<Kogai> op;            // Synopsis/outline of what is known about this situation, looking down all branches
+QPointer<Ruikei> ap;            // Previous position (for deep analysis trees)
          qint32  xo,yo;         // Offset into the Goban where this Ruikei is matched (at "orientation")
          qint32  friendlyColor; // Color of Goishi to consider "friendly"
          qint32  depth;         // How many plays have been made since the "top"?
+         qint32  previousMove;  // What (opponent) move led to this Ruikei position
+         qint32  justCaptured;  // How many Goishi did the previous move capture?
 };
 
 #endif // RUIKEI_H
