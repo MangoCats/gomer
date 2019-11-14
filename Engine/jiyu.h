@@ -27,6 +27,7 @@ public:
         void  clear();
         void  update();
         bool  check( qint32 i, qint32 x, qint32 y, qint32 level );
+        void  edgeBoost( qint32 x, qint32 y );
      QString  show();
         void  updateScore();
        qreal  score( qint32 c );

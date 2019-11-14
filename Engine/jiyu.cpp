@@ -71,6 +71,16 @@ void Jiyu::update()
         }
       level++;
     }
+  // Extra credit for "owning" edges
+  for ( x = 0; x < bp->Xsize() - 1; x++ )
+    { edgeBoost( x, 0 );
+      edgeBoost( x, bp->Ysize() - 1 );
+    }
+  for ( y = 0; y < bp->Ysize() - 1; y++ )
+    { edgeBoost( 0, y );
+      edgeBoost( bp->Xsize() - 1, y );
+    }
+
   updateScore();
 }
 
@@ -97,6 +107,17 @@ bool Jiyu::check( qint32 i, qint32 x, qint32 y, qint32 level )
     }
   grid[i] = QPair<qint32,qint32>(cn,level); // New marking, owned by the neighbor's color
   return true;
+}
+
+/**
+ * @brief Jiyu::edgeBoost - give "extra credit" to territory on the board edge
+ * @param x - coordinate to give a level boost to
+ * @param y - coordinate to give a level boost to
+ */
+void Jiyu::edgeBoost( qint32 x, qint32 y )
+{ qint32 i = bp->xyToIndex(x,y);
+  if ( grid.at(i).second > 1 ) // No edgeBoost for Goishi on the "losing line"
+    grid[i].second = grid.at(i).second - 1;
 }
 
 /**
