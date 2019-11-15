@@ -9,7 +9,8 @@
  * @param p - parent, Game this Shiko is playing
  */
 Shiko::Shiko(Shiai *p) : QObject(p), gp(p), bp(p->bp)
-{ cp = new Chiiki( this );
+{ np = new Bunkai( this );
+  cp = new Chiiki( this );
   jp = new Jiyu( bp );
   QSettings settings;
   ruikeiFilename = settings.value( "ruikeiFilename", QDir::homePath() + "/Ruikei.dat" ).toString();
@@ -25,6 +26,7 @@ Shiko::Shiko(Shiko *tp, Shiai *p) : QObject(p), gp(p), bp(p->bp)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
   stateHistory = tp->stateHistory;
+  np = tp->np;
   cp = new Chiiki( tp->cp, this );
   jp = new Jiyu( tp->jp, bp );
   apl = tp->apl; // Direct copy of the Ruikei pointers - no reason to duplicate the objects

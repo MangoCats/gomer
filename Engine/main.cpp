@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 // jp - Jiyu pointer
 // kp - Kigo pointer
 // mp - Sakudo pointer - makes moves
+// np - Bunkai pointer - analyzes Ruikei
 // op - Kogai pointer - outline / summary of position
 // pp - Player pointer
 // rp - Ryoiki pointer - regions of free space

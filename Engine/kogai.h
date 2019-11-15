@@ -25,6 +25,9 @@ public:
 
     QList<QPointer<Soshi> > ftl;  /// Friendly Territory List
     QList<QPointer<Soshi> > otl;  /// Opponent Territory List
+    qint32 passScore;
+    qint32 highScore;
+    qint32 bestMove;
 
 };
 

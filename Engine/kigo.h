@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QDataStream>
 
+#define SCORE_INVALID_MOVE -999
+
 /**
  * @brief The Kigo 記号 class - Indicates what may be present at a
  *   gridpoint of a Ruikei: off Goban, empty grid, goishi, etc.

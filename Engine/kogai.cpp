@@ -1,10 +1,17 @@
 #include "kogai.h"
 
 Kogai::Kogai(Ruikei *p) : QObject(p)
-{}
+{ passScore = SCORE_INVALID_MOVE;
+  highScore = SCORE_INVALID_MOVE;
+  bestMove  = MOVE_PASS_INDEX;
+}
 
 Kogai::Kogai(QDataStream &ds, Ruikei *p) : QObject(p)
-{ qint32 ftlsz;
+{ ds >> passScore;
+  ds >> highScore;
+  ds >> bestMove;
+
+  qint32 ftlsz;
   ds >> ftlsz;
   for ( qint32 i = 0; i < ftlsz; i++ )
     ftl.append( new Soshi( ds, this ) );
@@ -16,7 +23,11 @@ Kogai::Kogai(QDataStream &ds, Ruikei *p) : QObject(p)
 }
 
 void Kogai::toDataStream( QDataStream &ds ) const
-{ qint32 ftlsz = ftl.size();
+{ ds << passScore;
+  ds << highScore;
+  ds << bestMove;
+
+  qint32 ftlsz = ftl.size();
   ds << ftlsz;
   foreach ( Soshi *ep, ftl )
     ep->toDataStream( ds );

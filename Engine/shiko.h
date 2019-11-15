@@ -1,6 +1,7 @@
 #ifndef SHIKO_H
 #define SHIKO_H
 
+class Bunkai;
 class Chiiki;
 class Draco;
 class Goban;
@@ -9,6 +10,7 @@ class Ruikei;
 class Shiai;
 class Wyrm;
 #include <QObject>
+#include "bunkai.h"
 #include "chiiki.h"
 #include "draco.h"
 #include "goban.h"
@@ -65,13 +67,14 @@ signals:
 public slots:
 
 public:
+        QPointer<Bunkai> np;
         QPointer<Chiiki> cp;
-         QPointer<Shiai> gp;
          QPointer<Goban> bp;
           QPointer<Jiyu> jp;
+         QPointer<Shiai> gp;
   QList<QPointer<Wyrm> > wpl;
  QList<QPointer<Draco> > dpl;
-QList<QPointer<Ruikei> > apl;
+QList<QPointer<Ruikei> > apl; // TODO: consider migrating the apl to the Bunkai
             QStringList  stateHistory; // Previous board positions
                 QString  ruikeiFilename;
 };

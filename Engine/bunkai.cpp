@@ -1,33 +1,35 @@
 #include "bunkai.h"
 
-Bunkai::Bunkai(QObject *parent) : QObject(parent)
+Bunkai::Bunkai(Shiko *p) : QObject(p), tp(p)
 {}
 
 /**
- * @brief Bunkai::predictTerritory
+ * @brief Bunkai::moveOrPass - judge the relative merit of moving in the Ruikei vs passing
  * @param ap - Ruikei to make a new Kogai for
+ * @return pointer to Kogai which has the predictive results for ap
  */
-void  Bunkai::predictTerritory( Ruikei *ap )
+Kogai *Bunkai::moveOrPass( Ruikei *ap )
 { if ( ap == nullptr )
     { qDebug( "UNEXPECTED: Bunkai::predictTerritory() received null Ruikei" );
-      return;
+      return nullptr;
     }
+  Ruikei *map = tp->matchingRuikei( ap );
+  if ( map != nullptr ) // Precomputed match found?
+    { return map->op; }
+
   Kogai *op = new Kogai( ap ); // For now, work on a new Kogai
   // TODO: game it forward, play every legal move, for each of those play every legal response, etc. record the best result for each turn:
   // In other words: Friendly turn, which one gets the best result when Opponent turn gets their best result when Friendly turn gets their best result, etc.
   // Store the optimal and N-pass results each in their own Soshi in the Kogai
   //   also, reach back into the Shiko and add Ruikei - at least for the optimal paths, to the Shiko's Ruikei list
-  qint32 passScore = SCORE_INVALID_MOVE;
-  qint32 highScore = SCORE_INVALID_MOVE;
-  qint32 bestMove  = MOVE_PASS_INDEX;
   for ( qint32 i = MOVE_PASS_INDEX; i < ap->nPoints(); i++ )
     { qint32 iScore = playout( ap, i );
-      if ( iScore > highScore )
-        { highScore = iScore;
-          bestMove  = i;
+      if ( iScore > op->highScore )
+        { op->highScore = iScore;
+          op->bestMove  = i;
         }
       if ( i == MOVE_PASS_INDEX )
-        passScore = iScore;
+        op->passScore = iScore;
     }
   // TODO: Condensation of Ruikei with identical Kogai outcomes
   
@@ -39,6 +41,7 @@ void  Bunkai::predictTerritory( Ruikei *ap )
   if ( ap->op != nullptr )
     ap->op->deleteLater();
   ap->op = op;
+  return op;
 }
 
 /**
