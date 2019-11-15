@@ -17,9 +17,9 @@ void  Bunkai::predictTerritory( Ruikei *ap )
   // In other words: Friendly turn, which one gets the best result when Opponent turn gets their best result when Friendly turn gets their best result, etc.
   // Store the optimal and N-pass results each in their own Soshi in the Kogai
   //   also, reach back into the Shiko and add Ruikei - at least for the optimal paths, to the Shiko's Ruikei list
+  qint32 passScore = SCORE_INVALID_MOVE;
   qint32 highScore = SCORE_INVALID_MOVE;
   qint32 bestMove  = MOVE_PASS_INDEX;
-  qint32 passScore = SCORE_INVALID_MOVE;
   for ( qint32 i = MOVE_PASS_INDEX; i < ap->nPoints(); i++ )
     { qint32 iScore = playout( ap, i );
       if ( iScore > highScore )

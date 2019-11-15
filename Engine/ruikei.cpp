@@ -466,7 +466,10 @@ qint32  Ruikei::nCaptured( bool friendly )
  * @return number of empty grid points completely surrounded by friendly or opponent Goishi
  */
 qint32  Ruikei::nTerritory( bool friendly )
-{ // TODO: efficient territory calculation
+{ qint32 nt = 0;
+  for ( qint32 i=0; i < nPoints(); i++ )
+    if ( kl.at(i).isTerritory( friendly ) )
+      nt++;
   return 0;
 }
 
@@ -477,4 +480,35 @@ qint32  Ruikei::nTerritory( bool friendly )
 qint32 Ruikei::score()
 { return nTerritory( true ) - nTerritory( false ) +
          nCaptured( true )  - nCaptured( false );
+}
+
+/**
+ * @brief Ruikei::matchPosition
+ * @param ap - Ruikei to try to match
+ * @return true if the ap position is a match for this position, in any orientation
+ */
+bool Ruikei::matchPosition( Ruikei *ap )
+{ // Try to fail fast before a full 8 orientation matchup test
+  if (    (ap->rows + ap->columns) !=    (rows + columns)) return false;
+  if ( abs(ap->rows - ap->columns) != abs(rows - columns)) return false;
+  if (     ap->nGoishi( true  )    != nGoishi( true  )   ) return false;
+  if (     ap->nGoishi( false )    != nGoishi( false )   ) return false;
+  if (     ap->nEdges()            != nEdges()           ) return false;
+  for ( orientation = 0; orientation < 8; orientation++ )
+    { if ( ( Xsize()     == ap->Xsize()     ) &&
+           ( x0Edge()    == ap->x0Edge()    ) &&
+           ( xSizeEdge() == ap->xSizeEdge() ) &&
+           ( Ysize()     == ap->Ysize()     ) &&
+           ( y0Edge()    == ap->y0Edge()    ) &&
+           ( ySizeEdge() == ap->ySizeEdge() ) )
+        { bool allKigoMatch = true;
+          for ( qint32 y = 0; (y < Ysize()) && allKigoMatch; y++ )
+            for ( qint32 x = 0; (x < Xsize()) && allKigoMatch; x++ )
+              if ( kigoAt( x,y ) != ap->kigoAt( x,y ) )
+                allKigoMatch = false;
+          if ( allKigoMatch )
+            return true;
+        }
+    }
+  return false;
 }

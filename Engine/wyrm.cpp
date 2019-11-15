@@ -7,7 +7,7 @@
  */
 Wyrm::Wyrm(Goishi *ip, Shiko *p) : Chiho(p), tp(p)
 { addGoishi( ip );
-  addGobanIndex( tp->bp->xyToIndex(ip->x,ip->y) );
+  addIndex( tp->bp->xyToIndex(ip->x,ip->y) );
 }
 
 /**
@@ -29,7 +29,7 @@ Wyrm::Wyrm(Wyrm *wp, Shiko *p) : Chiho(p), tp(p)
   libertyList = wp->libertyList;
   passEyes    = wp->passEyes;
   lifeOrDeath = wp->lifeOrDeath;
-  bi          = wp->bi;
+  il          = wp->il;
 }
 
 /**
@@ -57,7 +57,7 @@ void Wyrm::addGoishi( Goishi *ip )
         }
       mergeLibertyList( getLibertyList( ip ) );
       qint32 i = bp->xyToIndex( ip->x, ip->y );
-      addGobanIndex(i);
+      addIndex(i);
       if ( libertyList.contains( i ) )
         libertyList.removeAt( libertyList.indexOf( i ) );
        // can happen that the liberty list doesn't contain i when we are merging 2 or more Wyrms with a newly placed Goishi

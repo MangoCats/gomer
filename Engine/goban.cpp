@@ -269,7 +269,7 @@ bool  Goban::onEdge( qint32 i ) const
  * @return true if any element of this Chiho is on an edge of this Goban
  */
 bool  Goban::chihoOnEdge( Chiho *hp ) const
-{ foreach ( qint32 i, hp->bi )
+{ foreach ( qint32 i, hp->il )
     if ( onEdge(i) )
       return true;
   return false;
@@ -302,7 +302,7 @@ void  Goban::chihoXYlimits( Chiho *hp, qint32 &minX, qint32 &minY, qint32 &maxX,
   minY = Ysize();
   maxY = 0;
   qint32 x,y;
-  foreach ( qint32 i, hp->bi )
+  foreach ( qint32 i, hp->il )
     { indexToXY( i, &x, &y );
       if ( x < minX ) minX = x;
       if ( x > maxX ) maxX = x;
@@ -340,7 +340,7 @@ QString Goban::showBoard()
 
 QString Goban::showChiho( Chiho *hp )
 { QString s;
-  foreach ( qint32 i, hp->bi )
+  foreach ( qint32 i, hp->il )
     s.append( indexToVertex(i)+" " );
   s.chop(1);
   return s + "\n";
@@ -465,7 +465,7 @@ bool Goban::fill( qint32 x, qint32 y, qint32 c, bool rule, Chiho *hp )
 { if ( !fillRuleCheck(x,y,c,rule,hp) )
     return false; // Done with this branch of the search
   // This gridpoint matches the rules, save it
-  hp->addGobanIndex( xyToIndex(x,y) );
+  hp->addIndex( xyToIndex(x,y) );
   // And search the neighbors
   if ( x > 0 )           fill( x-1,y,c,rule,hp );
   if ( x < Xsize() - 1 ) fill( x+1,y,c,rule,hp );

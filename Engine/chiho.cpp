@@ -9,5 +9,5 @@ Chiho::Chiho( QObject *p ) : QObject(p)
  * @param p - Goban parent of the new Ryoiki
  */
 Chiho::Chiho( Chiho *hp, QObject *p ) : QObject(p)
-{ bi = hp->bi; }
+{ il = hp->il; }
 

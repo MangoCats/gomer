@@ -58,6 +58,7 @@ public:
   QList<qint32> passEyes( Wyrm *wp, const QList<Chiho *>& chpl );
           void  evaluateLife();
           void  evaluateDraco();
+        Ruikei *matchingRuikei( Ruikei * );
 
 signals:
 

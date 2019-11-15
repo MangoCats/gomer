@@ -22,11 +22,11 @@ int main(int argc, char *argv[])
 }
 
 // Common variable names / usage:
-// i - index onto a Goban
+// i - index onto a Menseki (Goban or Ruikei)
 // j - loop control index
 // k - loop control index
-// x - coordinate on a Goban
-// y - coordinate on a Goban
+// x - coordinate on a Menseki (Goban or Ruikei)
+// y - coordinate on a Menseki (Goban or Ruikei)
 // c - color (0 = black, 1 = white, -1 = neither, -2 = not yet determined, 2+ for weird games)
 // pl - player number, used when inner loops are concerned with color
 // p - pointer to parent object

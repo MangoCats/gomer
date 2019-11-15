@@ -23,7 +23,7 @@ Chiiki::Chiiki( Chiiki *pcp, Shiko *p ) : QObject(p), bp(pcp->bp), tp(p)
     { foreach ( Ryoiki *rp, pcp->rpm.at(pl) )
         rpm[pl].append( new Ryoiki( rp, this ) );
       foreach ( Ryoiki *rp, rpm.at(pl) )
-        foreach ( qint32 i, rp->bi )
+        foreach ( qint32 i, rp->il )
           rGrid[pl].replace( i, rp );
     } // for pl
 }
@@ -126,7 +126,7 @@ void Chiiki::update()
                 if ( rGrid[pl][i] == nullptr )         // Is there already a Ryoiki defined here?
                   if ( bp->fill( x, y, c, rule, rp ) ) // Did a new Ryoiki get placed?
                     { rpm[pl].append( rp );            // Add another Ryoiki to the matrix
-                      foreach ( qint32 ii, rp->bi )
+                      foreach ( qint32 ii, rp->il )
                         rGrid[pl][ii] = rp;            // Mark all grid points with the rp Ryoiki
                       rp = nullptr;
                     }
@@ -142,18 +142,18 @@ void Chiiki::update()
         qDebug( "Chiiki::update() Ryoiki null" );
        else
         { qint32 ro = UNDETERMINED_PLAYER;
-          bool done = ( rp->bi.size() <= 0 );
+          bool done = ( rp->il.size() <= 0 );
           if ( done ) qDebug( "why are we here with no Goban indices in the Ryoiki? %d", k );
           qint32 j = 0;
           while( !done )
-            { qint32 i = rp->bi.at(j);
+            { qint32 i = rp->il.at(j);
               qint32 x,y;
               bp->indexToXY( i, &x, &y );
               if ( x > 0 )                 done |= ryoikiOwner( x-1, y, &ro );
               if ( x < (bp->Xsize() - 1) ) done |= ryoikiOwner( x+1, y, &ro );
               if ( y > 0 )                 done |= ryoikiOwner( x, y-1, &ro );
               if ( y < (bp->Ysize() - 1) ) done |= ryoikiOwner( x, y+1, &ro );
-              if ( ++j >= rp->bi.size() )  done = true;
+              if ( ++j >= rp->il.size() )  done = true;
             }
           rp->owner = ro;
         }
@@ -163,7 +163,7 @@ void Chiiki::update()
   for ( qint32 pl = 0; pl <= np; pl++ )
     for ( qint32 k = 0; k < rpm.at(pl).size(); k++ )
       { rp = rpm.at(pl).at(k);
-        foreach ( qint32 i, rp->bi )
+        foreach ( qint32 i, rp->il )
           { qint32 x,y;
             bp->indexToXY( i, &x, &y );
             if ( x > 0 )                collectWyrms( x-1, y, rp );

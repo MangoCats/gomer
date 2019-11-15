@@ -550,12 +550,12 @@ QList<Chiho *> Shiko::bensonsChiho( Goban *bbp, qint32 c )
         qDebug( "UNEXPECTED: Shiko::bensonsChiho Chiho null" );
        else
         { qint32 k = 0;
-          while ( k < hp->bi.size() )
-            if ( bp->color( hp->bi.at(k) ) != NO_PLAYER )
-              hp->bi.removeAt( k );
+          while ( k < hp->il.size() )
+            if ( bp->color( hp->il.at(k) ) != NO_PLAYER )
+              hp->il.removeAt( k );
              else
               k++;
-          if ( hp->bi.size() < 1 )
+          if ( hp->il.size() < 1 )
             { qDebug( "UNEXPECTED: Shiko::bensonsChiho Chiho empty" );
               hp->deleteLater();
               hp = nullptr;
@@ -627,9 +627,9 @@ void  Shiko::clearWyrm( Goban *bbp, Wyrm *wp )
 bool Shiko::isVital( Wyrm *wp, Chiho *hp )
 { if ( wp == nullptr ) { qDebug( "Shiko::isVital Wyrm null"   ); return false; }
   if ( hp == nullptr ) { qDebug( "Shiko::isVital Chiho null" ); return false; }
-  if ( hp->bi.size() <= 0 ) { qDebug( "Shiko::isVital Chiho size 0" ); return false; }
+  if ( hp->il.size() <= 0 ) { qDebug( "Shiko::isVital Chiho size 0" ); return false; }
   if ( wp->libertyList.size() <= 0 ) { qDebug( "Shiko::isVital Wyrm libertyList size 0" ); return false; }
-  foreach ( qint32 i, hp->bi )
+  foreach ( qint32 i, hp->il )
     if ( !wp->libertyList.contains(i) )
       return false;
   return true;
@@ -662,7 +662,7 @@ QList<qint32> Shiko::passEyes( Wyrm *wp, const QList<Chiho *>& chpl )
 { QList<qint32> pel;
   foreach ( Chiho *hp, chpl )
     if ( isVital( wp, hp ) )
-      pel.append( hp->bi );
+      pel.append( hp->il );
   return pel;
 }
 
@@ -719,7 +719,7 @@ void Shiko::evaluateLife()
             }
         }
       foreach ( cwp, cwpl )          // Wyrms remaining in cwpl are alive
-        { wp = bp->grid.at( cwp->bi.at(0) )->wp; // Go to the Shiko's Goban to get the Wyrm
+        { wp = bp->grid.at( cwp->il.at(0) )->wp; // Go to the Shiko's Goban to get the Wyrm
           wp->passEyes    = passEyes( cwp, chpl );
           wp->lifeOrDeath = WYRM_LIVE;
           // QString msg = QString( "Shiko::vitalCount(%1) set live" ).arg(wp->show());
@@ -757,4 +757,16 @@ void Shiko::evaluateDraco()
         { new Draco( wp, cwpm.at(c), this );
           dpl.append( wp->dp );
         }
+}
+
+/**
+ * @brief Shiko::matchingRuikei
+ * @param ap - Ruikei to try to match
+ * @return nullptr if no match is found, or pointer to Ruikei from the list if a match is found
+ */
+Ruikei *Shiko::matchingRuikei( Ruikei *ap )
+{ foreach ( Ruikei *lap, apl )
+    if ( lap->matchPosition( ap ) )
+      return lap;
+  return nullptr;
 }

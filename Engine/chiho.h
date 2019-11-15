@@ -15,12 +15,12 @@ class Chiho : public QObject
 public:
         explicit  Chiho( QObject *p = nullptr );
                   Chiho( Chiho *hp, QObject *p = nullptr );
-            void  addGobanIndex( qint32 i ) { if ( !contains( i ) ) bi.append( i ); }
-            void  clear() { bi.clear(); }
-            bool  contains( qint32 i ) { return bi.contains(i); }
-            void  join( Chiho *hp ) { foreach( qint32 i, hp->bi ) addGobanIndex( i ); }
+            void  addIndex( qint32 i ) { if ( !contains( i ) ) il.append( i ); }
+            void  clear() { il.clear(); }
+            bool  contains( qint32 i ) { return il.contains(i); }
+            void  join( Chiho *hp ) { foreach( qint32 i, hp->il ) addIndex( i ); }
 
-    QList<qint32> bi;     // List of Goban index points in this Chiho
+    QList<qint32> il;     // List of index points in this Chiho
 };
 
 
