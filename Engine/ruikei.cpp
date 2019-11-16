@@ -50,7 +50,7 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(&(p->gp->v)), tp(p), ap(nu
         op = new Kogai( ds, this );
     }
 
-  friendlyColor = NO_PLAYER;
+  friendlyColor = NO_PLAYER; // Could go either way, at this point
   xo            =
   yo            =
   depth         =
@@ -85,11 +85,78 @@ Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp
   op           = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
   previousMove = i;
 
-  // TODO: make the play at i,
-  //       invert colors and
-  //       set friendlyColor as appropriate
-  justCaptured = 0; // populate justCaptured as appropriate
+  justCaptured = playAt( i ); // populate justCaptured as appropriate
+  swapFriendlyOpponent();
 }
+
+/**
+ * @brief Ruikei::playAt
+ * @param i - index to play a friendly Goishi at
+ * @return number of opponent Goishi captured in this move
+ */
+qint32 Ruikei::playAt( qint32 i )
+{ if ( i == MOVE_PASS_INDEX )
+    return 0;
+  if (( i < 0 ) || ( i >= kl.size() ))
+    { qDebug( "UNEXPECTED: Ruikei::playAt( %d ) range[0,%d)", i, kl.size() );
+      return 0;
+    }
+  if ( !kl[i].emptyGrid )      qDebug( "UNEXPECTED: Ruikei::playAt( %d ) emptyGrid was false", i );
+  if (  kl[i].opponentGoishi ) qDebug( "UNEXPECTED: Ruikei::playAt( %d ) opponentGoishi was true", i );
+  if (  kl[i].friendlyGoishi ) qDebug( "UNEXPECTED: Ruikei::playAt( %d ) friendlyGoishi was true", i );
+  kl[i].friendlyGoishi = true;
+  kl[i].opponentGoishi = false;
+  kl[i].emptyGrid      = false;
+  Chiho h;
+  qint32 nc = 0;
+  qint32 x,y;
+  indexToXY(i,&x,&y);
+  if ( x > 0           ) { nc += attemptCapture( x-1,y,h ); h.clear(); }
+  if ( x < (Xsize()-1) ) { nc += attemptCapture( x+1,y,h ); h.clear(); }
+  if ( y > 0           ) { nc += attemptCapture( x,y-1,h ); h.clear(); }
+  if ( y < (Ysize()-1) ) { nc += attemptCapture( x,y+1,h ); h.clear(); }
+  return nc;
+}
+
+/**
+ * @brief Ruikei::attemptCapture - recursive
+ * @param x - coordinate to check for 0 liberties and capture if true
+ * @param y - coordinate to check for 0 liberties and capture if true
+ * @param h - Chiho tracking the opponent Wyrm Goishi visited thus far
+ * @return number of Goishi successfully captured - 0 if any liberty is found
+ * TODO: beef up the Kigo with information about number of off Ruikei Goishi with 0 liberties,
+ *   so this capture info can be more accurate
+ */
+qint32 Ruikei::attemptCapture( qint32 x, qint32 y, Chiho &h )
+{ qint32 i = xyToIndex( x,y );
+  if ( h.contains( i ) )
+    return h.il.size();
+  if ( ( kl.at(i).outsideOpponentLiberty ) ||
+       ( kl.at(i).emptyGrid ) )
+    return 0;
+  if ( kl.at(i).opponentGoishi )
+    { h.addIndex( i );
+      if ( x > 0           ) if ( attemptCapture( x-1,y,h ) < 1 ) return 0;
+      if ( x < (Xsize()-1) ) if ( attemptCapture( x+1,y,h ) < 1 ) return 0;
+      if ( y > 0           ) if ( attemptCapture( x,y-1,h ) < 1 ) return 0;
+      if ( y < (Ysize()-1) ) if ( attemptCapture( x,y+1,h ) < 1 ) return 0;
+      kl[i].opponentGoishi = false;
+      kl[i].emptyGrid      = true;
+      return h.il.size();
+    }
+  return h.il.size();
+}
+
+/**
+ * @brief Ruikei::swapFriendlyOpponent - swap friendly for opponent in all elements
+ */
+void Ruikei::swapFriendlyOpponent()
+{ for ( qint32 i = 0; i < kl.size(); i++ )
+    kl[i].swapFriendlyOpponent();
+  if ( ++friendlyColor >= tp->gp->np )
+    friendlyColor = 0;
+}
+
 
 /**
  * @brief Ruikei::legalFriendlyMove
@@ -483,7 +550,8 @@ qint32  Ruikei::nTerritory( bool friendly )
 }
 
 /**
- * @brief Ruikei::score
+ * @brief Ruikei::score - importantly, symmetric about 0 so negation converts a
+ *   friendly score into an opponent score, and vice versa.
  * @return metric of the relative value of the Ruikei position for the friendly player
  */
 qint32 Ruikei::score()

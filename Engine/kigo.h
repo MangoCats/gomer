@@ -17,7 +17,7 @@ public:
       explicit Kigo(QObject *parent = nullptr);
                Kigo(const Kigo&);
           bool operator !=(const Kigo&) const;
-          void invert();
+          void swapFriendlyOpponent();
           void toDataStream( QDataStream &ds ) const;
         quint8 toByte() const;
           bool fromDataStream( QDataStream &ds );

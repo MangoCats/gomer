@@ -67,9 +67,9 @@ bool Kigo::operator !=( const Kigo &kc ) const
 }
 
 /**
- * @brief Kigo::invert - swap sides, as is done during minimax turn advance
+ * @brief Kigo::swapFriendlyOpponent - swap sides, as is done during minimax turn advance
  */
-void Kigo::invert()
+void Kigo::swapFriendlyOpponent()
 { bool              temp = friendlyGoishi;
           friendlyGoishi = opponentGoishi;
           opponentGoishi = temp;

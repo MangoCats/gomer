@@ -111,7 +111,8 @@ void Bunkai::playout( Ruikei *ap )
   if ( map != nullptr )                      // Precomputed match found?
     ap->op->copy( map->op );
    else
-    { bool legalMoveAvailable = false;
+    { Ruikei *sap = nullptr;
+      bool legalMoveAvailable = false;
       for ( qint32 i = (prevMove == MOVE_PASS_INDEX) ? 0 : MOVE_PASS_INDEX; i < ap->nPoints(); i++ )
         { Ruikei *nap = new Ruikei( ap, i ); // Next analysis position
           if ( !nap->isValid() )             // Illegal move?
@@ -124,10 +125,18 @@ void Bunkai::playout( Ruikei *ap )
               if ( ap->op->highScore < -nap->op->highScore )
                 { ap->op->highScore = -nap->op->highScore;
                   ap->op->bestMove = i;
+                  if ( ap->ap == nullptr )   // Are we at depth 0?
+                    { if ( sap != nullptr )
+                        delete sap;
+                      sap = nap;
+                    }
                 }
             }
-          delete nap;
+          if ( nap != sap )
+            delete nap;
         } // for ( i = ...) try all moves
+      if ( sap != nullptr )
+        apl.append( sap );                   // Building up the library with selected observed and computed scenarios
       if ( !legalMoveAvailable )
         { ap->op->highScore =
           ap->op->passScore = ap->score();   // No more moves available, the score is the score

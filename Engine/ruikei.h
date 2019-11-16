@@ -32,6 +32,9 @@ public:
               Ruikei( Ruikei *pap, qint32 i );
         void  toDataStream( QDataStream &ds ) const;
         bool  isValid() const;
+      qint32  playAt( qint32 i );
+      qint32  attemptCapture( qint32 x, qint32 y, Chiho &h );
+        void  swapFriendlyOpponent();
         bool  legalFriendlyMove( qint32 i );
         bool  matchWyrm( Wyrm *wp, Goban *bp, qint32 color );
         bool  matchChihoInCurrentOrientation( Chiho *hp, Goban *bp );
