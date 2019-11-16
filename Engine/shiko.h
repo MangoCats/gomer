@@ -28,8 +28,6 @@ class Shiko : public QObject
 public:
       explicit  Shiko( Shiai *p );
                 Shiko( Shiko *tp, Shiai *p );
-          void  readRuikei();
-          void  writeRuikei() const;
           void  clearGoban();
           void  resizeGoban();
   QList<qint32> allLegalMoves( qint32 c );
@@ -60,7 +58,6 @@ public:
   QList<qint32> passEyes( Wyrm *wp, const QList<Chiho *>& chpl );
           void  evaluateLife();
           void  evaluateDraco();
-        Ruikei *matchingRuikei( Ruikei * );
 
 signals:
 
@@ -74,9 +71,7 @@ public:
          QPointer<Shiai> gp;
   QList<QPointer<Wyrm> > wpl;
  QList<QPointer<Draco> > dpl;
-QList<QPointer<Ruikei> > apl; // TODO: consider migrating the apl to the Bunkai
             QStringList  stateHistory; // Previous board positions
-                QString  ruikeiFilename;
 };
 
 #endif // SHIKO_H

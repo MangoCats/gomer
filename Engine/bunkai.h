@@ -19,10 +19,16 @@ class Bunkai : public QObject
     Q_OBJECT
 public:
         explicit  Bunkai( Shiko *p = nullptr );
-           Kogai *moveOrPass( Ruikei *ap );
-          qint32  playout( Ruikei *ap, qint32 i );
+            void  readRuikei();
+            void  writeRuikei() const;
+          qint32  moveOrPass( Ruikei *ap );
+            void  playout( Ruikei *ap );
+          Ruikei *matchingRuikei( Ruikei * );
 
-  QPointer<Shiko> tp;
+                QString  ruikeiFilename;
+         QPointer<Shiko> tp;
+QList<QPointer<Ruikei> > apl;
+
 };
 
 #endif // BUNKAI_H

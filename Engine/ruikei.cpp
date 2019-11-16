@@ -28,20 +28,27 @@ Ruikei::Ruikei( qint32 xs, qint32 ys, Shiko *p ) : Menseki(xs,ys,&(p->gp->v)), t
  * @param p - parent Shiko
  */
 Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(&(p->gp->v)), tp(p), ap(nullptr)
-{ ds >> rows;
-  ds >> columns;
-  ds >> nEdge;
-  ds >> eEdge;
-  ds >> wEdge;
-  ds >> sEdge;
-  kl.resize( nPoints() );
-  bool ok = true;
-  for ( qint32 i = 0; i < nPoints(); ++i )
-    ok &= kl[i].fromDataStream( ds );
-  if ( !ok )
-    qDebug( "Ruikei::Ruikei() problem reading Kigo list" );
+{ quint8 version;
+  ds >> version;
+  if ( version != 1 )
+    { qDebug( "Unknown version %d while reading Ruikei", version );
+    }
    else
-    op = new Kogai( ds, this );
+    { ds >> rows;
+      ds >> columns;
+      ds >> nEdge;
+      ds >> eEdge;
+      ds >> wEdge;
+      ds >> sEdge;
+      kl.resize( nPoints() );
+      bool ok = true;
+      for ( qint32 i = 0; i < nPoints(); ++i )
+        ok &= kl[i].fromDataStream( ds );
+      if ( !ok )
+        qDebug( "Ruikei::Ruikei() problem reading Kigo list" );
+       else
+        op = new Kogai( ds, this );
+    }
 
   friendlyColor = NO_PLAYER;
   xo            =
@@ -133,7 +140,9 @@ bool  Ruikei::isValid() const
  * @param ds - DataStream to serialize this Ruikei to
  */
 void Ruikei::toDataStream( QDataStream &ds ) const
-{ ds << rows;
+{ quint8 version = 1;
+  ds << version;
+  ds << rows;
   ds << columns;
   ds << nEdge;
   ds << eEdge;
@@ -475,7 +484,7 @@ qint32  Ruikei::nTerritory( bool friendly )
 
 /**
  * @brief Ruikei::score
- * @return metric of the relative value of the Ruikei position
+ * @return metric of the relative value of the Ruikei position for the friendly player
  */
 qint32 Ruikei::score()
 { return nTerritory( true ) - nTerritory( false ) +

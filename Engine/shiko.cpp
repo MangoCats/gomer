@@ -1,20 +1,14 @@
 #include "shiko.h"
-#include <QDir>
-#include <QFile>
-#include <QSettings>
 
 /**
  * @brief Shiko::Shiko - normal constructor, called at game start with an empty Goban
  * @param pbp - passed Goban pointer, Goban this Shiko thinks about
  * @param p - parent, Game this Shiko is playing
  */
-Shiko::Shiko(Shiai *p) : QObject(p), gp(p), bp(p->bp)
+Shiko::Shiko(Shiai *p) : QObject(p), bp(p->bp), gp(p)
 { np = new Bunkai( this );
   cp = new Chiiki( this );
   jp = new Jiyu( bp );
-  QSettings settings;
-  ruikeiFilename = settings.value( "ruikeiFilename", QDir::homePath() + "/Ruikei.dat" ).toString();
-  readRuikei();
 }
 
 /**
@@ -22,65 +16,15 @@ Shiko::Shiko(Shiai *p) : QObject(p), gp(p), bp(p->bp)
  * @param tp - Shiko to copy
  * @param p - new Game parent
  */
-Shiko::Shiko(Shiko *tp, Shiai *p) : QObject(p), gp(p), bp(p->bp)
+Shiko::Shiko(Shiko *tp, Shiai *p) : QObject(p), bp(p->bp), gp(p)
 { foreach ( Wyrm *wp, tp->wpl )
     wpl.append( new Wyrm( wp, this ) );
   stateHistory = tp->stateHistory;
-  np = tp->np;
+  np = tp->np; // all Shiko share one Bunkai
   cp = new Chiiki( tp->cp, this );
   jp = new Jiyu( tp->jp, bp );
-  apl = tp->apl; // Direct copy of the Ruikei pointers - no reason to duplicate the objects
 }
 
-/**
- * @brief Shiko::readRuikei - de-serialize the Ruikei file into a list of objects in memory
- */
-void Shiko::readRuikei()
-{ QFile rf( ruikeiFilename );
-  if ( !rf.exists() )
-    { qDebug( "Shiko::readRuikei() %s does not exist",qPrintable( ruikeiFilename ) );
-      return;
-    }
-  if ( !rf.open( QIODevice::ReadOnly ) )
-    { qDebug( "Shiko::readRuikei() %s could not open for reading",qPrintable( ruikeiFilename ) );
-      return;
-    }
-  QDataStream ds( &rf );
-  while ( !ds.atEnd() )
-    { Ruikei *ap = new Ruikei(ds,this);
-      if ( ap->isValid() )
-        apl.append( ap );
-       else
-        { ap->deleteLater();
-          qDebug( "Shiko::readRuikei() %s problem with file format",qPrintable( ruikeiFilename ) );
-          return; // Abort the loop.
-        }
-    }
-}
-
-/**
- * @brief Shiko::writeRuikei - serialize the Ruikei objects from memoryinto a file
- */
-void Shiko::writeRuikei() const
-{ QFile rf( ruikeiFilename );
-  if ( !rf.open( QIODevice::WriteOnly ) )
-    { qDebug( "Shiko::readRuikei() %s could not open for writing",qPrintable( ruikeiFilename ) );
-      return;
-    }
-  QDataStream ds( &rf );
-  foreach ( Ruikei *ap, apl )
-    { if ( ap != nullptr )
-        { if ( ap->isValid() )
-            ap->toDataStream( ds );
-           else
-            qDebug( "Shiko::writeRuikei() invalid Ruikei encountered" );
-        }
-       else
-        qDebug( "Shiko::writeRuikei() null Ruikei pointer" );
-    }
-  QSettings settings;
-  settings.setValue( "ruikeiFilename", ruikeiFilename );
-}
 
 /**
  * @brief Shiko::clearGoban - reset to an empty Goban state
@@ -761,14 +705,3 @@ void Shiko::evaluateDraco()
         }
 }
 
-/**
- * @brief Shiko::matchingRuikei
- * @param ap - Ruikei to try to match
- * @return nullptr if no match is found, or pointer to Ruikei from the list if a match is found
- */
-Ruikei *Shiko::matchingRuikei( Ruikei *ap )
-{ foreach ( Ruikei *lap, apl )
-    if ( lap->matchPosition( ap ) )
-      return lap;
-  return nullptr;
-}

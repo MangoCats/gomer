@@ -1,68 +1,137 @@
 #include "bunkai.h"
+#include <QDir>
+#include <QFile>
+#include <QSettings>
 
 Bunkai::Bunkai(Shiko *p) : QObject(p), tp(p)
-{}
+{ QSettings settings;
+  ruikeiFilename = settings.value( "ruikeiFilename", QDir::homePath() + "/Ruikei.dat" ).toString();
+  readRuikei();
+}
+
+/**
+ * @brief Bunkai::readRuikei - de-serialize the Ruikei file into a list of objects in memory
+ */
+void Bunkai::readRuikei()
+{ QFile rf( ruikeiFilename );
+  if ( !rf.exists() )
+    { qDebug( "Shiko::readRuikei() %s does not exist",qPrintable( ruikeiFilename ) );
+      return;
+    }
+  if ( !rf.open( QIODevice::ReadOnly ) )
+    { qDebug( "Shiko::readRuikei() %s could not open for reading",qPrintable( ruikeiFilename ) );
+      return;
+    }
+  QDataStream ds( &rf );
+  while ( !ds.atEnd() )
+    { Ruikei *ap = new Ruikei(ds,tp);
+      if ( ap->isValid() )
+        apl.append( ap );
+       else
+        { ap->deleteLater();
+          qDebug( "Shiko::readRuikei() %s problem with file format",qPrintable( ruikeiFilename ) );
+          return; // Abort the loop.
+        }
+    }
+}
+
+/**
+ * @brief Bunkai::writeRuikei - serialize the Ruikei objects from memoryinto a file
+ */
+void Bunkai::writeRuikei() const
+{ QFile rf( ruikeiFilename );
+  if ( !rf.open( QIODevice::WriteOnly ) )
+    { qDebug( "Shiko::readRuikei() %s could not open for writing",qPrintable( ruikeiFilename ) );
+      return;
+    }
+  QDataStream ds( &rf );
+  foreach ( Ruikei *ap, apl )
+    { if ( ap != nullptr )
+        { if ( ap->isValid() )
+            ap->toDataStream( ds );
+           else
+            qDebug( "Shiko::writeRuikei() invalid Ruikei encountered" );
+        }
+       else
+        qDebug( "Shiko::writeRuikei() null Ruikei pointer" );
+    }
+  QSettings settings;
+  settings.setValue( "ruikeiFilename", ruikeiFilename );
+}
+
+/**
+ * @brief Bunkai::matchingRuikei
+ * @param ap - Ruikei to try to match
+ * @return nullptr if no match is found, or pointer to Ruikei from the list if a match is found
+ */
+Ruikei *Bunkai::matchingRuikei( Ruikei *ap )
+{ foreach ( Ruikei *lap, apl )
+    if ( lap->matchPosition( ap ) )
+      return lap;
+  return nullptr;
+}
 
 /**
  * @brief Bunkai::moveOrPass - judge the relative merit of moving in the Ruikei vs passing
- * @param ap - Ruikei to make a new Kogai for
- * @return pointer to Kogai which has the predictive results for ap
+ * @param ap - Ruikei to lookup or analyze
+ * @return The differential local score between the best possible move or passing
  */
-Kogai *Bunkai::moveOrPass( Ruikei *ap )
+qint32 Bunkai::moveOrPass( Ruikei *ap )
 { if ( ap == nullptr )
-    { qDebug( "UNEXPECTED: Bunkai::predictTerritory() received null Ruikei" );
-      return nullptr;
+    { qDebug( "UNEXPECTED: Bunkai::moveOrPass() received null Ruikei" );
+      return 0;
     }
-  Ruikei *map = tp->matchingRuikei( ap );
-  if ( map != nullptr ) // Precomputed match found?
-    { return map->op; }
+  playout( ap );
+  Kogai *op = ap->op;
+  if ( op == nullptr )
+    { qDebug( "UNEXPECTED: Bunkai::moveOrPass() received null Kogai from playout" );
+      return 0;
+    }
+  return op->highScore - op->passScore;
+  // TODO: Extract best score with multiple friendly passes for 2, 3 and maybe more passes.
 
-  Kogai *op = new Kogai( ap ); // For now, work on a new Kogai
-  // TODO: game it forward, play every legal move, for each of those play every legal response, etc. record the best result for each turn:
-  // In other words: Friendly turn, which one gets the best result when Opponent turn gets their best result when Friendly turn gets their best result, etc.
-  // Store the optimal and N-pass results each in their own Soshi in the Kogai
-  //   also, reach back into the Shiko and add Ruikei - at least for the optimal paths, to the Shiko's Ruikei list
-  for ( qint32 i = MOVE_PASS_INDEX; i < ap->nPoints(); i++ )
-    { qint32 iScore = playout( ap, i );
-      if ( iScore > op->highScore )
-        { op->highScore = iScore;
-          op->bestMove  = i;
-        }
-      if ( i == MOVE_PASS_INDEX )
-        op->passScore = iScore;
-    }
   // TODO: Condensation of Ruikei with identical Kogai outcomes
   
   // TODO: MonteCarlo Tree Analysis for larger Ruikei
 
   // TODO? compare new Kogai to the outgoing one...
-  
-  // Replace the existing Kogai with the newly developed one
-  if ( ap->op != nullptr )
-    ap->op->deleteLater();
-  ap->op = op;
-  return op;
 }
 
 /**
- * @brief Bunkai::playout - recursively play through all combinations
+ * @brief Bunkai::playout - recursively play through all legal move combinations
+ *   Effectively run a minimax search, each level maximizing the friendly high score
+ *   but the meaning of friendly inverting with each level.
  * @param ap - Ruikei to play through
- * @param i - particular grid point to play this iteration
- * @return final score of the chosen branch
- * // TODO: track multi-dimensional comparison of best possible score vs best score with 1 friendly pass, 2 friendly passes, etc.
  */
-qint32 Bunkai::playout( Ruikei *ap, qint32 i )
-{ Ruikei *nap = new Ruikei( ap, i );
-  if ( !nap->isValid() )
-    { nap->deleteLater();
-      return ap->score();  // End of the line, return the actual score
+void Bunkai::playout( Ruikei *ap )
+{ qint32 prevMove = MOVE_UNDEFINED_INDEX;
+  if ( ap->ap != nullptr )                   // Does this Ruikei include move history?
+    prevMove = ap->previousMove;
+  Ruikei *map = matchingRuikei( ap );        // Looking for Ruikei in the library
+  if ( map != nullptr )                      // Precomputed match found?
+    ap->op->copy( map->op );
+   else
+    { bool legalMoveAvailable = false;
+      for ( qint32 i = (prevMove == MOVE_PASS_INDEX) ? 0 : MOVE_PASS_INDEX; i < ap->nPoints(); i++ )
+        { Ruikei *nap = new Ruikei( ap, i ); // Next analysis position
+          if ( !nap->isValid() )             // Illegal move?
+            { delete nap; }
+           else
+            { legalMoveAvailable = true;
+              playout( nap );
+              if ( i == MOVE_PASS_INDEX )    // Scores invert because next level is inverted
+                ap->op->passScore = -nap->op->highScore;
+              if ( ap->op->highScore < -nap->op->highScore )
+                { ap->op->highScore = -nap->op->highScore;
+                  ap->op->bestMove = i;
+                }
+            }
+          delete nap;
+        } // for ( i = ...) try all moves
+      if ( !legalMoveAvailable )
+        { ap->op->highScore =
+          ap->op->passScore = ap->score();   // No more moves available, the score is the score
+        }
+      // TODO: IMPORTANT: look one move further to see if opponent has a legal move
     }
-  // Playout (most) all possible children, but not pass if previous move was pass
-  qint32 highScore = SCORE_INVALID_MOVE;
-  for ( qint32 ni = (i == MOVE_PASS_INDEX) ? 0 : MOVE_PASS_INDEX; ni < nap->nPoints(); ni++ )
-    { qint32 niScore = playout( nap, ni );
-      if ( niScore > highScore )
-        highScore = niScore;
-    }
-  return highScore;  // Best score of all child positions, assuming that minimax search path is what will be followed
 }

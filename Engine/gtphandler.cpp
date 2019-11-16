@@ -125,7 +125,8 @@ void  GtpHandler::receivedMessage( QString m )
         respond( true, id );
         if ( gp != nullptr )
           if ( gp->tp != nullptr )
-            gp->tp->writeRuikei();
+            if ( gp->tp->np != nullptr )
+              gp->tp->np->writeRuikei();
         emit quit();
         break;
 

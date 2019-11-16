@@ -7,23 +7,32 @@ Kogai::Kogai(Ruikei *p) : QObject(p)
 }
 
 Kogai::Kogai(QDataStream &ds, Ruikei *p) : QObject(p)
-{ ds >> passScore;
-  ds >> highScore;
-  ds >> bestMove;
+{ quint8 version;
+  ds >> version;
+  if ( version != 1 )
+    { qDebug( "Unknown version %d reading Kogai", version );
+    }
+   else
+    { ds >> passScore;
+      ds >> highScore;
+      ds >> bestMove;
 
-  qint32 ftlsz;
-  ds >> ftlsz;
-  for ( qint32 i = 0; i < ftlsz; i++ )
-    ftl.append( new Soshi( ds, this ) );
+      qint32 ftlsz;
+      ds >> ftlsz;
+      for ( qint32 i = 0; i < ftlsz; i++ )
+        ftl.append( new Soshi( ds, this ) );
 
-  qint32 otlsz;
-  ds >> otlsz;
-  for ( qint32 i = 0; i < otlsz; i++ )
-    otl.append( new Soshi( ds, this ) );
+      qint32 otlsz;
+      ds >> otlsz;
+      for ( qint32 i = 0; i < otlsz; i++ )
+        otl.append( new Soshi( ds, this ) );
+    }
 }
 
 void Kogai::toDataStream( QDataStream &ds ) const
-{ ds << passScore;
+{ quint8 version = 1;
+  ds << version;
+  ds << passScore;
   ds << highScore;
   ds << bestMove;
 
@@ -36,6 +45,22 @@ void Kogai::toDataStream( QDataStream &ds ) const
   ds << otlsz;
   foreach ( Soshi *ep, otl )
     ep->toDataStream( ds );
+}
+
+/**
+ * @brief Kogai::copy
+ * @param cop - pointer to Kogai which will have its contents copied into this one
+ */
+void Kogai::copy( Kogai *cop )
+{ if ( cop == nullptr )
+    { qDebug( "UNEXPECTED: Kogai::copy received nullptr" );
+      return;
+    }
+  passScore = cop->passScore;
+  highScore = cop->highScore;
+  bestMove = cop->bestMove;
+  ftl = cop->ftl;
+  otl = cop->otl;
 }
 
 /**
