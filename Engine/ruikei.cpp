@@ -87,7 +87,7 @@ Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp
   Ruikei *kap = pap->ap;           // Check every other parent for ko
   while ( kap != nullptr )
     { if ( matchAllGoishi( kap ) ) // Is this Ko?
-        { rows = columns = -1;     // Yes, invalidate the Ruikei
+        { rows = columns = -1;     // Yes, invalidate this Ruikei
           pap->kl[i].ko = true;    // Mark ko in the parent (avoids un-necessary re-checking)
           return;
         }
@@ -95,6 +95,9 @@ Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp
       if ( kap != nullptr )
         kap = kap->ap;            // Two steps back
     }
+
+  // TODO: compute friendly/opponent territory in the Kigos
+
   op = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
 }
 

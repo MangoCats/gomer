@@ -104,9 +104,14 @@ qint32 Bunkai::moveOrPass( Ruikei *ap )
  * @param ap - Ruikei to play through
  */
 void Bunkai::playout( Ruikei *ap )
-{ qint32 prevMove = MOVE_UNDEFINED_INDEX;
+{ if ( ap     == nullptr ) { qDebug( "UNEXPECTED: Bunkai::playout null ap"     ); return; }
+  if ( ap->op == nullptr ) { qDebug( "UNEXPECTED: Bunkai::playout null ap->op" ); return; }
+  qint32 prevMove = MOVE_UNDEFINED_INDEX;
   if ( ap->ap != nullptr )                   // Does this Ruikei include move history?
-    prevMove = ap->previousMove;
+    { prevMove = ap->previousMove;
+      if ( prevMove == MOVE_PASS_INDEX )
+        ap->op->passScore = ap->score();
+    }
   Ruikei *map = matchingRuikei( ap );        // Looking for Ruikei in the library
   if ( map != nullptr )                      // Precomputed match found?
     ap->op->copy( map->op );
@@ -130,17 +135,16 @@ void Bunkai::playout( Ruikei *ap )
                         delete sap;
                       sap = nap;
                     }
-                }
-            }
+                } // if new high score
+            } // else: move at i is valid
           if ( nap != sap )
             delete nap;
         } // for ( i = ...) try all moves
       if ( sap != nullptr )
         apl.append( sap );                   // Building up the library with selected observed and computed scenarios
-      if ( !legalMoveAvailable )
+      if ( !legalMoveAvailable )             // Note: pass is considered as a legal move if previous move was not also pass..
         { ap->op->highScore =
           ap->op->passScore = ap->score();   // No more moves available, the score is the score
         }
-      // TODO: IMPORTANT: look one move further to see if opponent has a legal move
-    }
+    } // else: precomputed match not found, compute results
 }
