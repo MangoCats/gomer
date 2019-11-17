@@ -67,9 +67,7 @@ Ruikei::Ruikei( QDataStream &ds, Shiko *p ) : Menseki(&(p->gp->v)), tp(p), ap(nu
  */
 Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp), ap(pap)
 { if ( !legalFriendlyMove( i ) )
-    { op = nullptr;
-      return; // Ruikei is invalid (rows, columns == -1), indicating move did not happen
-    }
+    return; // Ruikei is invalid (rows, columns == -1), indicating move did not happen
   rows         = ap->rows;
   columns      = ap->columns;
   nEdge        = ap->nEdge;
@@ -82,11 +80,22 @@ Ruikei::Ruikei( Ruikei *pap, qint32 i ) : Menseki(&(pap->tp->gp->v)), tp(pap->tp
   yo           = ap->yo;
   depth        = ap->depth + 1;
   orientation  = ap->orientation;
-  op           = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
   previousMove = i;
+  justCaptured = playAt( i );      // place the Goishi at i and set justCaptured count
+  swapFriendlyOpponent();          // friendly becomes opponent & vice versa
 
-  justCaptured = playAt( i ); // populate justCaptured as appropriate
-  swapFriendlyOpponent();
+  Ruikei *kap = pap->ap;           // Check every other parent for ko
+  while ( kap != nullptr )
+    { if ( matchAllGoishi( kap ) ) // Is this Ko?
+        { rows = columns = -1;     // Yes, invalidate the Ruikei
+          pap->kl[i].ko = true;    // Mark ko in the parent (avoids un-necessary re-checking)
+          return;
+        }
+      kap = kap->ap;
+      if ( kap != nullptr )
+        kap = kap->ap;            // Two steps back
+    }
+  op = new Kogai( this ); // Empty Kogai, use Kogai to pass back results...
 }
 
 /**
@@ -588,4 +597,21 @@ bool Ruikei::matchPosition( Ruikei *ap )
         }
     }
   return false;
+}
+
+/**
+ * @brief Ruikei::matchAllGoishi - ignore orientation
+ *   just examine friendly and opponent Goishi definitions
+ * @param ap - Ruikei to try to match
+ * @return true if all Goishi are equal
+ */
+bool Ruikei::matchAllGoishi( Ruikei *ap )
+{ if ( ap->kl.size() != kl.size() )
+    return false;
+  for ( qint32 i = 0; i < kl.size(); i++ )
+    if (( ap->kl.at(i).friendlyGoishi != kl.at(i).friendlyGoishi ) ||
+        ( ap->kl.at(i).opponentGoishi != kl.at(i).opponentGoishi ) ||
+        ( ap->kl.at(i).emptyGrid      != kl.at(i).emptyGrid      ))
+      return false;
+  return true;
 }

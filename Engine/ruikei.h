@@ -42,6 +42,7 @@ public:
         bool  matchOneGoishi( Goishi *ip, const Kigo &k );
         bool  matchBoth( Wyrm *wp1, Wyrm *wp2, Goban *bp );
         bool  matchPosition( Ruikei *ap );
+        bool  matchAllGoishi( Ruikei *ap );
       qint32  nPreviousPass();
       qint32  nEdges() const;
       qint32  nXedges() const;
